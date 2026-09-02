@@ -45,7 +45,6 @@ app.*.map.json
 /android/app/release
 
 
-
-/sceens/
-/CLUADE.md
+/screens/
+/CLAUDE.md
 /rulebook.md
