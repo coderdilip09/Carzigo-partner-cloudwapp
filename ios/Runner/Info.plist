@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Carzigo Partner needs camera access to take photos for your profile and KYC documents.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Carzigo Partner needs photo library access to upload profile and KYC document images.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
