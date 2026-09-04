@@ -1,18 +1,19 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
+import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_kyc_stepper.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_upload_box.dart';
 import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
-import 'package:carzigo_partner/utils/app_strings.dart';
-import 'package:flutter/material.dart';
-import 'package:carzigo_partner/utils/app_text_styles.dart';
-import 'package:provider/provider.dart';
-import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
+import 'package:carzigo_partner/utils/app_strings.dart';
+import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class IdentityProofScreen extends StatelessWidget {
   const IdentityProofScreen({super.key});
@@ -71,7 +72,12 @@ class IdentityProofScreen extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              AppIcon(_docIcons[i], size: 28),
+                              AppImageView(
+                                _docIcons[i],
+                                width: 42,
+                                height: 30,
+                                fit: BoxFit.contain,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(

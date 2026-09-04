@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
@@ -20,20 +21,29 @@ class KycOverviewScreen extends StatelessWidget {
       create: (_) => KycOverviewProvider(),
       child: Consumer<KycOverviewProvider>(
         builder: (context, provider, _) {
-          return Scaffold(
-            backgroundColor: AppColors.background,
-            body: Stack(
-              children: [
-                const Positioned.fill(
-                  child: AppImageView(AppAssets.bg, fit: BoxFit.cover),
-                ),
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppBackHeader(title: AppStrings.completeKyc.tr()),
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) {
+              if (didPop) return;
+              showLogoutDialog(context);
+            },
+            child: Scaffold(
+              backgroundColor: AppColors.background,
+              body: Stack(
+                children: [
+                  const Positioned.fill(
+                    child: AppImageView(AppAssets.bg, fit: BoxFit.cover),
+                  ),
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppBackHeader(
+                            title: AppStrings.completeKyc.tr(),
+                            onBack: () => showLogoutDialog(context),
+                          ),
                         const SizedBox(height: 6),
                         Text(
                           AppStrings.kycSubtitle.tr(),
@@ -52,34 +62,9 @@ class KycOverviewScreen extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              SizedBox(
-                                width: 36,
-                                height: 36,
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    const AppIcon(
-                                      AppAssets.phoneAndroid,
-                                      size: 32,
-                                    ),
-                                    Positioned(
-                                      right: -2,
-                                      bottom: -2,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(3),
-                                        decoration: const BoxDecoration(
-                                          color: AppColors.peach,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: AppIcon(
-                                          AppAssets.clock,
-                                          size: 12,
-                                          color: AppColors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              const AppIcon(
+                                AppAssets.kycPending,
+                                size: 32,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -118,25 +103,29 @@ class KycOverviewScreen extends StatelessWidget {
                         _KycItem(
                           title: AppStrings.identityProof.tr(),
                           subtitle: AppStrings.identityDocsHint.tr(),
-                          isDone: true,
+                          isDone: provider.isIdentityDone,
+                          isPending: !provider.isIdentityDone,
                           onTap: provider.tapOnIdentity,
                         ),
                         _KycItem(
                           title: AppStrings.addressProof.tr(),
                           subtitle: AppStrings.addressDocsHint.tr(),
-                          isPending: true,
+                          isDone: provider.isAddressDone,
+                          isPending: !provider.isAddressDone,
                           onTap: provider.tapOnAddress,
                         ),
                         _KycItem(
                           title: AppStrings.bankDetails.tr(),
                           subtitle: AppStrings.bankDocsHint.tr(),
-                          isPending: true,
+                          isDone: provider.isBankDone,
+                          isPending: !provider.isBankDone,
                           onTap: provider.tapOnBank,
                         ),
                         _KycItem(
                           title: AppStrings.profilePhoto.tr(),
                           subtitle: AppStrings.clearPhotoVerification.tr(),
-                          isPending: true,
+                          isDone: provider.isProfilePhotoDone,
+                          isPending: !provider.isProfilePhotoDone,
                           onTap: provider.tapOnProfilePhoto,
                         ),
                         const Spacer(),
@@ -167,6 +156,7 @@ class KycOverviewScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
             ),
           );
         },

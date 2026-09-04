@@ -73,7 +73,7 @@ class ReferredCustomerCard extends StatelessWidget {
                       AppIcon(
                         AppAssets.phone,
                         size: 12,
-                        color: AppColors.textSecondary,
+                        color: AppColors.phoneIcon,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
@@ -83,7 +83,7 @@ class ReferredCustomerCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.style(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: AppColors.phoneNumber,
                           ),
                         ),
                       ),
@@ -134,12 +134,6 @@ class ReferredCustomerCard extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(width: 4),
-            AppIcon(
-              AppAssets.chevronRight,
-              size: 16,
-              color: AppColors.black,
             ),
           ],
         ),

@@ -105,7 +105,7 @@ class ServiceDetailsScreen extends StatelessWidget {
       (
         AppStrings.statusAssigned.tr(),
         AppStrings.statusAssignedDesc.tr(),
-        AppAssets.assignment,
+        AppAssets.calendar,
         AppStrings.mockAssignedDatetime.tr(),
       ),
       (
@@ -129,7 +129,7 @@ class ServiceDetailsScreen extends StatelessWidget {
       (
         AppStrings.statusCompleted.tr(),
         AppStrings.statusCompletedDesc.tr(),
-        AppAssets.checkCircle,
+        AppAssets.doubleCheck,
         null,
       ),
     ];
@@ -190,7 +190,7 @@ class ServiceDetailsScreen extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(bottom: isLast ? 0 : 18),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       width: 36,
@@ -231,7 +231,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                             Text(
                               datetime,
                               style: AppTextStyles.style(
-                                fontSize: 11,
+                                fontSize: 7,
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -240,55 +240,69 @@ class ServiceDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     if (isDone)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.peach,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          AppStrings.completed.tr(),
-                          style: AppTextStyles.style(
-                            fontSize: 11,
-                            color: AppColors.navigateText,
-                            fontWeight: FontWeight.w500,
+                      SizedBox(
+                        height: 36,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.peach,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              AppStrings.completed.tr(),
+                              style: AppTextStyles.style(
+                                fontSize: 11,
+                                color: AppColors.navigateText,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ),
                       )
                     else
                       Flexible(
-                        child: OutlinedButton(
-                          onPressed: isNext
-                              ? () => provider.markStep(stepNum)
-                              : null,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.navigateText,
-                            disabledForegroundColor: AppColors.navigateText,
-                            backgroundColor: AppColors.peachLight,
-                            side: const BorderSide(color: AppColors.peachCard),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text(
-                            AppStrings.markAs.tr(args: [title]),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.style(
-                              fontSize: 10,
-                              color: AppColors.navigateText,
-                              fontWeight: FontWeight.w500,
+                        child: SizedBox(
+                          height: 36,
+                          child: Center(
+                            child: OutlinedButton(
+                              onPressed: isNext
+                                  ? () => provider.markStep(stepNum)
+                                  : null,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.navigateText,
+                                disabledForegroundColor:
+                                    AppColors.navigateText,
+                                backgroundColor: Colors.transparent,
+                                side: const BorderSide(
+                                  color: AppColors.peachCard,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: Text(
+                                AppStrings.markAs.tr(args: [title]),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.style(
+                                  fontSize: 10,
+                                  color: AppColors.navigateText,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -405,7 +419,7 @@ class _ScheduleCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.upcomingBadge,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -447,7 +461,7 @@ class _CustomerDetailsCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.peachLight,
+              color: AppColors.customerCard,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -480,7 +494,7 @@ class _CustomerDetailsCard extends StatelessWidget {
                           AppIcon(
                             AppAssets.phone,
                             size: 12,
-                            color: AppColors.navigateText,
+                            color: AppColors.phoneNumber,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -490,7 +504,7 @@ class _CustomerDetailsCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.style(
                                 fontSize: 12,
-                                color: AppColors.navigateText,
+                                color: AppColors.phoneNumber,
                               ),
                             ),
                           ),
@@ -502,7 +516,7 @@ class _CustomerDetailsCard extends StatelessWidget {
                           AppIcon(
                             AppAssets.email,
                             size: 12,
-                            color: AppColors.navigateText,
+                            color: AppColors.phoneNumber,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -512,7 +526,7 @@ class _CustomerDetailsCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.style(
                                 fontSize: 12,
-                                color: AppColors.navigateText,
+                                color: AppColors.phoneNumber,
                               ),
                             ),
                           ),
@@ -525,13 +539,13 @@ class _CustomerDetailsCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: const BoxDecoration(
-                    color: AppColors.destructive,
+                    color: AppColors.destructiveLight,
                     shape: BoxShape.circle,
                   ),
                   child: AppIcon(
-                    AppAssets.phone,
+                    AppAssets.phoneFilled,
                     size: 18,
-                    color: AppColors.white,
+                    color: AppColors.destructive,
                   ),
                 ),
               ],
@@ -566,7 +580,7 @@ class _ServiceAddressCard extends StatelessWidget {
             AppStrings.mockServiceAddress.tr(),
             style: AppTextStyles.style(
               fontSize: 13,
-              color: AppColors.navigateText,
+              color: AppColors.phoneNumber,
             ),
           ),
           const SizedBox(height: 12),
@@ -576,7 +590,7 @@ class _ServiceAddressCard extends StatelessWidget {
               onPressed: () {},
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.navigateText,
-                backgroundColor: AppColors.peachLight,
+                backgroundColor: AppColors.customerCard,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
@@ -587,7 +601,7 @@ class _ServiceAddressCard extends StatelessWidget {
                 ),
               ),
               icon: AppIcon(
-                AppAssets.navigate,
+                AppAssets.send,
                 size: 16,
                 color: AppColors.navigateText,
               ),
@@ -652,7 +666,7 @@ class _NoteCard extends StatelessWidget {
           Row(
             children: [
               AppIcon(
-                AppAssets.shield,
+                AppAssets.shieldFilled,
                 size: 18,
                 color: AppColors.primary,
               ),

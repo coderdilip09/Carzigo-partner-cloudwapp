@@ -19,6 +19,7 @@ class AppTextField extends StatelessWidget {
     this.onTap,
     this.hintColor,
     this.borderColor,
+    this.onChanged,
   });
 
   final TextEditingController? controller;
@@ -34,6 +35,7 @@ class AppTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final Color? hintColor;
   final Color? borderColor;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +63,7 @@ class AppTextField extends StatelessWidget {
       obscureText: obscureText,
       readOnly: readOnly,
       onTap: onTap,
+      onChanged: onChanged,
       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       style: AppTextStyles.style(
         fontSize: 14,
@@ -74,7 +77,7 @@ class AppTextField extends StatelessWidget {
         hintStyle: AppTextStyles.style(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: hintColor ?? AppColors.textHint,
+          color: hintColor ?? AppColors.textFieldHint,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         prefixIconConstraints: prefix != null

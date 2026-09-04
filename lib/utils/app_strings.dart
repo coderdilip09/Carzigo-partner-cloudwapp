@@ -44,6 +44,8 @@ class AppStrings {
   static const String verifyAndContinue = 'verify_and_continue';
   static const String minutes = 'minutes';
   static const String otpValidDuration = 'otp_valid_duration';
+  static const String otpRequired = 'otp_required';
+  static const String otpInvalid = 'otp_invalid';
 
   static const String letsGetStarted = 'lets_get_started';
   static const String createProfileSubtitle = 'create_profile_subtitle';
@@ -52,6 +54,10 @@ class AppStrings {
   static const String addProfilePhotoHint = 'add_profile_photo_hint';
   static const String enterFullName = 'enter_full_name';
   static const String enterEmail = 'enter_email';
+  static const String photoRequired = 'photo_required';
+  static const String nameRequired = 'name_required';
+  static const String emailRequired = 'email_required';
+  static const String emailInvalid = 'email_invalid';
 
   static const String completeKyc = 'complete_kyc';
   static const String kycSubtitle = 'kyc_subtitle';
@@ -137,6 +143,15 @@ class AppStrings {
   static const String ifscCode = 'ifsc_code';
   static const String uploadCheque = 'upload_cheque';
   static const String uploadClearImage = 'upload_clear_image';
+  static const String frontImageRequired = 'front_image_required';
+  static const String backImageRequired = 'back_image_required';
+  static const String documentImageRequired = 'document_image_required';
+  static const String accountHolderRequired = 'account_holder_required';
+  static const String accountNumberRequired = 'account_number_required';
+  static const String accountNumberInvalid = 'account_number_invalid';
+  static const String ifscRequired = 'ifsc_required';
+  static const String ifscInvalid = 'ifsc_invalid';
+  static const String chequeImageRequired = 'cheque_image_required';
   static const String identityDocsHint = 'identity_docs_hint';
   static const String addressDocsHint = 'address_docs_hint';
   static const String bankDocsHint = 'bank_docs_hint';
@@ -237,9 +252,14 @@ class AppStrings {
   static const String view = 'view';
   static const String changeNumber = 'change_number';
   static const String updatePhoneHint = 'update_phone_hint';
+  static const String changeNumberSubtitle = 'change_number_subtitle';
+  static const String changeNumberOtpHint = 'change_number_otp_hint';
+  static const String sendOtp = 'send_otp';
+  static const String phoneUpdated = 'phone_updated';
   static const String profileUpdated = 'profile_updated';
   static const String infoSafe = 'info_safe';
   static const String searchForHelp = 'search_for_help';
+  static const String noResultsFound = 'no_results_found';
   static const String callNow = 'call_now';
   static const String sendEmail = 'send_email';
   static const String mockServiceNotes = 'mock_service_notes';

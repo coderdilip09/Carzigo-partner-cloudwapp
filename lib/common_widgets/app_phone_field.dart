@@ -17,6 +17,8 @@ class AppPhoneField extends StatefulWidget {
     this.initialCountryCode = 'IN',
     this.suffix,
     this.borderColor,
+    this.readOnly = false,
+    this.showDivider = true,
   });
 
   final TextEditingController? controller;
@@ -25,6 +27,8 @@ class AppPhoneField extends StatefulWidget {
   final String initialCountryCode;
   final Widget? suffix;
   final Color? borderColor;
+  final bool readOnly;
+  final bool showDivider;
 
   @override
   State<AppPhoneField> createState() => _AppPhoneFieldState();
@@ -41,7 +45,14 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
 
   int get _maxLength => _country.countryCode == 'IN' ? 10 : 15;
 
+  Color get _fillColor =>
+      widget.readOnly ? AppColors.background : AppColors.white;
+
+  Color get _textColor =>
+      widget.readOnly ? AppColors.textSecondary : AppColors.black;
+
   void _openCountryPicker() {
+    if (widget.readOnly) return;
     showCountryPicker(
       context: context,
       showPhoneCode: true,
@@ -53,7 +64,7 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
         inputDecoration: InputDecoration(
           hintText: AppStrings.searchCountry.tr(),
           hintStyle: AppTextStyles.style(
-            color: AppColors.textHint,
+            color: AppColors.textFieldHint,
             fontSize: 14,
           ),
           filled: true,
@@ -91,7 +102,11 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
     }
     return Text(
       _country.flagEmoji,
-      style: const TextStyle(fontSize: 16, height: 1),
+      style: TextStyle(
+        fontSize: 16,
+        height: 1,
+        color: widget.readOnly ? AppColors.textSecondary : null,
+      ),
     );
   }
 
@@ -102,27 +117,32 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: _fillColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: widget.readOnly
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           InkWell(
-            onTap: _openCountryPicker,
+            onTap: widget.readOnly ? null : _openCountryPicker,
             borderRadius: const BorderRadius.horizontal(
               left: Radius.circular(12),
             ),
             child: Padding(
-              padding: const EdgeInsets.only(left: 12, right: 4),
+              padding: EdgeInsets.only(
+                left: 12,
+                right: widget.showDivider ? 4 : 8,
+              ),
               child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -134,37 +154,42 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
                       style: AppTextStyles.style(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.black,
+                        color: _textColor,
                       ),
                     ),
-                    const SizedBox(width: 2),
-                    SvgPicture.asset(
-                      AppAssets.chevronDown,
-                      width: 14,
-                      height: 14,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.black,
-                        BlendMode.srcIn,
+                    if (!widget.readOnly) ...[
+                      const SizedBox(width: 2),
+                      SvgPicture.asset(
+                        AppAssets.chevronDown,
+                        width: 14,
+                        height: 14,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.black,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: VerticalDivider(
-              width: 16,
-              thickness: 1,
-              color: AppColors.border,
+          if (widget.showDivider)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: VerticalDivider(
+                width: 16,
+                thickness: 1,
+                color: AppColors.border,
+              ),
             ),
-          ),
           Expanded(
             child: Center(
               child: TextField(
                 controller: widget.controller,
-                onChanged: widget.onChanged,
+                onChanged: widget.readOnly ? null : widget.onChanged,
+                readOnly: widget.readOnly,
+                enableInteractiveSelection: !widget.readOnly,
                 onTapOutside: (_) =>
                     FocusManager.instance.primaryFocus?.unfocus(),
                 keyboardType: TextInputType.phone,
@@ -176,18 +201,23 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
                 style: AppTextStyles.style(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.black,
+                  color: _textColor,
                   height: 1.2,
                 ),
                 decoration: InputDecoration(
                   counterText: '',
                   hintText: AppStrings.enterPhoneNumber.tr(),
                   hintStyle: AppTextStyles.style(
-                    color: AppColors.textHint,
+                    color: AppColors.textFieldHint,
                     fontSize: 14,
                     height: 1.2,
                   ),
+                  filled: true,
+                  fillColor: _fillColor,
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 4,

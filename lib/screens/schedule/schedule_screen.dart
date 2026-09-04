@@ -41,11 +41,11 @@ class ScheduleScreen extends StatelessWidget {
           final tabMeta = {
             ScheduleTab.upcoming: (
               AppStrings.upcoming.tr(),
-              AppAssets.clock,
+              AppAssets.calendar,
             ),
             ScheduleTab.completed: (
               AppStrings.completed.tr(),
-              AppAssets.checkCircle,
+              AppAssets.progressCheck,
             ),
             ScheduleTab.cancelled: (
               AppStrings.cancelled.tr(),
@@ -210,14 +210,14 @@ class _DateChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.peach,
+        color: AppColors.dateChipBg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
         style: AppTextStyles.style(
           fontSize: 11,
-          color: AppColors.primary,
+          color: AppColors.viewAll,
           fontWeight: FontWeight.w500,
         ),
       ),

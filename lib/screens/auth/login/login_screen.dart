@@ -34,6 +34,7 @@ class LoginScreen extends StatelessWidget {
                   child: AppImageView(AppAssets.bg, fit: BoxFit.cover),
                 ),
                 SafeArea(
+                  right: false,
                   child: Column(
                     children: [
                       Align(
@@ -91,68 +92,67 @@ class LoginScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Header: logo + welcome left, car flush to screen right
-                              Stack(
-                                clipBehavior: Clip.hardEdge,
-                                children: [
-                                  Positioned.fill(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
+                              // Header: logo + welcome left, car 116x155 flush right (Figma)
+                              SizedBox(
+                                height: 155,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    const Positioned(
+                                      right: 0,
+                                      top: 0,
                                       child: AppImageView(
                                         AppAssets.homeSideCar,
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                0.52,
-                                        fit: BoxFit.contain,
+                                        width: 140,
+                                        height: 155,
+                                        fit: BoxFit.cover,
                                         alignment: Alignment.centerRight,
                                       ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                      left: 20,
-                                      right:
-                                          MediaQuery.sizeOf(context).width *
-                                              0.40,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const AppImageView(
-                                          AppAssets.logo,
-                                          height: 52,
-                                          fit: BoxFit.contain,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          AppStrings.heyWelcomeBack.tr(),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: AppTextStyles.style(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.textPrimary,
-                                            height: 1.2,
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 20,
+                                        right: 148,
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const AppImageView(
+                                            AppAssets.logo,
+                                            height: 52,
+                                            fit: BoxFit.contain,
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          AppStrings.signInToContinue.tr(),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: AppTextStyles.style(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w400,
-                                            color: AppColors.textSecondary,
-                                            height: 1.3,
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            AppStrings.heyWelcomeBack.tr(),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.style(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textPrimary,
+                                              height: 1.2,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            AppStrings.signInToContinue.tr(),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.style(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w400,
+                                              color: AppColors.textSecondary,
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(
@@ -169,7 +169,20 @@ class LoginScreen extends StatelessWidget {
                                       onCountryChanged: provider.setCountry,
                                       initialCountryCode:
                                           provider.country.countryCode,
+                                      borderColor: provider.phoneError != null
+                                          ? AppColors.destructive
+                                          : null,
                                     ),
+                                    if (provider.phoneError != null) ...[
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        provider.phoneError!,
+                                        style: AppTextStyles.style(
+                                          fontSize: 12,
+                                          color: AppColors.destructive,
+                                        ),
+                                      ),
+                                    ],
                                     const SizedBox(height: 24),
                                     _FeatureRow(),
                                     const SizedBox(height: 20),

@@ -1,5 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
-import 'package:carzigo_partner/common_widgets/app_image_view.dart';
+import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/screens/kyc/application_pending/application_pending_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
@@ -35,15 +35,15 @@ class ApplicationPendingScreen extends StatelessWidget {
                           style: AppTextStyles.style(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,
-                          ),
+                            decoration: TextDecoration.underline,
+                          ).copyWith(decorationColor: AppColors.primary),
                         ),
                       ),
                     ),
                     const SizedBox(height: 60),
-                    const AppImageView(
-                      AppAssets.reminder,
-                      height: 120,
-                      fit: BoxFit.contain,
+                    const AppIcon(
+                      AppAssets.carTime,
+                      size: 120,
                     ),
                     const SizedBox(height: 24),
                     Text(

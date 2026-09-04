@@ -42,7 +42,7 @@ class AppBottomNavBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(4, (i) {
           final isActive = currentIndex == i;
-          final color = isActive ? AppColors.black : AppColors.textSecondary;
+          final color = isActive ? AppColors.black : AppColors.navUnselected;
           return GestureDetector(
             onTap: () => onTap(i),
             behavior: HitTestBehavior.opaque,
@@ -66,7 +66,7 @@ class AppBottomNavBar extends StatelessWidget {
                   labels[i],
                   style: AppTextStyles.style(
                     fontSize: 10,
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: FontWeight.w500,
                     color: color,
                   ),
                 ),

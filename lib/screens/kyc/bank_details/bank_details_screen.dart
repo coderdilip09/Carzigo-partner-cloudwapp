@@ -47,24 +47,25 @@ class BankDetailsScreen extends StatelessWidget {
                     AppTextField(
                       hint: AppStrings.accountHolderName.tr(),
                       prefixAsset: AppAssets.personFilled,
-                      hintColor: const Color(0xFF000000),
                       borderColor: AppColors.textFieldBorder,
                       textCapitalization: TextCapitalization.words,
+                      onChanged: provider.setHolderName,
                     ),
                     const SizedBox(height: 12),
                     AppTextField(
                       hint: AppStrings.bankAccountNumber.tr(),
                       prefixAsset: AppAssets.personId,
                       keyboardType: TextInputType.number,
-                      hintColor: const Color(0xFF000000),
                       borderColor: AppColors.textFieldBorder,
+                      onChanged: provider.setAccountNumber,
                     ),
                     const SizedBox(height: 12),
                     AppTextField(
                       hint: AppStrings.ifscCode.tr(),
                       prefixAsset: AppAssets.personId,
-                      hintColor: const Color(0xFF000000),
                       borderColor: AppColors.textFieldBorder,
+                      textCapitalization: TextCapitalization.characters,
+                      onChanged: provider.setIfsc,
                     ),
                     const SizedBox(height: 20),
                     AppUploadBox(

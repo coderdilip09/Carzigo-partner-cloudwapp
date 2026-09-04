@@ -74,7 +74,7 @@ class NotificationsScreen extends StatelessWidget {
                                 n.time.tr(),
                                 style: AppTextStyles.style(
                                   fontSize: 11,
-                                  color: AppColors.textHint,
+                                  color: AppColors.black,
                                 ),
                               ),
                             ],

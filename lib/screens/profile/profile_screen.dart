@@ -93,20 +93,24 @@ class ProfileScreen extends StatelessWidget {
                             Positioned(
                               bottom: 0,
                               right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.white,
-                                    width: 1.5,
+                              child: GestureDetector(
+                                onTap: provider.tapOnMyProfile,
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.white,
+                                      width: 1.5,
+                                    ),
                                   ),
-                                ),
-                                child: AppIcon(
-                                  AppAssets.camera,
-                                  size: 12,
-                                  color: AppColors.white,
+                                  child: AppIcon(
+                                    AppAssets.camera,
+                                    size: 12,
+                                    color: AppColors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -140,25 +144,42 @@ class ProfileScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: provider.tapOnMyProfile,
-                          icon: AppIcon(
-                            AppAssets.edit,
-                            size: 14,
-                            color: AppColors.white,
-                          ),
-                          label: Text(AppStrings.edit.tr()),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.white,
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+                        SizedBox(
+                          height: 26,
+                          child: ElevatedButton(
+                            onPressed: provider.tapOnMyProfile,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.white,
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                              minimumSize: const Size(0, 26),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              visualDensity: VisualDensity.compact,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AppIcon(
+                                  AppAssets.edit,
+                                  size: 10,
+                                  color: AppColors.white,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  AppStrings.edit.tr(),
+                                  style: AppTextStyles.style(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -260,9 +281,6 @@ class _MenuTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDestructive ? AppColors.pinkSection : AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          border: isDestructive
-              ? null
-              : Border.all(color: AppColors.completedCardBorder),
           boxShadow: [
             BoxShadow(
               color: AppColors.black.withValues(alpha: 0.04),

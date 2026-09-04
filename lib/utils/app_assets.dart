@@ -24,6 +24,7 @@ class AppAssets {
 
   // --- SVG chrome icons (replace with brand SVG/PNG when ready) ---
   static const String logoCar = 'assets/images/icons/ic_car.svg';
+  static const String carTime = 'assets/images/icons/ic_car-time.svg';
   static const String flagIn = 'assets/images/icons/ic_flag_in.svg';
   static const String back = 'assets/images/icons/ic_back.svg';
   static const String chevronRight = 'assets/images/icons/ic_chevron_right.svg';
@@ -34,6 +35,7 @@ class AppAssets {
       'assets/images/icons/ic_notification_filled.svg';
   static const String home = 'assets/images/icons/ic_home.svg';
   static const String homeFilled = 'assets/images/icons/ic_home_filled.svg';
+  static const String hand = 'assets/images/webp/ic_hand.png';
   static const String calendar = 'assets/images/icons/ic_calendar.svg';
   static const String calendarFilled = 'assets/images/icons/ic_calendar_filled.svg';
   static const String refer = 'assets/images/icons/ic_refer.svg';
@@ -41,6 +43,7 @@ class AppAssets {
   static const String person = 'assets/images/icons/ic_person.svg';
   static const String personFilled = 'assets/images/icons/ic_person_filled.svg';
   static const String personId = 'assets/images/icons/ic_person_id.svg';
+  static const String personCall = 'assets/images/icons/ic_person-call.svg';
   static const String arrowForward = 'assets/images/icons/ic_arrow_forward.svg';
   static const String edit = 'assets/images/icons/ic_edit.svg';
   static const String camera = 'assets/images/icons/ic_camera.svg';
@@ -49,11 +52,13 @@ class AppAssets {
   static const String logout = 'assets/images/icons/ic_logout.svg';
   static const String delete = 'assets/images/icons/ic_delete.svg';
   static const String refresh = 'assets/images/icons/ic_refresh.svg';
+  static const String resend = 'assets/images/icons/ic_resent.svg';
   static const String send = 'assets/images/icons/ic_send.svg';
   static const String navigate = 'assets/images/icons/ic_navigate.svg';
   static const String help = 'assets/images/icons/ic_help.svg';
   static const String check = 'assets/images/icons/ic_check.svg';
   static const String checkCircle = 'assets/images/icons/ic_check_circle.svg';
+  static const String doubleCheck = 'assets/images/icons/ic_double_check.svg';
   static const String progressCheck = 'assets/images/icons/ic_progress-check.svg';
   static const String progressDown = 'assets/images/icons/ic_progress-down.svg';
   static const String cancel = 'assets/images/icons/ic_cancel.svg';
@@ -61,19 +66,23 @@ class AppAssets {
   static const String lock = 'assets/images/icons/ic_lock.svg';
   static const String lockFilled = 'assets/images/icons/ic_lock_filled.svg';
   static const String shield = 'assets/images/icons/ic_shield.svg';
+  static const String shieldFilled = 'assets/images/icons/ic_shield_filled.svg';
   static const String clock = 'assets/images/icons/ic_clock.svg';
   static const String phone = 'assets/images/icons/ic_phone.svg';
+  static const String phoneFilled = 'assets/images/icons/ic_phone_filled.svg';
   static const String phoneAndroid = 'assets/images/icons/ic_phone_android.svg';
+  static const String kycPending = 'assets/images/icons/ic_kyc_pending.svg';
   static const String email = 'assets/images/icons/ic_email.svg';
   static const String headset = 'assets/images/icons/ic_headset.svg';
   static const String location = 'assets/images/icons/ic_location.svg';
   static const String badge = 'assets/images/icons/ic_badge.svg';
-  static const String aadhaar = 'assets/images/icons/ic_aadhaar.svg';
-  static const String pan = 'assets/images/icons/ic_pan.svg';
-  static const String drivingLicense = 'assets/images/icons/ic_driving_license.svg';
+  static const String aadhaar = 'assets/images/webp/ic_aadhaar_img.png';
+  static const String pan = 'assets/images/webp/ic_pan_img.png';
+  static const String drivingLicense = 'assets/images/webp/ic_driving_license_img.png';
   static const String bank = 'assets/images/icons/ic_bank.svg';
   static const String folder = 'assets/images/icons/ic_folder.svg';
   static const String document = 'assets/images/icons/ic_document.svg';
+  static const String docProof = 'assets/images/webp/ic_doc_proof_img.png';
   static const String privacy = 'assets/images/icons/ic_privacy.svg';
   static const String campaign = 'assets/images/icons/ic_campaign.svg';
   static const String assignment = 'assets/images/icons/ic_assignment.svg';

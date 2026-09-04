@@ -14,9 +14,14 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
 class OtpVerifyScreen extends StatefulWidget {
-  const OtpVerifyScreen({super.key, required this.phone});
+  const OtpVerifyScreen({
+    super.key,
+    required this.phone,
+    this.isChangeNumber = false,
+  });
 
   final String phone;
+  final bool isChangeNumber;
 
   @override
   State<OtpVerifyScreen> createState() => _OtpVerifyScreenState();
@@ -26,7 +31,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => OtpVerifyProvider(phone: widget.phone)..startTimer(),
+      create: (_) => OtpVerifyProvider(
+        phone: widget.phone,
+        isChangeNumber: widget.isChangeNumber,
+      )..startTimer(),
       child: Consumer<OtpVerifyProvider>(
         builder: (context, provider, _) {
           return Scaffold(
@@ -70,7 +78,9 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                               '${AppStrings.enterOtpSentTo.tr()} ',
                                         ),
                                         TextSpan(
-                                          text: MockData.userPhoneMasked,
+                                          text: widget.isChangeNumber
+                                              ? '+91 ${widget.phone}'
+                                              : MockData.userPhoneMasked,
                                           style: AppTextStyles.style(
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w600,
@@ -120,9 +130,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                               const spacing = 10.0;
                               final cellWidth =
                                   (constraints.maxWidth - spacing * 5) / 6;
+                              final hasError = provider.otpError != null;
                               return MaterialPinField(
                                 length: 6,
-                                onChanged: (_) {},
+                                onChanged: provider.setOtp,
                                 onTapOutside: (_) =>
                                     FocusManager.instance.primaryFocus
                                         ?.unfocus(),
@@ -136,6 +147,17 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                   filledFillColor: const Color(0xFFF3F3F3),
                                   followingFillColor: const Color(0xFFF3F3F3),
                                   completeFillColor: const Color(0xFFF3F3F3),
+                                  borderColor: hasError
+                                      ? AppColors.destructive
+                                      : null,
+                                  focusedBorderColor: hasError
+                                      ? AppColors.destructive
+                                      : AppColors.primary,
+                                  followingBorderColor: hasError
+                                      ? AppColors.destructive
+                                      : null,
+                                  errorColor: AppColors.destructive,
+                                  errorBorderColor: AppColors.destructive,
                                   cursorColor: AppColors.primary,
                                   hintCharacter: '-',
                                   hintStyle: AppTextStyles.style(
@@ -151,6 +173,19 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                             },
                           ),
                         ),
+                        if (provider.otpError != null) ...[
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              provider.otpError!,
+                              style: AppTextStyles.style(
+                                fontSize: 12,
+                                color: AppColors.destructive,
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 12),
                         Center(
                           child: Row(
@@ -380,7 +415,7 @@ class _ResendCard extends StatelessWidget {
                     ),
                     child: const Center(
                       child: AppIcon(
-                        AppAssets.refresh,
+                        AppAssets.resend,
                         size: 14,
                         color: AppColors.primary,
                       ),

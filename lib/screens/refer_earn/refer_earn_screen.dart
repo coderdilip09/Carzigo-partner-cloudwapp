@@ -60,6 +60,9 @@ class ReferEarnScreen extends StatelessWidget {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.howItWorksText,
                           side: const BorderSide(color: AppColors.howItWorksText),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 10,
@@ -67,7 +70,11 @@ class ReferEarnScreen extends StatelessWidget {
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,
-                          textStyle: AppTextStyles.style(fontSize: 11),
+                          textStyle: AppTextStyles.style(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.howItWorksText,
+                          ),
                         ),
                         icon: AppIcon(
                           AppAssets.help,
@@ -440,9 +447,9 @@ class _CopyField extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.notificationCircle,
+        color: AppColors.referralCopyBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.peachCard),
+        border: Border.all(color: AppColors.completedCardBorder),
       ),
       child: Row(
         children: [

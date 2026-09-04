@@ -162,12 +162,18 @@ class _DashboardHome extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        AppStrings.helloName.tr(args: [MockData.userName]),
-                        style: AppTextStyles.style(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            AppStrings.helloName.tr(args: [MockData.userName]),
+                            style: AppTextStyles.style(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const AppIcon(AppAssets.hand, size: 18),
+                        ],
                       ),
                       Row(
                         children: [
@@ -193,9 +199,23 @@ class _DashboardHome extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: const AppIcon(
-                      AppAssets.notificationFilled,
-                      size: 22,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const AppIcon(AppAssets.notification, size: 22),
+                        Positioned(
+                          right: 0,
+                          top: 4,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppColors.destructive,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -407,14 +427,16 @@ class _StatChip extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: AppColors.destructive,
                   shape: BoxShape.circle,
                 ),
                 child: AppIcon(
                   leadingAsset,
-                  size: 14,
+                  size: 24,
                   color: AppColors.white,
                 ),
               ),

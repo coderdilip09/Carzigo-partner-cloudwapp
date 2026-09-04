@@ -7,6 +7,7 @@ import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_phone_field.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_text_field.dart';
+import 'package:carzigo_partner/screens/profile/edit_profile/change_number/change_number_screen.dart';
 import 'package:carzigo_partner/services/image_pick_service/image_pick_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
@@ -31,6 +32,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
+  String? _nameError;
+  String? _emailError;
 
   @override
   void initState() {
@@ -40,14 +43,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailController = TextEditingController(
       text: AppStrings.emailHintExample.tr(),
     );
+    _nameController.addListener(_clearNameError);
+    _emailController.addListener(_clearEmailError);
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_clearNameError);
+    _emailController.removeListener(_clearEmailError);
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _clearNameError() {
+    if (_nameError == null) return;
+    setState(() => _nameError = null);
+  }
+
+  void _clearEmailError() {
+    if (_emailError == null) return;
+    setState(() => _emailError = null);
   }
 
   Future<void> _pick(ImageSource source) async {
@@ -56,11 +73,48 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _profileImage = file);
   }
 
-  void _onChangeNumber() {
-    AppToast.show(AppStrings.updatePhoneHint.tr());
+  Future<void> _onChangeNumber() async {
+    final newPhone = await AppNavigation.to<String>(
+      const ChangeNumberScreen(),
+    );
+    if (!mounted || newPhone == null || newPhone.isEmpty) return;
+    setState(() => _phoneController.text = newPhone);
+  }
+
+  bool _isValidEmail(String value) {
+    return RegExp(r'^[\w.\-+]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(value);
+  }
+
+  bool _validate() {
+    var isValid = true;
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+
+    String? nameError;
+    String? emailError;
+
+    if (name.isEmpty) {
+      nameError = AppStrings.nameRequired.tr();
+      isValid = false;
+    }
+
+    if (email.isEmpty) {
+      emailError = AppStrings.emailRequired.tr();
+      isValid = false;
+    } else if (!_isValidEmail(email)) {
+      emailError = AppStrings.emailInvalid.tr();
+      isValid = false;
+    }
+
+    setState(() {
+      _nameError = nameError;
+      _emailError = emailError;
+    });
+    return isValid;
   }
 
   void _onUpdateProfile() {
+    if (!_validate()) return;
     AppNavigation.back();
     AppToast.success(AppStrings.profileUpdated.tr());
   }
@@ -172,38 +226,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 28),
                     AppTextField(
                       controller: _nameController,
-                      prefixAsset: AppAssets.person,
+                      prefixAsset: AppAssets.personFilled,
                       prefixIconColor: AppColors.primary,
                       textCapitalization: TextCapitalization.words,
+                      borderColor: _nameError != null
+                          ? AppColors.destructive
+                          : null,
                     ),
+                    if (_nameError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _nameError!,
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          color: AppColors.destructive,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     AppPhoneField(
                       controller: _phoneController,
-                      suffix: GestureDetector(
-                        onTap: _onChangeNumber,
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: AppColors.textFieldBorder,
-                            ),
-                          ),
-                          child: Text(
-                            AppStrings.changeNumber.tr(),
-                            style: AppTextStyles.style(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.accentOrange,
-                            ),
-                          ),
-                        ),
-                      ),
+                      readOnly: true,
+                      showDivider: false,
+                      borderColor: AppColors.textFieldBorderGrey,
                     ),
                     const SizedBox(height: 12),
                     AppTextField(
@@ -211,7 +256,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       prefixAsset: AppAssets.email,
                       prefixIconColor: AppColors.primary,
                       keyboardType: TextInputType.emailAddress,
+                      borderColor: _emailError != null
+                          ? AppColors.destructive
+                          : null,
                     ),
+                    if (_emailError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _emailError!,
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          color: AppColors.destructive,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: _onChangeNumber,

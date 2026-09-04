@@ -9,8 +9,22 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class HelpSupportScreen extends StatelessWidget {
+class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
+
+  @override
+  State<HelpSupportScreen> createState() => _HelpSupportScreenState();
+}
+
+class _HelpSupportScreenState extends State<HelpSupportScreen> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _launchUri(Uri uri) async {
     final ok = await canLaunchUrl(uri);
@@ -29,16 +43,29 @@ class HelpSupportScreen extends StatelessWidget {
     await _launchUri(Uri.parse('mailto:$email?subject=$subject'));
   }
 
+  List<(String, String)> get _allTopics => [
+        (AppStrings.topicBooking.tr(), AppStrings.topicBookingDesc.tr()),
+        (AppStrings.topicPayments.tr(), AppStrings.topicPaymentsDesc.tr()),
+        (AppStrings.topicMembership.tr(), AppStrings.topicMembershipDesc.tr()),
+        (AppStrings.topicAccount.tr(), AppStrings.topicAccountDesc.tr()),
+        (AppStrings.topicOffers.tr(), AppStrings.topicOffersDesc.tr()),
+        (AppStrings.topicGeneral.tr(), AppStrings.topicGeneralDesc.tr()),
+      ];
+
+  List<(String, String)> get _filteredTopics {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return _allTopics;
+    return _allTopics
+        .where(
+          (t) =>
+              t.$1.toLowerCase().contains(q) || t.$2.toLowerCase().contains(q),
+        )
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final topics = [
-      (AppStrings.topicBooking.tr(), AppStrings.topicBookingDesc.tr()),
-      (AppStrings.topicPayments.tr(), AppStrings.topicPaymentsDesc.tr()),
-      (AppStrings.topicMembership.tr(), AppStrings.topicMembershipDesc.tr()),
-      (AppStrings.topicAccount.tr(), AppStrings.topicAccountDesc.tr()),
-      (AppStrings.topicOffers.tr(), AppStrings.topicOffersDesc.tr()),
-      (AppStrings.topicGeneral.tr(), AppStrings.topicGeneralDesc.tr()),
-    ];
+    final topics = _filteredTopics;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -175,12 +202,9 @@ class HelpSupportScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.peach,
+                  color: AppColors.textFieldFill,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -191,13 +215,46 @@ class HelpSupportScreen extends StatelessWidget {
                       color: AppColors.black,
                     ),
                     const SizedBox(width: 10),
-                    Text(
-                      AppStrings.searchForHelp.tr(),
-                      style: AppTextStyles.style(
-                        fontSize: 14,
-                        color: AppColors.black,
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (value) => setState(() => _query = value),
+                        style: AppTextStyles.style(
+                          fontSize: 14,
+                          color: AppColors.black,
+                        ),
+                        cursorColor: AppColors.primary,
+                        decoration: InputDecoration(
+                          hintText: AppStrings.searchForHelp.tr(),
+                          hintStyle: AppTextStyles.style(
+                            fontSize: 14,
+                            color: AppColors.black,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.textFieldFill,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
+                        ),
                       ),
                     ),
+                    if (_query.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          _searchController.clear();
+                          setState(() => _query = '');
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: AppColors.black,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -211,55 +268,67 @@ class HelpSupportScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              ...List.generate(topics.length, (i) {
-                final t = topics[i];
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  t.$1,
-                                  style: AppTextStyles.style(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  t.$2,
-                                  style: AppTextStyles.style(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const AppIcon(
-                            AppAssets.chevronRight,
-                            size: 18,
-                            color: AppColors.textPrimary,
-                          ),
-                        ],
-                      ),
+              if (topics.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    AppStrings.noResultsFound.tr(),
+                    style: AppTextStyles.style(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
                     ),
-                    if (i < topics.length - 1)
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: AppColors.border,
+                  ),
+                )
+              else
+                ...List.generate(topics.length, (i) {
+                  final t = topics[i];
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    t.$1,
+                                    style: AppTextStyles.style(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    t.$2,
+                                    style: AppTextStyles.style(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const AppIcon(
+                              AppAssets.chevronRight,
+                              size: 18,
+                              color: AppColors.textPrimary,
+                            ),
+                          ],
+                        ),
                       ),
-                  ],
-                );
-              }),
+                      if (i < topics.length - 1)
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: AppColors.border,
+                        ),
+                    ],
+                  );
+                }),
               const SizedBox(height: 20),
               Text(
                 AppStrings.otherWays.tr(),
@@ -275,7 +344,7 @@ class HelpSupportScreen extends StatelessWidget {
                 title: AppStrings.callUs.tr(),
                 value: AppStrings.supportPhone.tr(),
                 action: AppStrings.callNow.tr(),
-                actionIcon: AppAssets.headset,
+                actionIcon: AppAssets.personCall,
                 onAction: _callSupport,
               ),
               _ContactCard(
@@ -324,7 +393,7 @@ class _ContactCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.peach,
+        color: AppColors.contactCard,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -373,7 +442,7 @@ class _ContactCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         backgroundColor: AppColors.white,
                         foregroundColor: AppColors.textPrimary,
-                        side: const BorderSide(color: AppColors.notification),
+                        side: const BorderSide(color: AppColors.sendEmailBorder),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,

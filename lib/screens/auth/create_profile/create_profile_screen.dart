@@ -53,7 +53,9 @@ class CreateProfileScreen extends StatelessWidget {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppColors.primary,
+                                  color: provider.photoError != null
+                                      ? AppColors.destructive
+                                      : const Color(0x40FD5903),
                                   width: 1,
                                 ),
                                 color: AppColors.peach,
@@ -111,22 +113,61 @@ class CreateProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (provider.photoError != null) ...[
+                      const SizedBox(height: 6),
+                      Center(
+                        child: Text(
+                          provider.photoError!,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.destructive,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     AppTextField(
                       hint: AppStrings.enterFullName.tr(),
                       prefixAsset: AppAssets.personFilled,
                       prefixIconColor: AppColors.accentOrange,
-                      borderColor: AppColors.textFieldBorderGrey,
+                      borderColor: provider.nameError != null
+                          ? AppColors.destructive
+                          : AppColors.textFieldBorderGrey,
                       textCapitalization: TextCapitalization.words,
+                      onChanged: provider.setName,
                     ),
+                    if (provider.nameError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        provider.nameError!,
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          color: AppColors.destructive,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     AppTextField(
                       hint: AppStrings.enterEmail.tr(),
                       prefixAsset: AppAssets.email,
                       prefixIconColor: AppColors.accentOrange,
-                      borderColor: AppColors.textFieldBorderGrey,
+                      borderColor: provider.emailError != null
+                          ? AppColors.destructive
+                          : AppColors.textFieldBorderGrey,
                       keyboardType: TextInputType.emailAddress,
+                      onChanged: provider.setEmail,
                     ),
+                    if (provider.emailError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        provider.emailError!,
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          color: AppColors.destructive,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     _FeatureGrid(),
                     const SizedBox(height: 24),

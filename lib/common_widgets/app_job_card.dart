@@ -113,8 +113,10 @@ class AppJobCard extends StatelessWidget {
             children: [
               Text(
                 AppStrings.mockJobService.tr(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.style(
-                  fontSize: 14,
+                  fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: AppColors.black,
                 ),
@@ -191,110 +193,40 @@ class AppJobCard extends StatelessWidget {
   }
 
   Widget _buildScheduleCard(String resolvedTime) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                color: AppColors.peachLight,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.all(6),
-              child: const AppImageView(
-                AppAssets.dummyCar,
-                width: 64,
-                height: 64,
-                fit: BoxFit.contain,
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-              ),
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: const AppImageView(
+            AppAssets.dummyCar,
+            width: 72,
+            height: 72,
+            fit: BoxFit.cover,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.mockJobService.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  AppStrings.mockJobCustomer.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppStrings.mockJobCar.tr(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.style(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.timeBadge,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const AppIcon(
-                            AppAssets.clock,
-                            size: 12,
-                            color: AppColors.black,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            resolvedTime,
-                            maxLines: 1,
-                            softWrap: false,
-                            style: AppTextStyles.style(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.black,
-                            ),
-                          ),
-                        ],
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      AppStrings.mockJobService.tr(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.style(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (showPrice)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                  if (showPrice) ...[
+                    const SizedBox(width: 8),
                     Text(
                       AppStrings.mockJobPrice.tr(),
                       style: AppTextStyles.style(
@@ -310,32 +242,95 @@ class AppJobCard extends StatelessWidget {
                       color: AppColors.black,
                     ),
                   ],
-                )
-              else
-                const SizedBox.shrink(),
-              if (status != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.peach,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    status!,
-                    style: AppTextStyles.style(
-                      fontSize: 10,
-                      color: AppColors.accentOrange,
-                      fontWeight: FontWeight.w600,
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                AppStrings.mockJobCustomer.tr(),
+                style: AppTextStyles.style(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                AppStrings.mockJobCar.tr(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.style(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Flexible(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.timeBadge,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const AppIcon(
+                              AppAssets.clock,
+                              size: 12,
+                              color: AppColors.black,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                resolvedTime,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.style(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.black,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  if (status != null) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: AppColors.accentOrange),
+                      ),
+                      child: Text(
+                        status!,
+                        style: AppTextStyles.style(
+                          fontSize: 10,
+                          color: AppColors.accentOrange,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

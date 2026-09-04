@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
               alignment: Alignment.centerRight,
             ),
           ),
-          const Center(child: AppLogo(size: 200, showPartner: true)),
+          const Center(child: AppLogo(size: 280, showPartner: true)),
         ],
       ),
     );

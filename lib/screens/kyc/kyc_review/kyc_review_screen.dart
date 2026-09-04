@@ -56,14 +56,14 @@ class KycReviewScreen extends StatelessWidget {
                       line1: AppStrings.aadhaarCard.tr(),
                       line2: MockData.aadhaarMasked,
                       onEdit: provider.tapOnEditIdentity,
-                      trailingAsset: AppAssets.aadhaar,
+                      trailingAsset: AppAssets.docProof,
                     ),
                     _ReviewCard(
                       title: AppStrings.addressProof.tr(),
                       line1: AppStrings.aadhaarCard.tr(),
                       line2: MockData.aadhaarMasked,
                       onEdit: provider.tapOnEditAddress,
-                      trailingAsset: AppAssets.aadhaar,
+                      trailingAsset: AppAssets.docProof,
                     ),
                     _ReviewCard(
                       title: AppStrings.bankDetails.tr(),

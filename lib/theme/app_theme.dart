@@ -44,7 +44,7 @@ class AppTheme {
           horizontal: 16,
           vertical: 14,
         ),
-        hintStyle: AppTextStyles.style(color: AppColors.textHint, fontSize: 14),
+        hintStyle: AppTextStyles.style(color: AppColors.textFieldHint, fontSize: 14),
       ),
     );
   }

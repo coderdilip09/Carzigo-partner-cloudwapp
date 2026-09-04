@@ -28,17 +28,7 @@ class AppBackHeader extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.border.withValues(alpha: 0.5),
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: AppIcon(AppAssets.back, size: 20),
-            ),
-          ),
+          const AppIcon(AppAssets.back, size: 40),
           if (showBackText) ...[
             const SizedBox(width: 8),
             Text(
