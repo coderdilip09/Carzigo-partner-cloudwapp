@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
@@ -74,9 +75,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _onChangeNumber() async {
-    final newPhone = await AppNavigation.to<String>(
-      const ChangeNumberScreen(),
-    );
+    final newPhone = await AppNavigation.to<String>(const ChangeNumberScreen());
     if (!mounted || newPhone == null || newPhone.isEmpty) return;
     setState(() => _phoneController.text = newPhone);
   }
@@ -123,253 +122,257 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppBackHeader(
-                      title: AppStrings.editProfile.tr(),
-                      showBackText: true,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppStrings.editProfileSubtitle.tr(),
-                      style: AppTextStyles.style(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
+      body: AppBg(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppBackHeader(
+                        title: AppStrings.editProfile.tr(),
+                        showBackText: true,
                       ),
-                    ),
-                    const SizedBox(height: 28),
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => showImageSourceSheet(
-                          context,
-                          onCamera: () => _pick(ImageSource.camera),
-                          onGallery: () => _pick(ImageSource.gallery),
+                      const SizedBox(height: 4),
+                      Text(
+                        AppStrings.editProfileSubtitle.tr(),
+                        style: AppTextStyles.style(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
                         ),
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.peachCard,
-                                  width: 2,
+                      ),
+                      const SizedBox(height: 28),
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => showImageSourceSheet(
+                            context,
+                            onCamera: () => _pick(ImageSource.camera),
+                            onGallery: () => _pick(ImageSource.gallery),
+                          ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.peachCard,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: _profileImage != null
+                                      ? Image.file(
+                                          _profileImage!,
+                                          width: 110,
+                                          height: 110,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : AppImageView(
+                                          AppAssets.dummyProfile,
+                                          width: 110,
+                                          height: 110,
+                                          fit: BoxFit.cover,
+                                        ),
                                 ),
                               ),
-                              child: ClipOval(
-                                child: _profileImage != null
-                                    ? Image.file(
-                                        _profileImage!,
-                                        width: 110,
-                                        height: 110,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : AppImageView(
-                                        AppAssets.dummyProfile,
-                                        width: 110,
-                                        height: 110,
-                                        fit: BoxFit.cover,
-                                      ),
+                              Positioned(
+                                bottom: 4,
+                                right: 4,
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: AppIcon(
+                                    AppAssets.camera,
+                                    size: 16,
+                                    color: AppColors.white,
+                                  ),
+                                ),
                               ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Text(
+                          AppStrings.profilePhoto.tr(),
+                          style: AppTextStyles.style(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Center(
+                        child: Text(
+                          AppStrings.tapToChangePhoto.tr(),
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      AppTextField(
+                        controller: _nameController,
+                        prefixAsset: AppAssets.personFilled,
+                        prefixIconColor: AppColors.primary,
+                        textCapitalization: TextCapitalization.words,
+                        borderColor: _nameError != null
+                            ? AppColors.destructive
+                            : null,
+                      ),
+                      if (_nameError != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          _nameError!,
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.destructive,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      AppPhoneField(
+                        controller: _phoneController,
+                        readOnly: true,
+                        showDivider: false,
+                        borderColor: AppColors.textFieldBorderGrey,
+                      ),
+                      const SizedBox(height: 12),
+                      AppTextField(
+                        controller: _emailController,
+                        prefixAsset: AppAssets.email,
+                        prefixIconColor: AppColors.primary,
+                        keyboardType: TextInputType.emailAddress,
+                        borderColor: _emailError != null
+                            ? AppColors.destructive
+                            : null,
+                      ),
+                      if (_emailError != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          _emailError!,
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.destructive,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      GestureDetector(
+                        onTap: _onChangeNumber,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.textFieldBorder,
                             ),
-                            Positioned(
-                              bottom: 4,
-                              right: 4,
-                              child: Container(
-                                width: 32,
-                                height: 32,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
                                 decoration: const BoxDecoration(
-                                  color: AppColors.primary,
+                                  color: AppColors.notificationCircle,
                                   shape: BoxShape.circle,
                                 ),
                                 alignment: Alignment.center,
                                 child: AppIcon(
-                                  AppAssets.camera,
-                                  size: 16,
-                                  color: AppColors.white,
+                                  AppAssets.lock,
+                                  size: 18,
+                                  color: AppColors.primary,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Text(
-                        AppStrings.profilePhoto.tr(),
-                        style: AppTextStyles.style(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Center(
-                      child: Text(
-                        AppStrings.tapToChangePhoto.tr(),
-                        style: AppTextStyles.style(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    AppTextField(
-                      controller: _nameController,
-                      prefixAsset: AppAssets.personFilled,
-                      prefixIconColor: AppColors.primary,
-                      textCapitalization: TextCapitalization.words,
-                      borderColor: _nameError != null
-                          ? AppColors.destructive
-                          : null,
-                    ),
-                    if (_nameError != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        _nameError!,
-                        style: AppTextStyles.style(
-                          fontSize: 12,
-                          color: AppColors.destructive,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    AppPhoneField(
-                      controller: _phoneController,
-                      readOnly: true,
-                      showDivider: false,
-                      borderColor: AppColors.textFieldBorderGrey,
-                    ),
-                    const SizedBox(height: 12),
-                    AppTextField(
-                      controller: _emailController,
-                      prefixAsset: AppAssets.email,
-                      prefixIconColor: AppColors.primary,
-                      keyboardType: TextInputType.emailAddress,
-                      borderColor: _emailError != null
-                          ? AppColors.destructive
-                          : null,
-                    ),
-                    if (_emailError != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        _emailError!,
-                        style: AppTextStyles.style(
-                          fontSize: 12,
-                          color: AppColors.destructive,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: _onChangeNumber,
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.textFieldBorder),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                color: AppColors.notificationCircle,
-                                shape: BoxShape.circle,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppStrings.changeNumber.tr(),
+                                      style: AppTextStyles.style(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      AppStrings.updatePhoneHint.tr(),
+                                      style: AppTextStyles.style(
+                                        fontSize: 11,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              alignment: Alignment.center,
-                              child: AppIcon(
-                                AppAssets.lock,
+                              AppIcon(
+                                AppAssets.chevronRight,
                                 size: 18,
-                                color: AppColors.primary,
+                                color: AppColors.black,
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    AppStrings.changeNumber.tr(),
-                                    style: AppTextStyles.style(
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    AppStrings.updatePhoneHint.tr(),
-                                    style: AppTextStyles.style(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            AppIcon(
-                              AppAssets.chevronRight,
-                              size: 18,
-                              color: AppColors.black,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: Column(
-                children: [
-                  AppSolidButton(
-                    label: AppStrings.updateProfile.tr(),
-                    onTap: _onUpdateProfile,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AppIcon(
-                        AppAssets.lock,
-                        size: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          AppStrings.infoSafe.tr(),
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.style(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
+                            ],
                           ),
                         ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: Column(
+                  children: [
+                    AppSolidButton(
+                      label: AppStrings.updateProfile.tr(),
+                      onTap: _onUpdateProfile,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AppIcon(
+                          AppAssets.lock,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            AppStrings.infoSafe.tr(),
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.style(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

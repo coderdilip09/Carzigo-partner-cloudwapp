@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
@@ -73,11 +74,7 @@ void _showDocumentPreview(
                         fit: BoxFit.cover,
                       ),
                     )
-                  : AppIcon(
-                      previewAsset,
-                      size: 88,
-                      color: AppColors.primary,
-                    ),
+                  : AppIcon(previewAsset, size: 88, color: AppColors.primary),
             ),
             const SizedBox(height: 14),
             Text(
@@ -134,81 +131,83 @@ class DocumentsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppBackHeader(title: AppStrings.documents.tr()),
-              Text(
-                AppStrings.documentsSubtitle.tr(),
-                style: AppTextStyles.style(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
+      body: AppBg(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppBackHeader(title: AppStrings.documents.tr()),
+                Text(
+                  AppStrings.documentsSubtitle.tr(),
+                  style: AppTextStyles.style(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _DocCard(
+                          iconAsset: AppAssets.badge,
+                          title: AppStrings.identityProof.tr(),
+                          line1: AppStrings.aadhaarCard.tr(),
+                          line2: MockData.aadhaarMasked,
+                          previewAsset: AppAssets.docProof,
+                          showStackedPreview: true,
+                          onEdit: () =>
+                              AppNavigation.to(const IdentityProofScreen()),
+                        ),
+                        _DocCard(
+                          iconAsset: AppAssets.location,
+                          title: AppStrings.addressProof.tr(),
+                          line1: AppStrings.aadhaarCard.tr(),
+                          line2: MockData.aadhaarMasked,
+                          previewAsset: AppAssets.docProof,
+                          showStackedPreview: true,
+                          onEdit: () =>
+                              AppNavigation.to(const AddressProofScreen()),
+                        ),
+                        _DocCard(
+                          iconAsset: AppAssets.bank,
+                          title: AppStrings.bankDetails.tr(),
+                          line1: AppStrings.mockBankName.tr(),
+                          line2: AppStrings.mockBankAccountMasked.tr(),
+                          previewAsset: AppAssets.bank,
+                          showStackedPreview: false,
+                          onEdit: () =>
+                              AppNavigation.to(const BankDetailsScreen()),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                AppSolidButton(
+                  label: AppStrings.submitForVerification.tr(),
+                  onTap: () {},
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _DocCard(
-                        iconAsset: AppAssets.badge,
-                        title: AppStrings.identityProof.tr(),
-                        line1: AppStrings.aadhaarCard.tr(),
-                        line2: MockData.aadhaarMasked,
-                        previewAsset: AppAssets.docProof,
-                        showStackedPreview: true,
-                        onEdit: () =>
-                            AppNavigation.to(const IdentityProofScreen()),
-                      ),
-                      _DocCard(
-                        iconAsset: AppAssets.location,
-                        title: AppStrings.addressProof.tr(),
-                        line1: AppStrings.aadhaarCard.tr(),
-                        line2: MockData.aadhaarMasked,
-                        previewAsset: AppAssets.docProof,
-                        showStackedPreview: true,
-                        onEdit: () =>
-                            AppNavigation.to(const AddressProofScreen()),
-                      ),
-                      _DocCard(
-                        iconAsset: AppAssets.bank,
-                        title: AppStrings.bankDetails.tr(),
-                        line1: AppStrings.mockBankName.tr(),
-                        line2: AppStrings.mockBankAccountMasked.tr(),
-                        previewAsset: AppAssets.bank,
-                        showStackedPreview: false,
-                        onEdit: () =>
-                            AppNavigation.to(const BankDetailsScreen()),
+                      AppIcon(AppAssets.lock, size: 14, color: AppColors.black),
+                      const SizedBox(width: 4),
+                      Text(
+                        AppStrings.documentsSafe.tr(),
+                        style: AppTextStyles.style(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              AppSolidButton(
-                label: AppStrings.submitForVerification.tr(),
-                onTap: () {},
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AppIcon(AppAssets.lock, size: 14, color: AppColors.black),
-                    const SizedBox(width: 4),
-                    Text(
-                      AppStrings.documentsSafe.tr(),
-                      style: AppTextStyles.style(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -285,8 +284,10 @@ class _DocCard extends StatelessWidget {
                 onTap: onEdit,
                 behavior: HitTestBehavior.opaque,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(8),
@@ -356,8 +357,7 @@ class _DocCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.performanceCard,
                   borderRadius: BorderRadius.circular(16),

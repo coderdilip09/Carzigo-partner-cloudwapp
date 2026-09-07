@@ -85,6 +85,7 @@ class AppAssets {
   static const String document = 'assets/images/icons/ic_document.svg';
   static const String docProof = 'assets/images/webp/ic_doc_proof_img.png';
   static const String privacy = 'assets/images/icons/ic_privacy.svg';
+  static const String iconPrivacy = 'assets/images/icons/icon_privacy.svg';
   static const String termsCondition =
       'assets/images/icons/ic_terms_condition.svg';
   static const String campaign = 'assets/images/icons/ic_campaign.svg';

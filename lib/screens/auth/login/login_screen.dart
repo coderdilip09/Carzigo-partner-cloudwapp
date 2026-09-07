@@ -94,6 +94,7 @@ class LoginScreen extends StatelessWidget {
                             children: [
                               // Header: logo + welcome left, car 116x155 flush right (Figma)
                               SizedBox(
+                                width: double.infinity,
                                 height: 155,
                                 child: Stack(
                                   clipBehavior: Clip.none,

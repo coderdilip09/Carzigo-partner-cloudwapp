@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_bottom_nav_bar.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_job_card.dart';
@@ -43,7 +44,7 @@ class DashboardScreen extends StatelessWidget {
           ];
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: pages[provider.currentIndex],
+            body: AppBg(child: pages[provider.currentIndex]),
             bottomNavigationBar: AppBottomNavBar(
               currentIndex: provider.currentIndex,
               onTap: (index) {
@@ -70,10 +71,7 @@ class _DashboardHome extends StatelessWidget {
   final VoidCallback onNotificationTap;
   final void Function([ScheduleTab tab]) onOpenSchedule;
 
-  Widget _smallCircleArrow({
-    required String asset,
-    required Color color,
-  }) {
+  Widget _smallCircleArrow({required String asset, required Color color}) {
     return Container(
       width: 12,
       height: 12,
@@ -337,8 +335,7 @@ class _DashboardHome extends StatelessWidget {
                     status: AppStrings.upcoming.tr(),
                     embedded: true,
                     showBottomDivider: i < 2,
-                    onTap: () =>
-                        AppNavigation.to(const ServiceDetailsScreen()),
+                    onTap: () => AppNavigation.to(const ServiceDetailsScreen()),
                   );
                 }),
               ),
@@ -434,11 +431,7 @@ class _StatChip extends StatelessWidget {
                   color: AppColors.destructive,
                   shape: BoxShape.circle,
                 ),
-                child: AppIcon(
-                  leadingAsset,
-                  size: 24,
-                  color: AppColors.white,
-                ),
+                child: AppIcon(leadingAsset, size: 24, color: AppColors.white),
               ),
               const SizedBox(width: 8),
               Expanded(

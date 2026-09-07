@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
@@ -23,178 +24,185 @@ class CreateProfileScreen extends StatelessWidget {
         builder: (context, provider, _) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppBackHeader(
-                      title: AppStrings.letsGetStarted.tr(),
-                      showBackText: false,
-                    ),
-                    Text(
-                      AppStrings.createProfileSubtitle.tr(),
-                      style: AppTextStyles.style(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
+            body: AppBg(
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppBackHeader(
+                        title: AppStrings.letsGetStarted.tr(),
+                        showBackText: false,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => _showImageSourceSheet(context, provider),
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: 100,
-                              height: 100,
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: provider.photoError != null
-                                      ? AppColors.destructive
-                                      : const Color(0x40FD5903),
-                                  width: 1,
-                                ),
-                                color: AppColors.white,
-                              ),
-                              child: ClipOval(
-                                child: provider.profileImage != null
-                                    ? Image.file(
-                                        provider.profileImage!,
-                                        width: 94,
-                                        height: 94,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : const AppImageView(
-                                        AppAssets.dummyProfile,
-                                        width: 94,
-                                        height: 94,
-                                        fit: BoxFit.cover,
-                                      ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(7),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.white,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: AppIcon(
-                                  AppAssets.camera,
-                                  size: 11,
-                                  color: AppColors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: Text(
-                        AppStrings.addProfilePhoto.tr(),
-                        style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    Center(
-                      child: Text(
-                        AppStrings.addProfilePhotoHint.tr(),
-                        textAlign: TextAlign.center,
+                      Text(
+                        AppStrings.createProfileSubtitle.tr(),
                         style: AppTextStyles.style(
-                          fontSize: 11,
+                          fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
                       ),
-                    ),
-                    if (provider.photoError != null) ...[
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => _showImageSourceSheet(context, provider),
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: provider.photoError != null
+                                        ? AppColors.destructive
+                                        : const Color(0x40FD5903),
+                                    width: 1,
+                                  ),
+                                  color: AppColors.white,
+                                ),
+                                child: ClipOval(
+                                  child: provider.profileImage != null
+                                      ? Image.file(
+                                          provider.profileImage!,
+                                          width: 94,
+                                          height: 94,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const AppImageView(
+                                          AppAssets.dummyProfile,
+                                          width: 94,
+                                          height: 94,
+                                          fit: BoxFit.cover,
+                                        ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.white,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: AppIcon(
+                                    AppAssets.camera,
+                                    size: 11,
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Center(
                         child: Text(
-                          provider.photoError!,
+                          AppStrings.addProfilePhoto.tr(),
+                          style: AppTextStyles.style(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Text(
+                          AppStrings.addProfilePhotoHint.tr(),
                           textAlign: TextAlign.center,
+                          style: AppTextStyles.style(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      if (provider.photoError != null) ...[
+                        const SizedBox(height: 6),
+                        Center(
+                          child: Text(
+                            provider.photoError!,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.style(
+                              fontSize: 12,
+                              color: AppColors.destructive,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      AppTextField(
+                        hint: AppStrings.enterFullName.tr(),
+                        prefixAsset: AppAssets.personFilled,
+                        prefixIconColor: AppColors.accentOrange,
+                        borderColor: provider.nameError != null
+                            ? AppColors.destructive
+                            : AppColors.textFieldBorderGrey,
+                        textCapitalization: TextCapitalization.words,
+                        onChanged: provider.setName,
+                      ),
+                      if (provider.nameError != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          provider.nameError!,
                           style: AppTextStyles.style(
                             fontSize: 12,
                             color: AppColors.destructive,
                           ),
                         ),
+                      ],
+                      const SizedBox(height: 12),
+                      AppTextField(
+                        hint: AppStrings.enterEmail.tr(),
+                        prefixAsset: AppAssets.email,
+                        prefixIconColor: AppColors.accentOrange,
+                        borderColor: provider.emailError != null
+                            ? AppColors.destructive
+                            : AppColors.textFieldBorderGrey,
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: provider.setEmail,
                       ),
-                    ],
-                    const SizedBox(height: 24),
-                    AppTextField(
-                      hint: AppStrings.enterFullName.tr(),
-                      prefixAsset: AppAssets.personFilled,
-                      prefixIconColor: AppColors.accentOrange,
-                      borderColor: provider.nameError != null
-                          ? AppColors.destructive
-                          : AppColors.textFieldBorderGrey,
-                      textCapitalization: TextCapitalization.words,
-                      onChanged: provider.setName,
-                    ),
-                    if (provider.nameError != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        provider.nameError!,
-                        style: AppTextStyles.style(
-                          fontSize: 12,
-                          color: AppColors.destructive,
+                      if (provider.emailError != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          provider.emailError!,
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.destructive,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      _FeatureGrid(),
+                      const SizedBox(height: 24),
+                      AppSolidButton(
+                        label: AppStrings.saveAndContinue.tr(),
+                        onTap: provider.tapOnSave,
+                        trailing: Container(
+                          width: 28,
+                          height: 28,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.white,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: AppIcon(
+                            AppAssets.arrowForward,
+                            size: 16,
+                            color: AppColors.white,
+                          ),
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    AppTextField(
-                      hint: AppStrings.enterEmail.tr(),
-                      prefixAsset: AppAssets.email,
-                      prefixIconColor: AppColors.accentOrange,
-                      borderColor: provider.emailError != null
-                          ? AppColors.destructive
-                          : AppColors.textFieldBorderGrey,
-                      keyboardType: TextInputType.emailAddress,
-                      onChanged: provider.setEmail,
-                    ),
-                    if (provider.emailError != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        provider.emailError!,
-                        style: AppTextStyles.style(
-                          fontSize: 12,
-                          color: AppColors.destructive,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    _FeatureGrid(),
-                    const SizedBox(height: 24),
-                    AppSolidButton(
-                      label: AppStrings.saveAndContinue.tr(),
-                      onTap: provider.tapOnSave,
-                      trailing: Container(
-                        width: 28,
-                        height: 28,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.white, width: 1.5),
-                        ),
-                        child: AppIcon(
-                          AppAssets.arrowForward,
-                          size: 16,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -265,11 +273,7 @@ class _FeatureGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       (
-        const AppIcon(
-          AppAssets.lock,
-          color: AppColors.accentOrange,
-          size: 18,
-        ),
+        const AppIcon(AppAssets.lock, color: AppColors.accentOrange, size: 18),
         AppStrings.secure.tr(),
         AppStrings.createSecureHint.tr(),
       ),
@@ -353,4 +357,3 @@ class _FeatureGrid extends StatelessWidget {
     );
   }
 }
-

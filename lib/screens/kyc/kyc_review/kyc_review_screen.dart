@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_kyc_stepper.dart';
@@ -24,61 +25,63 @@ class KycReviewScreen extends StatelessWidget {
         builder: (context, provider, _) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppBackHeader(title: AppStrings.reviewAndSubmit.tr()),
-                    const SizedBox(height: 16),
-                    const AppKycStepper(currentStep: KycStep.bank),
-                    const SizedBox(height: 20),
-                    Text(
-                      AppStrings.reviewYourDetails.tr(),
-                      style: AppTextStyles.style(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        color: AppColors.textPrimary,
+            body: AppBg(
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppBackHeader(title: AppStrings.reviewAndSubmit.tr()),
+                      const SizedBox(height: 16),
+                      const AppKycStepper(currentStep: KycStep.bank),
+                      const SizedBox(height: 20),
+                      Text(
+                        AppStrings.reviewYourDetails.tr(),
+                        style: AppTextStyles.style(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppStrings.verifyBeforeSubmitting.tr(),
-                      style: AppTextStyles.style(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                      const SizedBox(height: 4),
+                      Text(
+                        AppStrings.verifyBeforeSubmitting.tr(),
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _ReviewCard(
-                      title: AppStrings.identityProof.tr(),
-                      line1: AppStrings.aadhaarCard.tr(),
-                      line2: MockData.aadhaarMasked,
-                      onEdit: provider.tapOnEditIdentity,
-                      trailingAsset: AppAssets.docProof,
-                    ),
-                    _ReviewCard(
-                      title: AppStrings.addressProof.tr(),
-                      line1: AppStrings.aadhaarCard.tr(),
-                      line2: MockData.aadhaarMasked,
-                      onEdit: provider.tapOnEditAddress,
-                      trailingAsset: AppAssets.docProof,
-                    ),
-                    _ReviewCard(
-                      title: AppStrings.bankDetails.tr(),
-                      line1: AppStrings.mockBankName.tr(),
-                      line2: AppStrings.mockBankAccountMasked.tr(),
-                      onEdit: provider.tapOnEditBank,
-                      trailingAsset: AppAssets.bank,
-                      tintTrailing: true,
-                    ),
-                    const SizedBox(height: 24),
-                    AppSolidButton(
-                      label: AppStrings.submitForVerification.tr(),
-                      onTap: provider.tapOnSubmit,
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      _ReviewCard(
+                        title: AppStrings.identityProof.tr(),
+                        line1: AppStrings.aadhaarCard.tr(),
+                        line2: MockData.aadhaarMasked,
+                        onEdit: provider.tapOnEditIdentity,
+                        trailingAsset: AppAssets.docProof,
+                      ),
+                      _ReviewCard(
+                        title: AppStrings.addressProof.tr(),
+                        line1: AppStrings.aadhaarCard.tr(),
+                        line2: MockData.aadhaarMasked,
+                        onEdit: provider.tapOnEditAddress,
+                        trailingAsset: AppAssets.docProof,
+                      ),
+                      _ReviewCard(
+                        title: AppStrings.bankDetails.tr(),
+                        line1: AppStrings.mockBankName.tr(),
+                        line2: AppStrings.mockBankAccountMasked.tr(),
+                        onEdit: provider.tapOnEditBank,
+                        trailingAsset: AppAssets.bank,
+                        tintTrailing: true,
+                      ),
+                      const SizedBox(height: 24),
+                      AppSolidButton(
+                        label: AppStrings.submitForVerification.tr(),
+                        onTap: provider.tapOnSubmit,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

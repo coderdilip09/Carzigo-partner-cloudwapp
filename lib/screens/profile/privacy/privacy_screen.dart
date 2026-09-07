@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
@@ -12,30 +13,32 @@ class PrivacyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppBackHeader(
-                title: AppStrings.privacyPolicy.tr(),
-                showBackText: false,
-                titleInline: true,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    AppStrings.privacyBody.tr(),
-                    style: AppTextStyles.style(
-                      fontSize: 14,
-                      height: 1.6,
-                      color: AppColors.textPrimary,
+      body: AppBg(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppBackHeader(
+                  title: AppStrings.privacyPolicy.tr(),
+                  showBackText: false,
+                  titleInline: true,
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      AppStrings.privacyBody.tr(),
+                      style: AppTextStyles.style(
+                        fontSize: 14,
+                        height: 1.6,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/screens/schedule/service_details/service_details_provider.dart';
@@ -22,76 +23,78 @@ class ServiceDetailsScreen extends StatelessWidget {
         builder: (context, provider, _) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: SafeArea(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
+            body: AppBg(
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppBackHeader(
+                              title: AppStrings.serviceDetails.tr(),
+                              showBackText: false,
+                              titleInline: true,
+                            ),
+                            const SizedBox(height: 16),
+                            _ScheduleCard(),
+                            const SizedBox(height: 16),
+                            _CustomerDetailsCard(),
+                            const SizedBox(height: 16),
+                            _ServiceAddressCard(),
+                            const SizedBox(height: 20),
+                            Text(
+                              AppStrings.updateStatus.tr(),
+                              style: AppTextStyles.style(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.sectionTitle,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ..._buildSteps(provider),
+                            const SizedBox(height: 16),
+                            IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Expanded(
+                                    child: _NoteCard(
+                                      title: AppStrings.serviceNotes.tr(),
+                                      text: AppStrings.mockServiceNotes.tr(),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _NoteCard(
+                                      title: AppStrings.customerInstructions
+                                          .tr(),
+                                      text: AppStrings.mockCustomerInstructions
+                                          .tr(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
                       padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppBackHeader(
-                            title: AppStrings.serviceDetails.tr(),
-                            showBackText: false,
-                            titleInline: true,
-                          ),
-                          const SizedBox(height: 16),
-                          _ScheduleCard(),
-                          const SizedBox(height: 16),
-                          _CustomerDetailsCard(),
-                          const SizedBox(height: 16),
-                          _ServiceAddressCard(),
-                          const SizedBox(height: 20),
-                          Text(
-                            AppStrings.updateStatus.tr(),
-                            style: AppTextStyles.style(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.sectionTitle,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ..._buildSteps(provider),
-                          const SizedBox(height: 16),
-                          IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Expanded(
-                                  child: _NoteCard(
-                                    title: AppStrings.serviceNotes.tr(),
-                                    text: AppStrings.mockServiceNotes.tr(),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _NoteCard(
-                                    title: AppStrings.customerInstructions.tr(),
-                                    text: AppStrings
-                                        .mockCustomerInstructions
-                                        .tr(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      child: AppSolidButton(
+                        label: AppStrings.addToCalendar.tr(),
+                        onTap: () {},
+                        leading: AppIcon(
+                          AppAssets.calendar,
+                          size: 18,
+                          color: AppColors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: AppSolidButton(
-                      label: AppStrings.addToCalendar.tr(),
-                      onTap: () {},
-                      leading: AppIcon(
-                        AppAssets.calendar,
-                        size: 18,
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -157,9 +160,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                     height: 28,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isDone
-                          ? AppColors.destructive
-                          : AppColors.peach,
+                      color: isDone ? AppColors.destructive : AppColors.peach,
                     ),
                     child: Center(
                       child: Text(
@@ -274,8 +275,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                                   : null,
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.navigateText,
-                                disabledForegroundColor:
-                                    AppColors.navigateText,
+                                disabledForegroundColor: AppColors.navigateText,
                                 backgroundColor: Colors.transparent,
                                 side: const BorderSide(
                                   color: AppColors.peachCard,
@@ -285,8 +285,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                                   vertical: 10,
                                 ),
                                 minimumSize: Size.zero,
-                                tapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 visualDensity: VisualDensity.compact,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),

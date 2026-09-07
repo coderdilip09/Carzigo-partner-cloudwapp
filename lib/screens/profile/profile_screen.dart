@@ -212,7 +212,7 @@ class ProfileScreen extends StatelessWidget {
                     onTap: provider.tapOnTerms,
                   ),
                   _MenuTile(
-                    iconAsset: AppAssets.privacy,
+                    iconAsset: AppAssets.iconPrivacy,
                     title: AppStrings.privacyPolicy.tr(),
                     subtitle: AppStrings.privacySubtitle.tr(),
                     onTap: provider.tapOnPrivacy,
