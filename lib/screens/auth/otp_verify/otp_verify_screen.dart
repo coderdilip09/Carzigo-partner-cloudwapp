@@ -347,6 +347,10 @@ class _ResendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canResend = provider.secondsLeft == 0;
+    final resendColor =
+        canResend ? AppColors.primary : AppColors.textMuted;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -357,6 +361,7 @@ class _ResendCard extends StatelessWidget {
       child: Column(
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: 34,
@@ -365,9 +370,9 @@ class _ResendCard extends StatelessWidget {
                   color: AppColors.peach,
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
+                  child: const Center(
                   child: AppIcon(
-                    AppAssets.send,
+                    AppAssets.didntCode,
                     size: 18,
                     color: AppColors.primary,
                   ),
@@ -380,12 +385,16 @@ class _ResendCard extends StatelessWidget {
                   children: [
                     Text(
                       AppStrings.didntReceiveCode.tr(),
-                      style: AppTextStyles.style(fontWeight: FontWeight.w600),
+                      style: AppTextStyles.style(
+                        fontWeight: FontWeight.w600,
+                        height: 1,
+                      ),
                     ),
                     Text(
                       AppStrings.mayTakeMinutes.tr(),
                       style: AppTextStyles.style(
                         fontSize: 11,
+                        height: 1.2,
                         color: AppColors.textSecondary,
                       ),
                     ),
@@ -396,44 +405,62 @@ class _ResendCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           GestureDetector(
-            onTap: provider.tapOnResend,
+            onTap: canResend ? provider.tapOnResend : null,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.white,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.border),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 24,
+                  SizedBox(
+                    width: 34,
                     height: 24,
-                    decoration: const BoxDecoration(
-                      color: AppColors.peach,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: AppIcon(
-                        AppAssets.resend,
-                        size: 14,
-                        color: AppColors.primary,
+                    child: Center(
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          color: AppColors.peach,
+                          shape: BoxShape.circle,
+                        ),
+                        child: AppIcon(
+                          AppAssets.resend,
+                          size: 14,
+                          color: resendColor,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Text(
                     AppStrings.resendCode.tr(),
-                    style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                  ),
-                  const Spacer(),
-                  Text(
-                    AppStrings.resendIn.tr(args: [provider.formattedTime]),
                     style: AppTextStyles.style(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600,
+                      height: 1,
+                      color: resendColor,
                     ),
                   ),
+                  if (!canResend) ...[
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Text(
+                        AppStrings.resendIn.tr(
+                          args: [provider.formattedTime],
+                        ),
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          height: 1,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

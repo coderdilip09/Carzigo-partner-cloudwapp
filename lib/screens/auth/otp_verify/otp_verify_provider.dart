@@ -71,11 +71,14 @@ class OtpVerifyProvider extends BaseProvider {
       AppNavigation.back(true);
       return;
     }
+    AppToast.success(AppStrings.otpVerified.tr());
     AppNavigation.to(const CreateProfileScreen());
   }
 
   void tapOnResend() {
-    if (secondsLeft == 0) startTimer();
+    if (secondsLeft != 0) return;
+    startTimer();
+    AppToast.success(AppStrings.otpResent.tr());
   }
 
   @override

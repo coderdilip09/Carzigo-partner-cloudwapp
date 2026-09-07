@@ -206,7 +206,7 @@ class ProfileScreen extends StatelessWidget {
                     onTap: provider.tapOnHelp,
                   ),
                   _MenuTile(
-                    iconAsset: AppAssets.document,
+                    iconAsset: AppAssets.termsCondition,
                     title: AppStrings.termsConditions.tr(),
                     subtitle: AppStrings.termsSubtitle.tr(),
                     onTap: provider.tapOnTerms,

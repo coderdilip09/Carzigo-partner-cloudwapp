@@ -54,6 +54,7 @@ class AppAssets {
   static const String refresh = 'assets/images/icons/ic_refresh.svg';
   static const String resend = 'assets/images/icons/ic_resent.svg';
   static const String send = 'assets/images/icons/ic_send.svg';
+  static const String didntCode = 'assets/images/icons/ic_didnt_code.svg';
   static const String navigate = 'assets/images/icons/ic_navigate.svg';
   static const String help = 'assets/images/icons/ic_help.svg';
   static const String check = 'assets/images/icons/ic_check.svg';
@@ -84,6 +85,8 @@ class AppAssets {
   static const String document = 'assets/images/icons/ic_document.svg';
   static const String docProof = 'assets/images/webp/ic_doc_proof_img.png';
   static const String privacy = 'assets/images/icons/ic_privacy.svg';
+  static const String termsCondition =
+      'assets/images/icons/ic_terms_condition.svg';
   static const String campaign = 'assets/images/icons/ic_campaign.svg';
   static const String assignment = 'assets/images/icons/ic_assignment.svg';
   static const String flash = 'assets/images/icons/ic_flash.svg';

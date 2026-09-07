@@ -115,11 +115,11 @@ class AppUploadBox extends StatelessWidget {
                           children: [
                             const AppImageView(
                               AppAssets.imageUpload,
-                              width: 48,
-                              height: 48,
+                              width:50,
+                              height:50,
                               fit: BoxFit.contain,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
                               AppStrings.tapToUpload.tr(),
                               style: AppTextStyles.style(

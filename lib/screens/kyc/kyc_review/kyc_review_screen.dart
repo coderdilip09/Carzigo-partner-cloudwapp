@@ -147,10 +147,20 @@ class _ReviewCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const AppIcon(
-                      AppAssets.edit,
-                      size: 14,
-                      color: AppColors.textPrimary,
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AppIcon(
+                          AppAssets.edit,
+                          size: 14,
+                          color: AppColors.textPrimary,
+                        ),
+                        Container(
+                          width: 14,
+                          height: 1,
+                          color: AppColors.textPrimary,
+                        ),
+                      ],
                     ),
                   ],
                 ),

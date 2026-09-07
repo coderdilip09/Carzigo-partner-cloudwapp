@@ -5,6 +5,7 @@ import 'package:carzigo_partner/screens/kyc/kyc_status.dart';
 import 'package:carzigo_partner/services/image_pick_service/image_pick_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
+import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
@@ -82,6 +83,7 @@ class CreateProfileProvider extends BaseProvider {
   void tapOnSave() {
     if (!_validate()) return;
     KycStatus.markProfilePhotoDone();
+    AppToast.success(AppStrings.profileCompleted.tr());
     AppNavigation.to(const KycOverviewScreen());
   }
 }

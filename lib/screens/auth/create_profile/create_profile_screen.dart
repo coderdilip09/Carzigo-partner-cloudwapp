@@ -58,7 +58,7 @@ class CreateProfileScreen extends StatelessWidget {
                                       : const Color(0x40FD5903),
                                   width: 1,
                                 ),
-                                color: AppColors.peach,
+                                color: AppColors.white,
                               ),
                               child: ClipOval(
                                 child: provider.profileImage != null
@@ -80,14 +80,18 @@ class CreateProfileScreen extends StatelessWidget {
                               bottom: 0,
                               right: 0,
                               child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: const BoxDecoration(
+                                padding: const EdgeInsets.all(7),
+                                decoration: BoxDecoration(
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.white,
+                                    width: 1,
+                                  ),
                                 ),
                                 child: AppIcon(
                                   AppAssets.camera,
-                                  size: 16,
+                                  size: 11,
                                   color: AppColors.white,
                                 ),
                               ),

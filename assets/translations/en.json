@@ -53,6 +53,7 @@
   "name_required": "Please enter your full name",
   "email_required": "Please enter your email address",
   "email_invalid": "Enter a valid email address",
+  "profile_completed": "Profile completed successfully",
   "complete_kyc": "Complete your KYC",
   "kyc_subtitle": "Verify your identity to start receiving jobs and payments",
   "start_kyc_verification": "Start KYC Verification",

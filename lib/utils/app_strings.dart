@@ -46,6 +46,8 @@ class AppStrings {
   static const String otpValidDuration = 'otp_valid_duration';
   static const String otpRequired = 'otp_required';
   static const String otpInvalid = 'otp_invalid';
+  static const String otpVerified = 'otp_verified';
+  static const String otpResent = 'otp_resent';
 
   static const String letsGetStarted = 'lets_get_started';
   static const String createProfileSubtitle = 'create_profile_subtitle';
@@ -58,6 +60,7 @@ class AppStrings {
   static const String nameRequired = 'name_required';
   static const String emailRequired = 'email_required';
   static const String emailInvalid = 'email_invalid';
+  static const String profileCompleted = 'profile_completed';
 
   static const String completeKyc = 'complete_kyc';
   static const String kycSubtitle = 'kyc_subtitle';

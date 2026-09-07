@@ -202,7 +202,7 @@ class AppJobCard extends StatelessWidget {
             AppAssets.dummyCar,
             width: 72,
             height: 72,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
           ),
         ),
         const SizedBox(width: 12),
@@ -244,7 +244,6 @@ class AppJobCard extends StatelessWidget {
                   ],
                 ],
               ),
-              const SizedBox(height: 2),
               Text(
                 AppStrings.mockJobCustomer.tr(),
                 style: AppTextStyles.style(
