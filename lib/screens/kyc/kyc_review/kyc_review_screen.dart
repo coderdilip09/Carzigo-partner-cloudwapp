@@ -9,7 +9,6 @@ import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
-import 'package:carzigo_partner/utils/mock_data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +19,7 @@ class KycReviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => KycReviewProvider(),
+      create: (_) => KycReviewProvider()..load(),
       child: Consumer<KycReviewProvider>(
         builder: (context, provider, _) {
           return Scaffold(
@@ -53,32 +52,40 @@ class KycReviewScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _ReviewCard(
-                        title: AppStrings.identityProof.tr(),
-                        line1: AppStrings.aadhaarCard.tr(),
-                        line2: MockData.aadhaarMasked,
-                        onEdit: provider.tapOnEditIdentity,
-                        trailingAsset: AppAssets.docProof,
-                      ),
-                      _ReviewCard(
-                        title: AppStrings.addressProof.tr(),
-                        line1: AppStrings.aadhaarCard.tr(),
-                        line2: MockData.aadhaarMasked,
-                        onEdit: provider.tapOnEditAddress,
-                        trailingAsset: AppAssets.docProof,
-                      ),
-                      _ReviewCard(
-                        title: AppStrings.bankDetails.tr(),
-                        line1: AppStrings.mockBankName.tr(),
-                        line2: AppStrings.mockBankAccountMasked.tr(),
-                        onEdit: provider.tapOnEditBank,
-                        trailingAsset: AppAssets.bank,
-                        tintTrailing: true,
-                      ),
+                      if (provider.isLoading && provider.review == null)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 48),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else ...[
+                        _ReviewCard(
+                          title: AppStrings.identityProof.tr(),
+                          line1: provider.identityDocLabel,
+                          line2: provider.identityMasked,
+                          onEdit: provider.tapOnEditIdentity,
+                          trailingAsset: AppAssets.docProof,
+                        ),
+                        _ReviewCard(
+                          title: AppStrings.addressProof.tr(),
+                          line1: provider.addressDocLabel,
+                          line2: provider.addressMasked,
+                          onEdit: provider.tapOnEditAddress,
+                          trailingAsset: AppAssets.docProof,
+                        ),
+                        _ReviewCard(
+                          title: AppStrings.bankDetails.tr(),
+                          line1: provider.bankName,
+                          line2: provider.bankMasked,
+                          onEdit: provider.tapOnEditBank,
+                          trailingAsset: AppAssets.bank,
+                          tintTrailing: true,
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       AppSolidButton(
                         label: AppStrings.submitForVerification.tr(),
                         onTap: provider.tapOnSubmit,
+                        isLoading: provider.isSubmitting,
                       ),
                     ],
                   ),

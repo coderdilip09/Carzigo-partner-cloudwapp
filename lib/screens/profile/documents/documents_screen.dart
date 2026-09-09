@@ -158,8 +158,9 @@ class DocumentsScreen extends StatelessWidget {
                           line2: MockData.aadhaarMasked,
                           previewAsset: AppAssets.docProof,
                           showStackedPreview: true,
-                          onEdit: () =>
-                              AppNavigation.to(const IdentityProofScreen()),
+                          onEdit: () => AppNavigation.to(
+                            const IdentityProofScreen(loadSaved: true),
+                          ),
                         ),
                         _DocCard(
                           iconAsset: AppAssets.location,
@@ -168,8 +169,9 @@ class DocumentsScreen extends StatelessWidget {
                           line2: MockData.aadhaarMasked,
                           previewAsset: AppAssets.docProof,
                           showStackedPreview: true,
-                          onEdit: () =>
-                              AppNavigation.to(const AddressProofScreen()),
+                          onEdit: () => AppNavigation.to(
+                            const AddressProofScreen(loadSaved: true),
+                          ),
                         ),
                         _DocCard(
                           iconAsset: AppAssets.bank,
@@ -178,8 +180,9 @@ class DocumentsScreen extends StatelessWidget {
                           line2: AppStrings.mockBankAccountMasked.tr(),
                           previewAsset: AppAssets.bank,
                           showStackedPreview: false,
-                          onEdit: () =>
-                              AppNavigation.to(const BankDetailsScreen()),
+                          onEdit: () => AppNavigation.to(
+                            const BankDetailsScreen(loadSaved: true),
+                          ),
                         ),
                       ],
                     ),

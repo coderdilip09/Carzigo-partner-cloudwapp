@@ -6,6 +6,7 @@ import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_text_field.dart';
 import 'package:carzigo_partner/common_widgets/app_upload_box.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_provider.dart';
+import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -17,19 +18,23 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class BankDetailsScreen extends StatelessWidget {
-  const BankDetailsScreen({super.key});
+  const BankDetailsScreen({super.key, this.loadSaved = false});
+
+  final bool loadSaved;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => BankDetailsProvider(),
+      create: (_) => BankDetailsProvider(loadSaved: loadSaved),
       child: Consumer<BankDetailsProvider>(
         builder: (context, provider, _) {
           return Scaffold(
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: SingleChildScrollView(
+                child: Stack(
+                  children: [
+                    SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Form(
                     key: provider.formKey,
@@ -53,40 +58,72 @@ class BankDetailsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         AppTextField(
+                          controller: provider.holderNameController,
                           hint: AppStrings.accountHolderName.tr(),
                           prefixAsset: AppAssets.personFilled,
                           borderColor: AppColors.textFieldBorder,
                           textCapitalization: TextCapitalization.words,
-                          onChanged: provider.setHolderName,
                           validator: provider.validateHolderName,
                         ),
                         const SizedBox(height: 12),
                         AppTextField(
-                          hint: AppStrings.bankAccountNumber.tr(),
-                          prefixAsset: AppAssets.personId,
-                          keyboardType: TextInputType.number,
+                          controller: provider.bankNameController,
+                          hint: AppStrings.bankName.tr(),
+                          prefixAsset: AppAssets.personFilled,
                           borderColor: AppColors.textFieldBorder,
-                          onChanged: provider.setAccountNumber,
-                          validator: provider.validateAccountNumber,
-                          maxLength: 18,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
+                          textCapitalization: TextCapitalization.words,
+                          validator: provider.validateBankName,
                         ),
                         const SizedBox(height: 12),
                         AppTextField(
+                          key: ValueKey(
+                            KycDocNumber.isMasked(
+                              provider.accountNumberController.text,
+                            ),
+                          ),
+                          controller: provider.accountNumberController,
+                          hint: AppStrings.bankAccountNumber.tr(),
+                          prefixAsset: AppAssets.personId,
+                          keyboardType:
+                              KycDocNumber.isMasked(
+                                provider.accountNumberController.text,
+                              )
+                              ? TextInputType.text
+                              : TextInputType.number,
+                          borderColor: AppColors.textFieldBorder,
+                          validator: provider.validateAccountNumber,
+                          maxLength:
+                              KycDocNumber.isMasked(
+                                provider.accountNumberController.text,
+                              )
+                              ? null
+                              : 18,
+                          inputFormatters:
+                              KycDocNumber.isMasked(
+                                provider.accountNumberController.text,
+                              )
+                              ? const []
+                              : [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                        ),
+                        const SizedBox(height: 12),
+                        AppTextField(
+                          controller: provider.ifscController,
                           hint: AppStrings.ifscCode.tr(),
                           prefixAsset: AppAssets.personId,
                           borderColor: AppColors.textFieldBorder,
                           textCapitalization: TextCapitalization.characters,
-                          onChanged: provider.setIfsc,
                           validator: provider.validateIfsc,
                           maxLength: 11,
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp(r'[A-Za-z0-9]'),
                             ),
-                            TextInputFormatter.withFunction((oldValue, newValue) {
+                            TextInputFormatter.withFunction((
+                              oldValue,
+                              newValue,
+                            ) {
                               return newValue.copyWith(
                                 text: newValue.text.toUpperCase(),
                               );
@@ -98,6 +135,7 @@ class BankDetailsScreen extends StatelessWidget {
                           title: AppStrings.uploadCheque.tr(),
                           subtitle: AppStrings.uploadClearImage.tr(),
                           imageFile: provider.chequeImage,
+                          imageUrl: provider.chequeUrl,
                           onTap: () => showImageSourceSheet(
                             context,
                             onCamera: () =>
@@ -110,10 +148,28 @@ class BankDetailsScreen extends StatelessWidget {
                         AppSolidButton(
                           label: AppStrings.submit.tr(),
                           onTap: provider.tapOnSubmit,
+                          isLoading: provider.isLoading,
                         ),
                       ],
                     ),
                   ),
+                    ),
+                    if (provider.isFetching)
+                      const Positioned.fill(
+                        child: AbsorbPointer(
+                          child: Center(
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

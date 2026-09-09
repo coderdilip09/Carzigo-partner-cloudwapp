@@ -14,6 +14,10 @@ class AppJobCard extends StatelessWidget {
     this.showPrice = false,
     this.status,
     this.timeLabel,
+    this.serviceName,
+    this.customerName,
+    this.carName,
+    this.price,
     this.compact = true,
     this.embedded = false,
     this.showBottomDivider = false,
@@ -23,6 +27,10 @@ class AppJobCard extends StatelessWidget {
   final bool showPrice;
   final String? status;
   final String? timeLabel;
+  final String? serviceName;
+  final String? customerName;
+  final String? carName;
+  final String? price;
   final bool compact;
   final bool embedded;
   final bool showBottomDivider;
@@ -112,7 +120,7 @@ class AppJobCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppStrings.mockJobService.tr(),
+                serviceName ?? AppStrings.mockJobService.tr(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.style(
@@ -123,7 +131,7 @@ class AppJobCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                AppStrings.mockJobCustomer.tr(),
+                customerName ?? AppStrings.mockJobCustomer.tr(),
                 style: AppTextStyles.style(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -140,7 +148,7 @@ class AppJobCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      AppStrings.mockJobCar.tr(),
+                      carName ?? AppStrings.mockJobCar.tr(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.style(
@@ -215,7 +223,7 @@ class AppJobCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      AppStrings.mockJobService.tr(),
+                      serviceName ?? AppStrings.mockJobService.tr(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.style(
@@ -228,7 +236,7 @@ class AppJobCard extends StatelessWidget {
                   if (showPrice) ...[
                     const SizedBox(width: 8),
                     Text(
-                      AppStrings.mockJobPrice.tr(),
+                      price ?? AppStrings.mockJobPrice.tr(),
                       style: AppTextStyles.style(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -245,7 +253,7 @@ class AppJobCard extends StatelessWidget {
                 ],
               ),
               Text(
-                AppStrings.mockJobCustomer.tr(),
+                customerName ?? AppStrings.mockJobCustomer.tr(),
                 style: AppTextStyles.style(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -253,7 +261,7 @@ class AppJobCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                AppStrings.mockJobCar.tr(),
+                carName ?? AppStrings.mockJobCar.tr(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.style(

@@ -1,24 +1,56 @@
 import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
-import 'package:carzigo_partner/common_widgets/app_image_view.dart';
+import 'package:carzigo_partner/common_widgets/app_user_avatar.dart';
+import 'package:carzigo_partner/models/user_data_model.dart';
 import 'package:carzigo_partner/screens/profile/documents/documents_screen.dart';
 import 'package:carzigo_partner/screens/profile/edit_profile/edit_profile_screen.dart';
 import 'package:carzigo_partner/screens/profile/help_support/help_support_screen.dart';
 import 'package:carzigo_partner/screens/profile/privacy/privacy_screen.dart';
 import 'package:carzigo_partner/screens/profile/terms/terms_screen.dart';
+import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
+import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
-import 'package:carzigo_partner/utils/mock_data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ProfileProvider extends BaseProvider {
-  void tapOnMyProfile() => AppNavigation.to(const EditProfileScreen());
+  ProfileProvider() {
+    loadProfile();
+  }
+
+  UserDataModel? user;
+
+  Future<void> loadProfile() async {
+    try {
+      final saved = await PrefsService().getUser();
+      if (saved != null) {
+        user = saved;
+        safeNotifyListeners();
+      }
+
+      final res = await Api.getProfile();
+      if (res.isSuccess && res.data != null) {
+        await PrefsService().saveUser(res.data!);
+        user = res.data;
+      }
+    } catch (e, st) {
+      debugPrint('Profile get failed: $e\n$st');
+    } finally {
+      safeNotifyListeners();
+    }
+  }
+
+  Future<void> tapOnMyProfile() async {
+    await AppNavigation.to(const EditProfileScreen());
+    await loadProfile();
+  }
+
   void tapOnDocuments() => AppNavigation.to(const DocumentsScreen());
   void tapOnHelp() => AppNavigation.to(const HelpSupportScreen());
   void tapOnTerms() => AppNavigation.to(const TermsScreen());
@@ -81,13 +113,9 @@ class ProfileScreen extends StatelessWidget {
                                   width: 2,
                                 ),
                               ),
-                              child: ClipOval(
-                                child: AppImageView(
-                                  AppAssets.dummyProfile,
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
+                              child: AppUserAvatar(
+                                url: provider.user?.photoUrl,
+                                size: 60,
                               ),
                             ),
                             Positioned(
@@ -122,20 +150,20 @@ class ProfileScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                MockData.userFullName,
+                                provider.user?.displayName ?? '',
                                 style: AppTextStyles.style(
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                               Text(
-                                MockData.userEmail,
+                                provider.user?.email ?? '',
                                 style: AppTextStyles.style(
                                   fontSize: 11,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                               Text(
-                                MockData.userPhone,
+                                provider.user?.displayPhone ?? '',
                                 style: AppTextStyles.style(
                                   fontSize: 11,
                                   color: AppColors.textSecondary,

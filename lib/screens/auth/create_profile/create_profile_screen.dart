@@ -148,6 +148,7 @@ class CreateProfileScreen extends StatelessWidget {
                       AppSolidButton(
                         label: AppStrings.saveAndContinue.tr(),
                         onTap: provider.tapOnSave,
+                        isLoading: provider.isLoading,
                         trailing: Container(
                           width: 28,
                           height: 28,

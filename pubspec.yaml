@@ -21,6 +21,14 @@ dependencies:
   image_cropper: ^12.2.1
   url_launcher: ^6.3.2
   fluttertoast: ^10.0.0
+  flutter_html: ^3.0.0
+  http: ^1.5.0
+
+# flutter_html 3.0.0 still calls html's internal qs.matches(),
+# which was removed in html 0.15.7.
+dependency_overrides:
+  html: 0.15.6
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

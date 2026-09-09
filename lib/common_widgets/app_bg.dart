@@ -11,8 +11,11 @@ class AppBg extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
       children: [
-        const Positioned.fill(child: AppImageView(AppAssets.bg, fit: BoxFit.cover)),
+        const Positioned.fill(
+          child: AppImageView(AppAssets.bg, fit: BoxFit.cover),
+        ),
         child,
       ],
     );

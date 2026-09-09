@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:carzigo_partner/screens/kyc/kyc_overview/kyc_overview_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_status.dart';
+import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/image_pick_service/image_pick_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
+import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
@@ -19,6 +21,7 @@ class CreateProfileProvider extends BaseProvider {
   File? profileImage;
   String? photoError;
   bool submitted = false;
+  bool isLoading = false;
 
   void setName(String value) {
     name = value;
@@ -67,14 +70,45 @@ class CreateProfileProvider extends BaseProvider {
     return true;
   }
 
-  void tapOnSave() {
+  Future<void> tapOnSave() async {
+    if (isLoading) return;
+
     submitted = true;
     final photoOk = _validatePhoto();
     final fieldsOk = formKey.currentState?.validate() ?? false;
     safeNotifyListeners();
     if (!photoOk || !fieldsOk) return;
-    KycStatus.markProfilePhotoDone();
-    AppToast.success(AppStrings.profileCompleted.tr());
-    AppNavigation.to(const KycOverviewScreen());
+
+    isLoading = true;
+    safeNotifyListeners();
+
+    try {
+      final uploadRes = await Api.uploadImage(file: profileImage!);
+      if (!uploadRes.isSuccess || !(uploadRes.data?.hasFullUrl ?? false)) {
+        AppToast.error(uploadRes.message ?? AppStrings.uploadFailed.tr());
+        return;
+      }
+
+      final profileRes = await Api.updateProfile(
+        name: name.trim(),
+        email: email.trim(),
+        photo: uploadRes.data!.resolvedUrl,
+      );
+      if (!profileRes.isSuccess || profileRes.data == null) {
+        AppToast.error(profileRes.message ?? AppStrings.requestFailed.tr());
+        return;
+      }
+
+      await PrefsService().saveUser(profileRes.data!);
+      KycStatus.markProfilePhotoDone();
+      AppToast.success(profileRes.message ?? AppStrings.profileCompleted.tr());
+      AppNavigation.to(const KycOverviewScreen());
+    } catch (e, st) {
+      debugPrint('Create profile failed: $e\n$st');
+      AppToast.error(AppStrings.requestFailed.tr());
+    } finally {
+      isLoading = false;
+      safeNotifyListeners();
+    }
   }
 }

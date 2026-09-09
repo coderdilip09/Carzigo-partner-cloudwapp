@@ -7,7 +7,6 @@ import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
-import 'package:carzigo_partner/utils/mock_data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -17,10 +16,14 @@ class OtpVerifyScreen extends StatefulWidget {
   const OtpVerifyScreen({
     super.key,
     required this.phone,
+    this.countryCode = '+91',
+    this.resendAfterSeconds = 45,
     this.isChangeNumber = false,
   });
 
   final String phone;
+  final String countryCode;
+  final int resendAfterSeconds;
   final bool isChangeNumber;
 
   @override
@@ -33,6 +36,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
     return ChangeNotifierProvider(
       create: (_) => OtpVerifyProvider(
         phone: widget.phone,
+        countryCode: widget.countryCode,
+        resendAfterSeconds: widget.resendAfterSeconds,
         isChangeNumber: widget.isChangeNumber,
       )..startTimer(),
       child: Consumer<OtpVerifyProvider>(
@@ -78,9 +83,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                               '${AppStrings.enterOtpSentTo.tr()} ',
                                         ),
                                         TextSpan(
-                                          text: widget.isChangeNumber
-                                              ? '+91 ${widget.phone}'
-                                              : MockData.userPhoneMasked,
+                                          text:
+                                              '${widget.countryCode} ${widget.phone}',
                                           style: AppTextStyles.style(
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w600,
@@ -134,9 +138,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                               return MaterialPinField(
                                 length: 6,
                                 onChanged: provider.setOtp,
-                                onTapOutside: (_) =>
-                                    FocusManager.instance.primaryFocus
-                                        ?.unfocus(),
+                                onTapOutside: (_) => FocusManager
+                                    .instance
+                                    .primaryFocus
+                                    ?.unfocus(),
                                 theme: MaterialPinTheme(
                                   shape: MaterialPinShape.filled,
                                   cellSize: Size(cellWidth, 48),
@@ -254,6 +259,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                         AppSolidButton(
                           label: AppStrings.verifyAndContinue.tr(),
                           onTap: provider.tapOnVerify,
+                          isLoading: provider.isLoading,
                         ),
                       ],
                     ),
@@ -348,8 +354,7 @@ class _ResendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final canResend = provider.secondsLeft == 0;
-    final resendColor =
-        canResend ? AppColors.primary : AppColors.textMuted;
+    final resendColor = canResend ? AppColors.primary : AppColors.textMuted;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -370,7 +375,7 @@ class _ResendCard extends StatelessWidget {
                   color: AppColors.peach,
                   shape: BoxShape.circle,
                 ),
-                  child: const Center(
+                child: const Center(
                   child: AppIcon(
                     AppAssets.didntCode,
                     size: 18,
@@ -450,9 +455,7 @@ class _ResendCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: Text(
-                        AppStrings.resendIn.tr(
-                          args: [provider.formattedTime],
-                        ),
+                        AppStrings.resendIn.tr(args: [provider.formattedTime]),
                         style: AppTextStyles.style(
                           fontSize: 12,
                           height: 1,

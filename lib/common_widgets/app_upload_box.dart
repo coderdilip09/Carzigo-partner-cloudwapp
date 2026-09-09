@@ -17,12 +17,14 @@ class AppUploadBox extends StatelessWidget {
     this.subtitle,
     this.onTap,
     this.imageFile,
+    this.imageUrl,
   });
 
   final String? title;
   final String? subtitle;
   final VoidCallback? onTap;
   final File? imageFile;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -87,30 +89,8 @@ class AppUploadBox extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: imageFile != null
-                      ? Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.file(imageFile!, fit: BoxFit.cover),
-                            Positioned(
-                              right: 6,
-                              bottom: 6,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Icon(
-                                  Icons.edit,
-                                  size: 14,
-                                  color: AppColors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Column(
+                  child: _preview() ??
+                      Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const AppImageView(
@@ -139,6 +119,47 @@ class AppUploadBox extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget? _preview() {
+    final Widget? image;
+    if (imageFile != null) {
+      image = Image.file(imageFile!, fit: BoxFit.cover);
+    } else {
+      final url = imageUrl?.trim() ?? '';
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        image = Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+        );
+      } else {
+        image = null;
+      }
+    }
+    if (image == null) return null;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        image,
+        Positioned(
+          right: 6,
+          bottom: 6,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.edit,
+              size: 14,
+              color: AppColors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

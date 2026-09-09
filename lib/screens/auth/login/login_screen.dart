@@ -192,6 +192,7 @@ class LoginScreen extends StatelessWidget {
                                     AppSolidButton(
                                       label: AppStrings.submit.tr(),
                                       onTap: provider.tapOnSubmit,
+                                      isLoading: provider.isLoading,
                                     ),
                                     const SizedBox(height: 16),
                                     Center(
@@ -206,14 +207,15 @@ class LoginScreen extends StatelessWidget {
                                           final termsLabel = split == null
                                               ? legal
                                               : legal
-                                                  .substring(0, split.start)
-                                                  .trim();
+                                                    .substring(0, split.start)
+                                                    .trim();
                                           final privacyLabel = split == null
                                               ? AppStrings.privacyPolicy.tr()
                                               : legal
-                                                  .substring(split.end)
-                                                  .trim();
-                                          final joiner = split?.group(0) ??
+                                                    .substring(split.end)
+                                                    .trim();
+                                          final joiner =
+                                              split?.group(0) ??
                                               ' ${AppStrings.and.tr()} ';
                                           return RichText(
                                             textAlign: TextAlign.center,
@@ -256,12 +258,11 @@ class LoginScreen extends StatelessWidget {
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 12,
                                                   ),
-                                                  recognizer:
-                                                      TapGestureRecognizer()
-                                                        ..onTap = () =>
-                                                            AppNavigation.to(
-                                                              const PrivacyScreen(),
-                                                            ),
+                                                  recognizer: TapGestureRecognizer()
+                                                    ..onTap = () =>
+                                                        AppNavigation.to(
+                                                          const PrivacyScreen(),
+                                                        ),
                                                 ),
                                               ],
                                             ),

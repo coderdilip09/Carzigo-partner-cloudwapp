@@ -54,7 +54,10 @@ class ScheduleScreen extends StatelessWidget {
           };
 
           return SafeArea(
-            child: SingleChildScrollView(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(16, 16, 16, showBottomNav ? 80 : 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,19 +148,19 @@ class ScheduleScreen extends StatelessWidget {
                     children: [
                       AppStatCard(
                         iconAsset: AppAssets.calendar,
-                        value: AppStrings.mockTotalJobsCount.tr(),
+                        value: provider.totalJobs,
                         label: AppStrings.totalJobs.tr(),
                       ),
                       const SizedBox(width: 8),
                       AppStatCard(
                         iconAsset: AppAssets.logoCar,
-                        value: AppStrings.mockCompletedCount.tr(),
+                        value: provider.completed,
                         label: AppStrings.completed.tr(),
                       ),
                       const SizedBox(width: 8),
                       AppStatCard(
                         iconAsset: AppAssets.refresh,
-                        value: AppStrings.mockInProgressCount.tr(),
+                        value: provider.inProgress,
                         label: AppStrings.inProgress.tr(),
                       ),
                     ],
@@ -168,30 +171,58 @@ class ScheduleScreen extends StatelessWidget {
                     style: AppTextStyles.style(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 10),
-                  _DateChip(label: AppStrings.mockScheduleDate.tr()),
-                  const SizedBox(height: 12),
-                  ...List.generate(
-                    2,
-                    (_) => AppJobCard(
-                      compact: false,
-                      showPrice: true,
-                      status: statusLabel,
-                      onTap: () =>
-                          AppNavigation.to(const ServiceDetailsScreen()),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  _DateChip(label: AppStrings.mockScheduleDateSecondary.tr()),
-                  const SizedBox(height: 12),
-                  AppJobCard(
-                    compact: false,
-                    showPrice: true,
-                    status: statusLabel,
-                    onTap: () =>
-                        AppNavigation.to(const ServiceDetailsScreen()),
-                  ),
+                  if (!provider.isLoading && provider.jobs.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Text(
+                          AppStrings.noData.tr(),
+                          style: AppTextStyles.style(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    for (final group in provider.groupedJobs) ...[
+                      if (group.$1.isNotEmpty) ...[
+                        _DateChip(label: group.$1),
+                        const SizedBox(height: 12),
+                      ],
+                      for (final job in group.$2)
+                        AppJobCard(
+                          compact: false,
+                          showPrice: true,
+                          status: statusLabel,
+                          timeLabel: job.timeRange,
+                          serviceName: job.serviceName,
+                          customerName: job.customerName,
+                          carName: job.car,
+                          price: job.price,
+                          onTap: () =>
+                              AppNavigation.to(const ServiceDetailsScreen()),
+                        ),
+                    ],
                 ],
               ),
+            ),
+                if (provider.isLoading)
+                  const Positioned.fill(
+                    child: AbsorbPointer(
+                      child: Center(
+                        child: SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           );
         },

@@ -4,7 +4,7 @@ import 'package:carzigo_partner/screens/refer_earn/refer_earn_provider.dart';
 import 'package:carzigo_partner/screens/refer_earn/widgets/referred_customer_card.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
-import 'package:carzigo_partner/utils/mock_data.dart';
+import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -34,20 +34,41 @@ class ReferredCustomersScreen extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-                        itemCount: provider.allReferredCustomers.length,
-                        itemBuilder: (context, index) {
-                          final c = provider.allReferredCustomers[index];
-                          return ReferredCustomerCard(
-                            initials: c.$1,
-                            name: c.$2,
-                            phone: c.$3,
-                            status: c.$4.tr(),
-                            amount: MockData.referralRewardAmount,
-                          );
-                        },
-                      ),
+                      child: provider.isLoading
+                          ? const Center(
+                              child: SizedBox(
+                                width: 28,
+                                height: 28,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            )
+                          : provider.customers.isEmpty
+                          ? Center(
+                              child: Text(
+                                AppStrings.noData.tr(),
+                                style: AppTextStyles.style(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                              itemCount: provider.customers.length,
+                              itemBuilder: (context, index) {
+                                final c = provider.customers[index];
+                                return ReferredCustomerCard(
+                                  initials: c.displayInitials,
+                                  name: c.displayName,
+                                  phone: c.displayPhone,
+                                  status: c.displayStatus,
+                                  amount: c.amount ?? provider.rewardLabel,
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),

@@ -1,7 +1,9 @@
 import 'dart:async';
 
-import 'package:carzigo_partner/screens/auth/create_profile/create_profile_screen.dart';
+import 'package:carzigo_partner/services/api_service/api.dart';
+import 'package:carzigo_partner/services/auth_route_service/auth_route_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
+import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
@@ -10,14 +12,19 @@ import 'package:easy_localization/easy_localization.dart';
 class OtpVerifyProvider extends BaseProvider {
   OtpVerifyProvider({
     required this.phone,
+    required this.countryCode,
+    this.resendAfterSeconds = 45,
     this.isChangeNumber = false,
-  });
+  }) : secondsLeft = resendAfterSeconds;
 
   final String phone;
+  final String countryCode;
+  final int resendAfterSeconds;
   final bool isChangeNumber;
   String otp = '';
   String? otpError;
-  int secondsLeft = 45;
+  bool isLoading = false;
+  int secondsLeft;
   Timer? _timer;
 
   void setOtp(String value) {
@@ -28,9 +35,9 @@ class OtpVerifyProvider extends BaseProvider {
     safeNotifyListeners();
   }
 
-  void startTimer() {
+  void startTimer([int? seconds]) {
     _timer?.cancel();
-    secondsLeft = 45;
+    secondsLeft = seconds ?? resendAfterSeconds;
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (secondsLeft > 0) {
         secondsLeft--;
@@ -64,21 +71,58 @@ class OtpVerifyProvider extends BaseProvider {
     return true;
   }
 
-  void tapOnVerify() {
+  Future<void> tapOnVerify() async {
+    if (isLoading) return;
     if (!_validateOtp()) return;
+
     if (isChangeNumber) {
       AppToast.success(AppStrings.phoneUpdated.tr());
       AppNavigation.back(true);
       return;
     }
-    AppToast.success(AppStrings.otpVerified.tr());
-    AppNavigation.to(const CreateProfileScreen());
+
+    isLoading = true;
+    safeNotifyListeners();
+
+    final res = await Api.verifyOtp(
+      countryCode: countryCode,
+      mobile: phone,
+      otp: otp.trim(),
+    );
+
+    if (!res.isSuccess || res.data?.token == null) {
+      isLoading = false;
+      safeNotifyListeners();
+      AppToast.error(res.message ?? AppStrings.otpInvalid.tr());
+      return;
+    }
+
+    await PrefsService().saveAuth(res.data!);
+    AppToast.success(res.message ?? AppStrings.otpVerified.tr());
+    final next = await AuthRouteService.resolveLoggedIn(auth: res.data);
+    isLoading = false;
+    safeNotifyListeners();
+    AppNavigation.offAll(next);
   }
 
-  void tapOnResend() {
-    if (secondsLeft != 0) return;
-    startTimer();
-    AppToast.success(AppStrings.otpResent.tr());
+  Future<void> tapOnResend() async {
+    if (secondsLeft != 0 || isLoading || isChangeNumber) return;
+
+    isLoading = true;
+    safeNotifyListeners();
+
+    final res = await Api.resendOtp(countryCode: countryCode, mobile: phone);
+
+    isLoading = false;
+    safeNotifyListeners();
+
+    if (!res.isSuccess) {
+      AppToast.error(res.message ?? AppStrings.otpInvalid.tr());
+      return;
+    }
+
+    startTimer(res.data?.resendAfterSeconds ?? resendAfterSeconds);
+    AppToast.success(res.message ?? AppStrings.otpResent.tr());
   }
 
   @override

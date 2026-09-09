@@ -10,7 +10,6 @@ import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
-import 'package:carzigo_partner/utils/mock_data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +26,10 @@ class ReferEarnScreen extends StatelessWidget {
       child: Consumer<ReferEarnProvider>(
         builder: (context, provider, _) {
           return SafeArea(
-            child: SingleChildScrollView(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+            SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(16, 16, 16, showBottomNav ? 80 : 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,19 +179,19 @@ class ReferEarnScreen extends StatelessWidget {
                       children: [
                         AppStatCard(
                           iconAsset: AppAssets.calendar,
-                          value: '24',
+                          value: provider.totalReferred,
                           label: AppStrings.totalReferred.tr(),
                         ),
                         const SizedBox(width: 8),
                         AppStatCard(
                           iconAsset: AppAssets.logoCar,
-                          value: '12',
+                          value: provider.onboarded,
                           label: AppStrings.onboarded.tr(),
                         ),
                         const SizedBox(width: 8),
                         AppStatCard(
                           iconAsset: AppAssets.clock,
-                          value: '08',
+                          value: provider.completedFirstWash,
                           label: AppStrings.completedFirstWash.tr(),
                         ),
                       ],
@@ -211,24 +213,32 @@ class ReferEarnScreen extends StatelessWidget {
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
                     childAspectRatio: 1.15,
-                    children: [
-                      _HowItWorksCard(
-                        title: AppStrings.stepReferCustomer.tr(),
-                        desc: AppStrings.stepShareCode.tr(),
-                      ),
-                      _HowItWorksCard(
-                        title: AppStrings.stepCustomerOnboards.tr(),
-                        desc: AppStrings.stepTheySignup.tr(),
-                      ),
-                      _HowItWorksCard(
-                        title: AppStrings.stepFirstWashTitle.tr(),
-                        desc: AppStrings.stepFirstWash.tr(),
-                      ),
-                      _HowItWorksCard(
-                        title: AppStrings.stepYouEarnTitle.tr(),
-                        desc: AppStrings.stepYouEarn.tr(),
-                      ),
-                    ],
+                    children: provider.howItWorks.isNotEmpty
+                        ? [
+                            for (final step in provider.howItWorks)
+                              _HowItWorksCard(
+                                title: step.title ?? '',
+                                desc: step.description ?? '',
+                              ),
+                          ]
+                        : [
+                            _HowItWorksCard(
+                              title: AppStrings.stepReferCustomer.tr(),
+                              desc: AppStrings.stepShareCode.tr(),
+                            ),
+                            _HowItWorksCard(
+                              title: AppStrings.stepCustomerOnboards.tr(),
+                              desc: AppStrings.stepTheySignup.tr(),
+                            ),
+                            _HowItWorksCard(
+                              title: AppStrings.stepFirstWashTitle.tr(),
+                              desc: AppStrings.stepFirstWash.tr(),
+                            ),
+                            _HowItWorksCard(
+                              title: AppStrings.stepYouEarnTitle.tr(),
+                              desc: AppStrings.stepYouEarn.tr(),
+                            ),
+                          ],
                   ),
                   const SizedBox(height: 20),
                   Row(
@@ -263,7 +273,7 @@ class ReferEarnScreen extends StatelessWidget {
                         Expanded(
                           child: _CopyField(
                             label: AppStrings.referralCode.tr(),
-                            value: MockData.referralCode,
+                            value: provider.code,
                             onCopy: () => provider.copyCode(),
                           ),
                         ),
@@ -283,7 +293,7 @@ class ReferEarnScreen extends StatelessWidget {
                               const SizedBox(height: 8),
                               Expanded(
                                 child: _CopyField(
-                                  value: MockData.referralLink,
+                                  value: provider.link,
                                   valueColor: AppColors.primary,
                                   onCopy: () => provider.copyLink(),
                                 ),
@@ -314,58 +324,91 @@ class ReferEarnScreen extends StatelessWidget {
                           color: AppColors.sectionTitle,
                         ),
                       ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => AppNavigation.to(
-                          const ReferredCustomersScreen(),
-                        ),
-                        behavior: HitTestBehavior.opaque,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              AppStrings.viewAll.tr(),
-                              style: AppTextStyles.style(
-                                color: AppColors.viewAllLink,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
+                      if (provider.customers.isNotEmpty) ...[
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => AppNavigation.to(
+                            const ReferredCustomersScreen(),
+                          ),
+                          behavior: HitTestBehavior.opaque,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                AppStrings.viewAll.tr(),
+                                style: AppTextStyles.style(
                                   color: AppColors.viewAllLink,
-                                  width: 1,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              alignment: Alignment.center,
-                              child: AppIcon(
-                                AppAssets.chevronRight,
-                                size: 10,
-                                color: AppColors.viewAllLink,
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.viewAllLink,
+                                    width: 1,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: AppIcon(
+                                  AppAssets.chevronRight,
+                                  size: 10,
+                                  color: AppColors.viewAllLink,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 12),
-                  ...provider.referredCustomers.map(
-                    (c) => ReferredCustomerCard(
-                      initials: c.$1,
-                      name: c.$2,
-                      phone: c.$3,
-                      status: c.$4.tr(),
-                      amount: MockData.referralRewardAmount,
+                  if (!provider.isLoading && provider.customers.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Text(
+                          AppStrings.noData.tr(),
+                          style: AppTextStyles.style(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    ...provider.customers.map(
+                      (c) => ReferredCustomerCard(
+                        initials: c.displayInitials,
+                        name: c.displayName,
+                        phone: c.displayPhone,
+                        status: c.displayStatus,
+                        amount: c.amount ?? provider.rewardLabel,
+                      ),
                     ),
-                  ),
                 ],
               ),
+            ),
+                if (provider.isLoading)
+                  const Positioned.fill(
+                    child: AbsorbPointer(
+                      child: Center(
+                        child: SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           );
         },

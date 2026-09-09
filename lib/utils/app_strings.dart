@@ -61,6 +61,9 @@ class AppStrings {
   static const String emailRequired = 'email_required';
   static const String emailInvalid = 'email_invalid';
   static const String profileCompleted = 'profile_completed';
+  static const String requestFailed = 'request_failed';
+  static const String noData = 'no_data';
+  static const String uploadFailed = 'upload_failed';
 
   static const String completeKyc = 'complete_kyc';
   static const String kycSubtitle = 'kyc_subtitle';
@@ -144,6 +147,8 @@ class AppStrings {
   static const String accountHolderName = 'account_holder_name';
   static const String bankAccountNumber = 'bank_account_number';
   static const String ifscCode = 'ifsc_code';
+  static const String bankName = 'bank_name_label';
+  static const String bankNameRequired = 'bank_name_required';
   static const String uploadCheque = 'upload_cheque';
   static const String uploadClearImage = 'upload_clear_image';
   static const String frontImageRequired = 'front_image_required';
@@ -167,6 +172,18 @@ class AppStrings {
   static const String aadhaarCard = 'aadhaar_card';
   static const String panCard = 'pan_card';
   static const String drivingLicense = 'driving_license';
+  static const String aadhaarCardNumber = 'aadhaar_card_number';
+  static const String panCardNumber = 'pan_card_number';
+  static const String drivingLicenseNumber = 'driving_license_number';
+  static const String enterAadhaarCardNumber = 'enter_aadhaar_card_number';
+  static const String enterPanCardNumber = 'enter_pan_card_number';
+  static const String enterDrivingLicenseNumber =
+      'enter_driving_license_number';
+  static const String documentNumberRequired = 'document_number_required';
+  static const String aadhaarNumberInvalid = 'aadhaar_number_invalid';
+  static const String panNumberInvalid = 'pan_number_invalid';
+  static const String drivingLicenseNumberInvalid =
+      'driving_license_number_invalid';
   static const String verified = 'verified';
   static const String documentsSafe = 'documents_safe';
   static const String scheduleJobs = 'schedule_jobs';
@@ -278,7 +295,8 @@ class AppStrings {
   static const String mockDashboardDate = 'mock_dashboard_date';
   static const String mockDashboardTime = 'mock_dashboard_time';
   static const String mockScheduleDate = 'mock_schedule_date';
-  static const String mockScheduleDateSecondary = 'mock_schedule_date_secondary';
+  static const String mockScheduleDateSecondary =
+      'mock_schedule_date_secondary';
   static const String mockJobTimeRange = 'mock_job_time_range';
   static const String mockTotalJobsCount = 'mock_total_jobs_count';
   static const String mockCompletedCount = 'mock_completed_count';
