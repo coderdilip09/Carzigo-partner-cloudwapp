@@ -30,9 +30,7 @@ class LoginScreen extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: Stack(
               children: [
-                const Positioned.fill(
-                  child: AppImageView(AppAssets.bg, fit: BoxFit.cover),
-                ),
+                const Positioned.fill(child: AppImageView(AppAssets.bg, fit: BoxFit.cover)),
                 SafeArea(
                   right: false,
                   child: Column(
@@ -52,10 +50,7 @@ class LoginScreen extends StatelessWidget {
                               },
                               borderRadius: BorderRadius.circular(20),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: AppColors.white,
                                   borderRadius: BorderRadius.circular(20),
@@ -64,11 +59,7 @@ class LoginScreen extends StatelessWidget {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(
-                                      Icons.translate,
-                                      size: 16,
-                                      color: AppColors.primary,
-                                    ),
+                                    const Icon(Icons.translate, size: 16, color: AppColors.primary),
                                     const SizedBox(width: 4),
                                     Text(
                                       context.locale.languageCode == 'en'
@@ -111,14 +102,10 @@ class LoginScreen extends StatelessWidget {
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 20,
-                                        right: 148,
-                                      ),
+                                      padding: const EdgeInsets.only(left: 20, right: 148),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const AppImageView(
                                             AppAssets.logo,
@@ -156,20 +143,14 @@ class LoginScreen extends StatelessWidget {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  20,
-                                  28,
-                                  20,
-                                  20,
-                                ),
+                                padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     AppPhoneField(
                                       onChanged: provider.setPhone,
                                       onCountryChanged: provider.setCountry,
-                                      initialCountryCode:
-                                          provider.country.countryCode,
+                                      initialCountryCode: provider.country.countryCode,
                                       borderColor: provider.phoneError != null
                                           ? AppColors.destructive
                                           : null,
@@ -198,14 +179,13 @@ class LoginScreen extends StatelessWidget {
                                     Center(
                                       child: Builder(
                                         builder: (context) {
-                                          final legal = AppStrings
-                                              .termsAndPrivacy
-                                              .tr();
+                                          final legal = AppStrings.termsAndPrivacy.tr();
                                           final split = RegExp(
                                             r'\s*&\s*|\s+और\s+',
                                           ).firstMatch(legal);
                                           final termsLabel = split == null
                                               ? legal
+<<<<<<< Updated upstream
                                               : legal
                                                     .substring(0, split.start)
                                                     .trim();
@@ -217,6 +197,14 @@ class LoginScreen extends StatelessWidget {
                                           final joiner =
                                               split?.group(0) ??
                                               ' ${AppStrings.and.tr()} ';
+=======
+                                              : legal.substring(0, split.start).trim();
+                                          final privacyLabel = split == null
+                                              ? AppStrings.privacyPolicy.tr()
+                                              : legal.substring(split.end).trim();
+                                          final joiner =
+                                              split?.group(0) ?? ' ${AppStrings.and.tr()} ';
+>>>>>>> Stashed changes
                                           return RichText(
                                             textAlign: TextAlign.center,
                                             text: TextSpan(
@@ -226,8 +214,7 @@ class LoginScreen extends StatelessWidget {
                                               ),
                                               children: [
                                                 TextSpan(
-                                                  text:
-                                                      '${AppStrings.byContinuingAgree.tr()} ',
+                                                  text: '${AppStrings.byContinuingAgree.tr()} ',
                                                 ),
                                                 TextSpan(
                                                   text: termsLabel,
@@ -236,12 +223,9 @@ class LoginScreen extends StatelessWidget {
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 12,
                                                   ),
-                                                  recognizer:
-                                                      TapGestureRecognizer()
-                                                        ..onTap = () =>
-                                                            AppNavigation.to(
-                                                              const TermsScreen(),
-                                                            ),
+                                                  recognizer: TapGestureRecognizer()
+                                                    ..onTap = () =>
+                                                        AppNavigation.to(const TermsScreen()),
                                                 ),
                                                 TextSpan(
                                                   text: joiner,
@@ -260,9 +244,13 @@ class LoginScreen extends StatelessWidget {
                                                   ),
                                                   recognizer: TapGestureRecognizer()
                                                     ..onTap = () =>
+<<<<<<< Updated upstream
                                                         AppNavigation.to(
                                                           const PrivacyScreen(),
                                                         ),
+=======
+                                                        AppNavigation.to(const PrivacyScreen()),
+>>>>>>> Stashed changes
                                                 ),
                                               ],
                                             ),
@@ -297,64 +285,34 @@ class _FeatureRow extends StatelessWidget {
     // Read locale so this widget rebuilds when language changes.
     context.locale;
     final items = [
-      (
-        AppAssets.lock,
-        AppStrings.secureSafe.tr(),
-        AppStrings.dataProtected.tr(),
-      ),
-      (
-        AppAssets.rocket,
-        AppStrings.quickAccess.tr(),
-        AppStrings.loginInSeconds.tr(),
-      ),
-      (
-        AppAssets.headset,
-        AppStrings.support247.tr(),
-        AppStrings.weAreHereToHelp.tr(),
-      ),
+      (AppAssets.lock, AppStrings.secureSafe.tr(), AppStrings.dataProtected.tr()),
+      (AppAssets.rocket, AppStrings.quickAccess.tr(), AppStrings.loginInSeconds.tr()),
+      (AppAssets.headset, AppStrings.support247.tr(), AppStrings.weAreHereToHelp.tr()),
     ];
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var i = 0; i < items.length; i++) ...[
-            if (i > 0)
-              const VerticalDivider(
-                width: 16,
-                thickness: 1,
-                color: AppColors.border,
-              ),
+            if (i > 0) const VerticalDivider(width: 16, thickness: 1, color: AppColors.border),
             Expanded(
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: AppColors.peach,
-                      shape: BoxShape.circle,
-                    ),
-                    child: AppIcon(
-                      items[i].$1,
-                      size: 18,
-                      color: AppColors.primary,
-                    ),
+                    decoration: const BoxDecoration(color: AppColors.peach, shape: BoxShape.circle),
+                    child: AppIcon(items[i].$1, size: 18, color: AppColors.primary),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     items[i].$2,
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.style(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.style(fontSize: 10, fontWeight: FontWeight.w600),
                   ),
                   Text(
                     items[i].$3,
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.style(
-                      fontSize: 8,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTextStyles.style(fontSize: 8, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -383,10 +341,7 @@ class _BenefitsCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: AppColors.peach,
-              shape: BoxShape.circle,
-            ),
+            decoration: const BoxDecoration(color: AppColors.peach, shape: BoxShape.circle),
             child: const AppIcon(AppAssets.privacy, color: AppColors.primary),
           ),
           const SizedBox(width: 12),
@@ -396,17 +351,11 @@ class _BenefitsCard extends StatelessWidget {
               children: [
                 Text(
                   AppStrings.oneAccountManyBenefits.tr(),
-                  style: AppTextStyles.style(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
+                  style: AppTextStyles.style(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 Text(
                   AppStrings.manageVehicleBookings.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppTextStyles.style(fontSize: 11, color: AppColors.textSecondary),
                 ),
               ],
             ),
