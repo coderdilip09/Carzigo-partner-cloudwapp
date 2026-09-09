@@ -8,27 +8,24 @@ import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateProfileProvider extends BaseProvider {
+  final formKey = GlobalKey<FormState>();
+
   String name = '';
   String email = '';
   File? profileImage;
-
   String? photoError;
-  String? nameError;
-  String? emailError;
+  bool submitted = false;
 
   void setName(String value) {
     name = value;
-    if (nameError != null) nameError = null;
-    safeNotifyListeners();
   }
 
   void setEmail(String value) {
     email = value;
-    if (emailError != null) emailError = null;
-    safeNotifyListeners();
   }
 
   Future<void> pickFromCamera() => _pick(ImageSource.camera);
@@ -43,45 +40,39 @@ class CreateProfileProvider extends BaseProvider {
     safeNotifyListeners();
   }
 
-  bool _isValidEmail(String value) {
-    return RegExp(r'^[\w.\-+]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(value);
+  String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppStrings.nameRequired.tr();
+    }
+    return null;
   }
 
-  bool _validate() {
-    var isValid = true;
+  String? validateEmail(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return AppStrings.emailRequired.tr();
+    }
+    if (!RegExp(r'^[\w.\-+]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(trimmed)) {
+      return AppStrings.emailInvalid.tr();
+    }
+    return null;
+  }
 
+  bool _validatePhoto() {
     if (profileImage == null) {
       photoError = AppStrings.photoRequired.tr();
-      isValid = false;
-    } else {
-      photoError = null;
+      return false;
     }
-
-    final trimmedName = name.trim();
-    if (trimmedName.isEmpty) {
-      nameError = AppStrings.nameRequired.tr();
-      isValid = false;
-    } else {
-      nameError = null;
-    }
-
-    final trimmedEmail = email.trim();
-    if (trimmedEmail.isEmpty) {
-      emailError = AppStrings.emailRequired.tr();
-      isValid = false;
-    } else if (!_isValidEmail(trimmedEmail)) {
-      emailError = AppStrings.emailInvalid.tr();
-      isValid = false;
-    } else {
-      emailError = null;
-    }
-
-    safeNotifyListeners();
-    return isValid;
+    photoError = null;
+    return true;
   }
 
   void tapOnSave() {
-    if (!_validate()) return;
+    submitted = true;
+    final photoOk = _validatePhoto();
+    final fieldsOk = formKey.currentState?.validate() ?? false;
+    safeNotifyListeners();
+    if (!photoOk || !fieldsOk) return;
     KycStatus.markProfilePhotoDone();
     AppToast.success(AppStrings.profileCompleted.tr());
     AppNavigation.to(const KycOverviewScreen());

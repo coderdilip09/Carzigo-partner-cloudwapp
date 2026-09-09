@@ -29,12 +29,12 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
   File? _profileImage;
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
-  String? _nameError;
-  String? _emailError;
+  bool _submitted = false;
 
   @override
   void initState() {
@@ -44,28 +44,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailController = TextEditingController(
       text: AppStrings.emailHintExample.tr(),
     );
-    _nameController.addListener(_clearNameError);
-    _emailController.addListener(_clearEmailError);
   }
 
   @override
   void dispose() {
-    _nameController.removeListener(_clearNameError);
-    _emailController.removeListener(_clearEmailError);
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     super.dispose();
-  }
-
-  void _clearNameError() {
-    if (_nameError == null) return;
-    setState(() => _nameError = null);
-  }
-
-  void _clearEmailError() {
-    if (_emailError == null) return;
-    setState(() => _emailError = null);
   }
 
   Future<void> _pick(ImageSource source) async {
@@ -80,40 +66,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _phoneController.text = newPhone);
   }
 
-  bool _isValidEmail(String value) {
-    return RegExp(r'^[\w.\-+]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(value);
+  String? _validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppStrings.nameRequired.tr();
+    }
+    return null;
   }
 
-  bool _validate() {
-    var isValid = true;
-    final name = _nameController.text.trim();
-    final email = _emailController.text.trim();
-
-    String? nameError;
-    String? emailError;
-
-    if (name.isEmpty) {
-      nameError = AppStrings.nameRequired.tr();
-      isValid = false;
-    }
-
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
     if (email.isEmpty) {
-      emailError = AppStrings.emailRequired.tr();
-      isValid = false;
-    } else if (!_isValidEmail(email)) {
-      emailError = AppStrings.emailInvalid.tr();
-      isValid = false;
+      return AppStrings.emailRequired.tr();
     }
-
-    setState(() {
-      _nameError = nameError;
-      _emailError = emailError;
-    });
-    return isValid;
+    if (!RegExp(r'^[\w.\-+]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(email)) {
+      return AppStrings.emailInvalid.tr();
+    }
+    return null;
   }
 
   void _onUpdateProfile() {
-    if (!_validate()) return;
+    setState(() => _submitted = true);
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     AppNavigation.back();
     AppToast.success(AppStrings.profileUpdated.tr());
   }
@@ -124,7 +97,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       backgroundColor: AppColors.background,
       body: AppBg(
         child: SafeArea(
-          child: Column(
+          child: Form(
+            key: _formKey,
+            autovalidateMode: _submitted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
+            child: Column(
             children: [
               Expanded(
                 child: SingleChildScrollView(
@@ -229,20 +207,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         prefixAsset: AppAssets.personFilled,
                         prefixIconColor: AppColors.primary,
                         textCapitalization: TextCapitalization.words,
-                        borderColor: _nameError != null
-                            ? AppColors.destructive
-                            : null,
+                        validator: _validateName,
                       ),
-                      if (_nameError != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          _nameError!,
-                          style: AppTextStyles.style(
-                            fontSize: 12,
-                            color: AppColors.destructive,
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 12),
                       AppPhoneField(
                         controller: _phoneController,
@@ -256,20 +222,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         prefixAsset: AppAssets.email,
                         prefixIconColor: AppColors.primary,
                         keyboardType: TextInputType.emailAddress,
-                        borderColor: _emailError != null
-                            ? AppColors.destructive
-                            : null,
+                        validator: _validateEmail,
                       ),
-                      if (_emailError != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          _emailError!,
-                          style: AppTextStyles.style(
-                            fontSize: 12,
-                            color: AppColors.destructive,
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: _onChangeNumber,
@@ -372,6 +326,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),

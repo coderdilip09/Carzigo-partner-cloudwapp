@@ -48,7 +48,7 @@ class AppColors {
   static const Color pinkSection = Color(0xFFFFE8E8);
   static const Color greenSection = Color(0xFFE8F5E9);
   static const Color greenLight = Color(0xFFF0FAF0);
-  static const Color navBar = Color(0xFFF2E6E1);
+  static const Color navBar = Color(0xFFF2E2D9);
   static const Color red = Color(0xFFF44336);
   static const Color redLight = Color(0xFFFFEBEE);
   static const Color destructive = Color(0xFFFB3002);

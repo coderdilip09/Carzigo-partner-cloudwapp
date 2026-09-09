@@ -7,11 +7,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class AppBottomNavBar extends StatelessWidget {
-  const AppBottomNavBar({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const AppBottomNavBar({super.key, required this.currentIndex, required this.onTap});
 
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -20,6 +16,7 @@ class AppBottomNavBar extends StatelessWidget {
     AppAssets.home,
     AppAssets.calendar,
     AppAssets.refer,
+    AppAssets.personIcon,
   ];
 
   @override
@@ -34,10 +31,7 @@ class AppBottomNavBar extends StatelessWidget {
     return Container(
       margin: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottomInset),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: AppColors.navBar,
-        borderRadius: BorderRadius.circular(32),
-      ),
+      decoration: BoxDecoration(color: AppColors.navBar, borderRadius: BorderRadius.circular(32)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(4, (i) {
@@ -49,18 +43,7 @@ class AppBottomNavBar extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (i < 3)
-                  AppIcon(
-                    _svgIcons[i],
-                    size: 22,
-                    color: color,
-                  )
-                else
-                  Icon(
-                    Icons.person_outline,
-                    size: 22,
-                    color: color,
-                  ),
+                AppIcon(_svgIcons[i], size: 22, color: color),
                 const SizedBox(height: 4),
                 Text(
                   labels[i],

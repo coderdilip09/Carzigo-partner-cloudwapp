@@ -28,19 +28,18 @@ class CreateProfileScreen extends StatelessWidget {
               child: SafeArea(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppBackHeader(
-                        title: AppStrings.letsGetStarted.tr(),
-                        showBackText: false,
-                      ),
+                  child: Form(
+                    key: provider.formKey,
+                    autovalidateMode: provider.submitted
+                        ? AutovalidateMode.onUserInteraction
+                        : AutovalidateMode.disabled,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      AppBackHeader(title: AppStrings.letsGetStarted.tr(), showBackText: false),
                       Text(
                         AppStrings.createProfileSubtitle.tr(),
-                        style: AppTextStyles.style(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.style(fontSize: 13, color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 24),
                       Center(
@@ -86,10 +85,7 @@ class CreateProfileScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: AppColors.primary,
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.white,
-                                      width: 1,
-                                    ),
+                                    border: Border.all(color: AppColors.white, width: 1),
                                   ),
                                   child: AppIcon(
                                     AppAssets.camera,
@@ -106,19 +102,14 @@ class CreateProfileScreen extends StatelessWidget {
                       Center(
                         child: Text(
                           AppStrings.addProfilePhoto.tr(),
-                          style: AppTextStyles.style(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.style(fontWeight: FontWeight.w600),
                         ),
                       ),
                       Center(
                         child: Text(
                           AppStrings.addProfilePhotoHint.tr(),
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.style(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppTextStyles.style(fontSize: 11, color: AppColors.textSecondary),
                         ),
                       ),
                       if (provider.photoError != null) ...[
@@ -127,10 +118,7 @@ class CreateProfileScreen extends StatelessWidget {
                           child: Text(
                             provider.photoError!,
                             textAlign: TextAlign.center,
-                            style: AppTextStyles.style(
-                              fontSize: 12,
-                              color: AppColors.destructive,
-                            ),
+                            style: AppTextStyles.style(fontSize: 12, color: AppColors.destructive),
                           ),
                         ),
                       ],
@@ -139,43 +127,21 @@ class CreateProfileScreen extends StatelessWidget {
                         hint: AppStrings.enterFullName.tr(),
                         prefixAsset: AppAssets.personFilled,
                         prefixIconColor: AppColors.accentOrange,
-                        borderColor: provider.nameError != null
-                            ? AppColors.destructive
-                            : AppColors.textFieldBorderGrey,
+                        borderColor: AppColors.textFieldBorderGrey,
                         textCapitalization: TextCapitalization.words,
                         onChanged: provider.setName,
+                        validator: provider.validateName,
                       ),
-                      if (provider.nameError != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          provider.nameError!,
-                          style: AppTextStyles.style(
-                            fontSize: 12,
-                            color: AppColors.destructive,
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 12),
                       AppTextField(
                         hint: AppStrings.enterEmail.tr(),
                         prefixAsset: AppAssets.email,
                         prefixIconColor: AppColors.accentOrange,
-                        borderColor: provider.emailError != null
-                            ? AppColors.destructive
-                            : AppColors.textFieldBorderGrey,
+                        borderColor: AppColors.textFieldBorderGrey,
                         keyboardType: TextInputType.emailAddress,
                         onChanged: provider.setEmail,
+                        validator: provider.validateEmail,
                       ),
-                      if (provider.emailError != null) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          provider.emailError!,
-                          style: AppTextStyles.style(
-                            fontSize: 12,
-                            color: AppColors.destructive,
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 20),
                       _FeatureGrid(),
                       const SizedBox(height: 24),
@@ -189,19 +155,13 @@ class CreateProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Colors.transparent,
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.white,
-                              width: 1.5,
-                            ),
+                            border: Border.all(color: AppColors.white, width: 1.5),
                           ),
-                          child: AppIcon(
-                            AppAssets.arrowForward,
-                            size: 16,
-                            color: AppColors.white,
-                          ),
+                          child: AppIcon(AppAssets.arrowForward, size: 16, color: AppColors.white),
                         ),
                       ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -212,10 +172,7 @@ class CreateProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showImageSourceSheet(
-    BuildContext context,
-    CreateProfileProvider provider,
-  ) async {
+  Future<void> _showImageSourceSheet(BuildContext context, CreateProfileProvider provider) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.white,
@@ -278,20 +235,12 @@ class _FeatureGrid extends StatelessWidget {
         AppStrings.createSecureHint.tr(),
       ),
       (
-        const AppIcon(
-          AppAssets.flashFilled,
-          color: AppColors.accentOrange,
-          size: 18,
-        ),
+        const AppIcon(AppAssets.flash, color: AppColors.accentOrange, size: 18),
         AppStrings.quickSetup.tr(),
         AppStrings.createQuickHint.tr(),
       ),
       (
-        const Icon(
-          Icons.person_outline,
-          size: 18,
-          color: AppColors.accentOrange,
-        ),
+        const AppIcon(AppAssets.personIcon, color: AppColors.accentOrange, size: 18),
         AppStrings.personalized.tr(),
         AppStrings.createPersonalizedHint.tr(),
       ),
@@ -313,10 +262,7 @@ class _FeatureGrid extends StatelessWidget {
                   width: 36,
                   height: 36,
                   alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: AppColors.peach,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: const BoxDecoration(color: AppColors.peach, shape: BoxShape.circle),
                   child: item.$1,
                 ),
                 const SizedBox(height: 8),

@@ -2,6 +2,7 @@ import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTextField extends StatelessWidget {
   const AppTextField({
@@ -20,6 +21,11 @@ class AppTextField extends StatelessWidget {
     this.hintColor,
     this.borderColor,
     this.onChanged,
+    this.validator,
+    this.autovalidateMode,
+    this.inputFormatters,
+    this.maxLength,
+    this.textInputAction,
   });
 
   final TextEditingController? controller;
@@ -36,12 +42,21 @@ class AppTextField extends StatelessWidget {
   final Color? hintColor;
   final Color? borderColor;
   final ValueChanged<String>? onChanged;
+  final FormFieldValidator<String>? validator;
+  final AutovalidateMode? autovalidateMode;
+  final List<TextInputFormatter>? inputFormatters;
+  final int? maxLength;
+  final TextInputAction? textInputAction;
 
   @override
   Widget build(BuildContext context) {
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: borderColor ?? AppColors.textFieldBorder),
+    );
+    final errorBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.destructive),
     );
 
     Widget? prefixIcon = prefix;
@@ -51,12 +66,12 @@ class AppTextField extends StatelessWidget {
         child: AppIcon(
           prefixAsset!,
           size: 22,
-          color: prefixIconColor ?? const Color(0xFF000000),
+          color: prefixIconColor ?? AppColors.black,
         ),
       );
     }
 
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
@@ -64,16 +79,22 @@ class AppTextField extends StatelessWidget {
       readOnly: readOnly,
       onTap: onTap,
       onChanged: onChanged,
+      validator: validator,
+      autovalidateMode: autovalidateMode,
+      inputFormatters: inputFormatters,
+      maxLength: maxLength,
+      textInputAction: textInputAction,
       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       style: AppTextStyles.style(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF000000),
+        color: AppColors.black,
       ),
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
         fillColor: AppColors.white,
+        counterText: '',
         hintStyle: AppTextStyles.style(
           fontSize: 14,
           fontWeight: FontWeight.w500,
@@ -94,6 +115,15 @@ class AppTextField extends StatelessWidget {
             color: borderColor ?? AppColors.textFieldBorder,
             width: 1.5,
           ),
+        ),
+        errorBorder: errorBorder,
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.destructive, width: 1.5),
+        ),
+        errorStyle: AppTextStyles.style(
+          fontSize: 12,
+          color: AppColors.destructive,
         ),
       ),
     );
