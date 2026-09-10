@@ -37,7 +37,18 @@ class KycOverviewScreen extends StatelessWidget {
                   SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                      child: Column(
+                      child: RefreshIndicator(
+                        onRefresh: provider.load,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
+                                child: IntrinsicHeight(
+                                  child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppBackHeader(
@@ -159,6 +170,12 @@ class KycOverviewScreen extends StatelessWidget {
                             ),
                           ),
                         ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
