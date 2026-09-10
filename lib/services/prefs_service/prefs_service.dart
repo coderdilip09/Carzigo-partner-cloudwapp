@@ -13,6 +13,7 @@ class PrefsService {
 
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
+  static const String _fcmTokenKey = 'fcm_token';
 
   SharedPreferences? _prefs;
 
@@ -75,6 +76,16 @@ class PrefsService {
       return;
     }
     await saveUser(UserDataModel(isProfileComplete: auth.needsProfile != true));
+  }
+
+  Future<void> saveFcmToken(String token) async {
+    final sp = await _sp();
+    await sp.setString(_fcmTokenKey, token);
+  }
+
+  Future<String?> getFcmToken() async {
+    final sp = await _sp();
+    return sp.getString(_fcmTokenKey);
   }
 
   Future<void> clear() async {

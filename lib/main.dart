@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:carzigo_partner/screens/splash/splash_screen.dart';
+import 'package:carzigo_partner/services/firebase_service/firebase_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/theme/app_theme.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -10,14 +13,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  runApp(
-    EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('hi')],
-      path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
-      useOnlyLangCode: true,
-      child: const MainApp(),
+  await FirebaseService().init();
+  runZonedGuarded(
+    () => runApp(
+      EasyLocalization(
+        supportedLocales: const [Locale('en'), Locale('hi')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('en'),
+        useOnlyLangCode: true,
+        child: const MainApp(),
+      ),
     ),
+    (error, stack) => FirebaseService().recordError(error, stack, fatal: true),
   );
 }
 

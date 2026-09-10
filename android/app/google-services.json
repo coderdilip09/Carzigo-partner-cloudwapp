@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "585836666621",
+    "project_id": "carzigo-partner",
+    "storage_bucket": "carzigo-partner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:585836666621:android:1dcf4ca1cd5685fc1ba894",
+        "android_client_info": {
+          "package_name": "com.cw.carzigopartner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQnCG1SVy_4eYT28s5oHtftu6LKLAmHmU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

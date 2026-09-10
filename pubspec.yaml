@@ -23,6 +23,10 @@ dependencies:
   fluttertoast: ^10.0.0
   flutter_html: ^3.0.0
   http: ^1.5.0
+  firebase_core: ^4.14.0
+  firebase_messaging: ^16.6.0
+  firebase_crashlytics: ^5.3.0
+  flutter_local_notifications: ^22.3.0
 
 # flutter_html 3.0.0 still calls html's internal qs.matches(),
 # which was removed in html 0.15.7.

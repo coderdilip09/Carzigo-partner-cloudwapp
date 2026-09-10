@@ -1,6 +1,7 @@
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_logo.dart';
 import 'package:carzigo_partner/services/auth_route_service/auth_route_service.dart';
+import 'package:carzigo_partner/services/firebase_service/firebase_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
@@ -32,12 +33,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (AppNavigation.isReady) {
       AppNavigation.offAll(next);
-      return;
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => next),
+        (_) => false,
+      );
     }
 
-    Navigator.of(
-      context,
-    ).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => next), (_) => false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FirebaseService().openPendingNotification();
+    });
   }
 
   Future<Widget> _nextScreen() => AuthRouteService.resolveStart();
