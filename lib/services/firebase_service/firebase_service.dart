@@ -37,24 +37,34 @@ class FirebaseService {
   bool _pendingNotificationOpen = false;
 
   Future<void> init() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    await _initCrashlytics();
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    await _initPush();
+    try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      }
+      await _initCrashlytics();
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+      await _initPush();
+    } catch (e, st) {
+      debugPrint('FirebaseService.init failed: $e\n$st');
+    }
   }
 
   Future<void> _initCrashlytics() async {
-    final enabled = !kDebugMode;
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(enabled);
-    if (!enabled) return;
+    try {
+      final enabled = !kDebugMode;
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(enabled);
+      if (!enabled) return;
 
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
+      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+    } catch (e, st) {
+      debugPrint('FirebaseService crashlytics init failed: $e\n$st');
+    }
   }
 
   void recordError(Object error, StackTrace stack, {bool fatal = false}) {
