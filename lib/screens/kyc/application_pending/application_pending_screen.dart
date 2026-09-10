@@ -30,52 +30,70 @@ class ApplicationPendingScreen extends StatelessWidget {
               backgroundColor: AppColors.background,
               body: AppBg(
                 child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () => showLogoutDialog(context),
-                            child: Text(
-                              AppStrings.logout.tr(),
-                              style: AppTextStyles.style(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                              ).copyWith(decorationColor: AppColors.primary),
+                  child: RefreshIndicator(
+                    onRefresh: provider.tapOnCheckStatus,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(20),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight - 40,
+                            ),
+                            child: IntrinsicHeight(
+                              child: Column(
+                                children: [
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: () =>
+                                          showLogoutDialog(context),
+                                      child: Text(
+                                        AppStrings.logout.tr(),
+                                        style: AppTextStyles.style(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.underline,
+                                        ).copyWith(
+                                          decorationColor: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 60),
+                                  const AppIcon(AppAssets.carTime, size: 120),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    AppStrings.applicationSubmitted.tr(),
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.style(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    AppStrings.applicationPendingBody.tr(),
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.style(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  AppSolidButton(
+                                    label: AppStrings.checkStatus.tr(),
+                                    onTap: provider.tapOnCheckStatus,
+                                    isLoading: provider.isLoading,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 60),
-                        const AppIcon(AppAssets.carTime, size: 120),
-                        const SizedBox(height: 24),
-                        Text(
-                          AppStrings.applicationSubmitted.tr(),
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.style(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          AppStrings.applicationPendingBody.tr(),
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.style(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            height: 1.5,
-                          ),
-                        ),
-                        const Spacer(),
-                        AppSolidButton(
-                          label: AppStrings.checkStatus.tr(),
-                          onTap: provider.tapOnCheckStatus,
-                          isLoading: provider.isLoading,
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 ),

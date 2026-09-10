@@ -73,7 +73,10 @@ class ProfileScreen extends StatelessWidget {
       child: Consumer<ProfileProvider>(
         builder: (context, provider, _) {
           return SafeArea(
-            child: SingleChildScrollView(
+            child: RefreshIndicator(
+              onRefresh: provider.loadProfile,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(16, 16, 16, showBottomNav ? 80 : 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,6 +276,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
             ),
           );
         },

@@ -26,7 +26,10 @@ class KycReviewScreen extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: SingleChildScrollView(
+                child: RefreshIndicator(
+                  onRefresh: provider.load,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,6 +92,7 @@ class KycReviewScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
                 ),
               ),
             ),

@@ -34,41 +34,65 @@ class ReferredCustomersScreen extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      child: provider.isLoading
-                          ? const Center(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: AppColors.primary,
+                      child: RefreshIndicator(
+                        onRefresh: provider.load,
+                        child: provider.isLoading && provider.customers.isEmpty
+                            ? ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                children: const [
+                                  SizedBox(height: 120),
+                                  Center(
+                                    child: SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : provider.customers.isEmpty
+                            ? ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                children: [
+                                  SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height * 0.4,
+                                    child: Center(
+                                      child: Text(
+                                        AppStrings.noData.tr(),
+                                        style: AppTextStyles.style(
+                                          color: AppColors.textSecondary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  8,
+                                  16,
+                                  20,
                                 ),
+                                itemCount: provider.customers.length,
+                                itemBuilder: (context, index) {
+                                  final c = provider.customers[index];
+                                  return ReferredCustomerCard(
+                                    initials: c.displayInitials,
+                                    name: c.displayName,
+                                    phone: c.displayPhone,
+                                    status: c.displayStatus,
+                                    amount: c.amount ?? provider.rewardLabel,
+                                  );
+                                },
                               ),
-                            )
-                          : provider.customers.isEmpty
-                          ? Center(
-                              child: Text(
-                                AppStrings.noData.tr(),
-                                style: AppTextStyles.style(
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-                              itemCount: provider.customers.length,
-                              itemBuilder: (context, index) {
-                                final c = provider.customers[index];
-                                return ReferredCustomerCard(
-                                  initials: c.displayInitials,
-                                  name: c.displayName,
-                                  phone: c.displayPhone,
-                                  status: c.displayStatus,
-                                  amount: c.amount ?? provider.rewardLabel,
-                                );
-                              },
-                            ),
+                      ),
                     ),
                   ],
                 ),

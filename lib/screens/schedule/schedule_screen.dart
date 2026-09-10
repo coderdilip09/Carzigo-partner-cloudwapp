@@ -57,7 +57,10 @@ class ScheduleScreen extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                SingleChildScrollView(
+                RefreshIndicator(
+                  onRefresh: provider.load,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(16, 16, 16, showBottomNav ? 80 : 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,6 +210,7 @@ class ScheduleScreen extends StatelessWidget {
                 ],
               ),
             ),
+                ),
                 if (provider.isLoading)
                   const Positioned.fill(
                     child: AbsorbPointer(
