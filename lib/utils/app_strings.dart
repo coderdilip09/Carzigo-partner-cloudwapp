@@ -9,6 +9,8 @@ class AppStrings {
   static const String selectLanguage = 'select_language';
   static const String languageEn = 'language_en';
   static const String languageHi = 'language_hi';
+  static const String languageEnglish = 'language_english';
+  static const String languageSubtitle = 'language_subtitle';
 
   static const String heyWelcomeBack = 'hey_welcome_back';
   static const String signInToContinue = 'sign_in_to_continue';
@@ -101,6 +103,7 @@ class AppStrings {
   static const String viewAll = 'view_all';
   static const String performanceSummary = 'performance_summary';
   static const String thisMonth = 'this_month';
+  static const String thisWeek = 'this_week';
   static const String upcoming = 'upcoming';
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';

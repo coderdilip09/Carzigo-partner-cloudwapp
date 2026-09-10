@@ -15,11 +15,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class IdentityProofProvider extends BaseProvider {
-  IdentityProofProvider({this.loadSaved = false}) {
+  IdentityProofProvider({
+    this.loadSaved = false,
+    this.editOnly = false,
+  }) {
     if (loadSaved) loadSavedData();
   }
 
   final bool loadSaved;
+
+  /// Profile Documents / Review edit: save then pop back (no Address next).
+  final bool editOnly;
   final formKey = GlobalKey<FormState>();
   final numberController = TextEditingController();
 
@@ -145,8 +151,12 @@ class IdentityProofProvider extends BaseProvider {
     return number != _savedNumber;
   }
 
-  void _goToAddress() {
+  void _finishSuccess() {
     KycStatus.markIdentityDone();
+    if (editOnly) {
+      AppNavigation.back();
+      return;
+    }
     AppNavigation.to(const AddressProofScreen(loadSaved: true));
   }
 
@@ -159,7 +169,7 @@ class IdentityProofProvider extends BaseProvider {
     if (!_validate()) return;
 
     if (!_hasChanges()) {
-      _goToAddress();
+      _finishSuccess();
       return;
     }
 
@@ -194,7 +204,7 @@ class IdentityProofProvider extends BaseProvider {
       }
 
       AppToast.success(res.message ?? AppStrings.profileCompleted.tr());
-      _goToAddress();
+      _finishSuccess();
     } catch (e, st) {
       debugPrint('Identity KYC failed: $e\n$st');
       AppToast.error(AppStrings.requestFailed.tr());

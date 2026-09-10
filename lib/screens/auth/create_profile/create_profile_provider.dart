@@ -102,7 +102,7 @@ class CreateProfileProvider extends BaseProvider {
       await PrefsService().saveUser(profileRes.data!);
       KycStatus.markProfilePhotoDone();
       AppToast.success(profileRes.message ?? AppStrings.profileCompleted.tr());
-      AppNavigation.to(const KycOverviewScreen());
+      AppNavigation.offAll(const KycOverviewScreen());
     } catch (e, st) {
       debugPrint('Create profile failed: $e\n$st');
       AppToast.error(AppStrings.requestFailed.tr());

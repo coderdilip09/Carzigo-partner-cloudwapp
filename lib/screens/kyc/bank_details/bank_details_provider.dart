@@ -15,11 +15,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class BankDetailsProvider extends BaseProvider {
-  BankDetailsProvider({this.loadSaved = false}) {
+  BankDetailsProvider({
+    this.loadSaved = false,
+    this.editOnly = false,
+  }) {
     if (loadSaved) loadSavedData();
   }
 
   final bool loadSaved;
+
+  /// Profile Documents / Review edit: save then pop back (no Review next).
+  final bool editOnly;
   final formKey = GlobalKey<FormState>();
   final holderNameController = TextEditingController();
   final bankNameController = TextEditingController();
@@ -146,8 +152,7 @@ class BankDetailsProvider extends BaseProvider {
     }
 
     if (!_hasChanges()) {
-      KycStatus.markBankDone();
-      AppNavigation.to(const KycReviewScreen());
+      _finishSuccess();
       return;
     }
 
@@ -184,9 +189,8 @@ class BankDetailsProvider extends BaseProvider {
         return;
       }
 
-      KycStatus.markBankDone();
       AppToast.success(res.message ?? AppStrings.profileCompleted.tr());
-      AppNavigation.to(const KycReviewScreen());
+      _finishSuccess();
     } catch (e, st) {
       debugPrint('Bank KYC failed: $e\n$st');
       AppToast.error(AppStrings.requestFailed.tr());
@@ -194,6 +198,15 @@ class BankDetailsProvider extends BaseProvider {
       isLoading = false;
       safeNotifyListeners();
     }
+  }
+
+  void _finishSuccess() {
+    KycStatus.markBankDone();
+    if (editOnly) {
+      AppNavigation.back();
+      return;
+    }
+    AppNavigation.to(const KycReviewScreen());
   }
 
   @override

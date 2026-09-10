@@ -97,17 +97,23 @@ class KycReviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnEditIdentity() async {
-    await AppNavigation.to(const IdentityProofScreen(loadSaved: true));
+    await AppNavigation.to(
+      const IdentityProofScreen(loadSaved: true, editOnly: true),
+    );
     await load();
   }
 
   Future<void> tapOnEditAddress() async {
-    await AppNavigation.to(const AddressProofScreen(loadSaved: true));
+    await AppNavigation.to(
+      const AddressProofScreen(loadSaved: true, editOnly: true),
+    );
     await load();
   }
 
   Future<void> tapOnEditBank() async {
-    await AppNavigation.to(const BankDetailsScreen(loadSaved: true));
+    await AppNavigation.to(
+      const BankDetailsScreen(loadSaved: true, editOnly: true),
+    );
     await load();
   }
 }

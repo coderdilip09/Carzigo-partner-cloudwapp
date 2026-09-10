@@ -5,6 +5,7 @@ import 'package:carzigo_partner/models/user_data_model.dart';
 import 'package:carzigo_partner/screens/profile/documents/documents_screen.dart';
 import 'package:carzigo_partner/screens/profile/edit_profile/edit_profile_screen.dart';
 import 'package:carzigo_partner/screens/profile/help_support/help_support_screen.dart';
+// import 'package:carzigo_partner/screens/profile/language/language_screen.dart';
 import 'package:carzigo_partner/screens/profile/privacy/privacy_screen.dart';
 import 'package:carzigo_partner/screens/profile/terms/terms_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
@@ -53,6 +54,7 @@ class ProfileProvider extends BaseProvider {
 
   void tapOnDocuments() => AppNavigation.to(const DocumentsScreen());
   void tapOnHelp() => AppNavigation.to(const HelpSupportScreen());
+  // void tapOnLanguage() => AppNavigation.to(const LanguageScreen());
   void tapOnTerms() => AppNavigation.to(const TermsScreen());
   void tapOnPrivacy() => AppNavigation.to(const PrivacyScreen());
 }
@@ -64,6 +66,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Rebuild profile labels when locale changes.
+    context.locale;
     return ChangeNotifierProvider(
       create: (_) => ProfileProvider(),
       child: Consumer<ProfileProvider>(
@@ -222,17 +226,18 @@ class ProfileScreen extends StatelessWidget {
                     onTap: provider.tapOnMyProfile,
                   ),
                   _MenuTile(
-                    iconAsset: AppAssets.location,
-                    title: AppStrings.savedAddresses.tr(),
-                    subtitle: AppStrings.savedAddressesSubtitle.tr(),
-                    onTap: () {},
-                  ),
-                  _MenuTile(
                     iconAsset: AppAssets.headset,
                     title: AppStrings.helpSupport.tr(),
                     subtitle: AppStrings.helpSupportSubtitle.tr(),
                     onTap: provider.tapOnHelp,
                   ),
+                  // Language (temporarily disabled)
+                  // _MenuTile(
+                  //   leadingIcon: Icons.translate,
+                  //   title: AppStrings.selectLanguage.tr(),
+                  //   subtitle: AppStrings.languageSubtitle.tr(),
+                  //   onTap: provider.tapOnLanguage,
+                  // ),
                   _MenuTile(
                     iconAsset: AppAssets.termsCondition,
                     title: AppStrings.termsConditions.tr(),
@@ -278,14 +283,16 @@ class ProfileScreen extends StatelessWidget {
 
 class _MenuTile extends StatelessWidget {
   const _MenuTile({
-    required this.iconAsset,
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.iconAsset,
+    this.leadingIcon,
     this.isDestructive = false,
-  });
+  }) : assert(iconAsset != null || leadingIcon != null);
 
-  final String iconAsset;
+  final String? iconAsset;
+  final IconData? leadingIcon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
@@ -325,7 +332,9 @@ class _MenuTile extends StatelessWidget {
                 color: isDestructive ? AppColors.white : AppColors.peach,
                 shape: BoxShape.circle,
               ),
-              child: AppIcon(iconAsset, color: iconColor, size: 20),
+              child: leadingIcon != null
+                  ? Icon(leadingIcon, color: iconColor, size: 20)
+                  : AppIcon(iconAsset!, color: iconColor, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(

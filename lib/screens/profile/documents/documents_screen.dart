@@ -3,24 +3,22 @@ import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
-import 'package:carzigo_partner/screens/kyc/address_proof/address_proof_screen.dart';
-import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
-import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_screen.dart';
-import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
+import 'package:carzigo_partner/screens/profile/documents/documents_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
-import 'package:carzigo_partner/utils/mock_data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void _showDocumentPreview(
   BuildContext context, {
   required String title,
   required String line1,
   required String line2,
-  required String previewAsset,
+  String? previewUrl,
+  required String fallbackAsset,
 }) {
   showDialog<void>(
     context: context,
@@ -67,14 +65,12 @@ void _showDocumentPreview(
               ),
               clipBehavior: Clip.antiAlias,
               alignment: Alignment.center,
-              child: previewAsset == AppAssets.docProof
-                  ? const SizedBox.expand(
-                      child: AppImageView(
-                        AppAssets.docProof,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : AppIcon(previewAsset, size: 88, color: AppColors.primary),
+              child: _DocImage(
+                url: previewUrl,
+                fallbackAsset: fallbackAsset,
+                fit: BoxFit.cover,
+                iconSize: 88,
+              ),
             ),
             const SizedBox(height: 14),
             Text(
@@ -129,90 +125,135 @@ class DocumentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AppBg(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppBackHeader(title: AppStrings.documents.tr()),
-                Text(
-                  AppStrings.documentsSubtitle.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        _DocCard(
-                          iconAsset: AppAssets.badge,
-                          title: AppStrings.identityProof.tr(),
-                          line1: AppStrings.aadhaarCard.tr(),
-                          line2: MockData.aadhaarMasked,
-                          previewAsset: AppAssets.docProof,
-                          showStackedPreview: true,
-                          onEdit: () => AppNavigation.to(
-                            const IdentityProofScreen(loadSaved: true),
-                          ),
-                        ),
-                        _DocCard(
-                          iconAsset: AppAssets.location,
-                          title: AppStrings.addressProof.tr(),
-                          line1: AppStrings.aadhaarCard.tr(),
-                          line2: MockData.aadhaarMasked,
-                          previewAsset: AppAssets.docProof,
-                          showStackedPreview: true,
-                          onEdit: () => AppNavigation.to(
-                            const AddressProofScreen(loadSaved: true),
-                          ),
-                        ),
-                        _DocCard(
-                          iconAsset: AppAssets.bank,
-                          title: AppStrings.bankDetails.tr(),
-                          line1: AppStrings.mockBankName.tr(),
-                          line2: AppStrings.mockBankAccountMasked.tr(),
-                          previewAsset: AppAssets.bank,
-                          showStackedPreview: false,
-                          onEdit: () => AppNavigation.to(
-                            const BankDetailsScreen(loadSaved: true),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                AppSolidButton(
-                  label: AppStrings.submitForVerification.tr(),
-                  onTap: () {},
-                ),
-                const SizedBox(height: 12),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+    return ChangeNotifierProvider(
+      create: (_) => DocumentsProvider(),
+      child: Consumer<DocumentsProvider>(
+        builder: (context, provider, _) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: AppBg(
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppIcon(AppAssets.lock, size: 14, color: AppColors.black),
-                      const SizedBox(width: 4),
+                      AppBackHeader(title: AppStrings.documents.tr()),
                       Text(
-                        AppStrings.documentsSafe.tr(),
+                        AppStrings.documentsSubtitle.tr(),
                         style: AppTextStyles.style(
-                          fontSize: 11,
+                          fontSize: 13,
                           color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(
+                        child: provider.isLoading && provider.review == null
+                            ? const Center(child: CircularProgressIndicator())
+                            : !provider.hasAnyDocument
+                            ? Center(
+                                child: Text(
+                                  AppStrings.noData.tr(),
+                                  style: AppTextStyles.style(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              )
+                            : RefreshIndicator(
+                                onRefresh: provider.load,
+                                child: SingleChildScrollView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  child: Column(
+                                    children: [
+                                      if (provider.hasIdentity)
+                                        _DocCard(
+                                          iconAsset: AppAssets.badge,
+                                          title: AppStrings.identityProof.tr(),
+                                          line1: provider.identityDocLabel,
+                                          line2: provider.identityMasked,
+                                          previewUrl:
+                                              provider.identityPreviewUrl,
+                                          fallbackAsset: AppAssets.docProof,
+                                          showStackedPreview: true,
+                                          isVerified: provider.hasIdentity,
+                                          statusLabel: provider.statusLabel(
+                                            provider.hasIdentity,
+                                          ),
+                                          onEdit: provider.tapOnEditIdentity,
+                                        ),
+                                      if (provider.hasAddress)
+                                        _DocCard(
+                                          iconAsset: AppAssets.location,
+                                          title: AppStrings.addressProof.tr(),
+                                          line1: provider.addressDocLabel,
+                                          line2: provider.addressMasked,
+                                          previewUrl:
+                                              provider.addressPreviewUrl,
+                                          fallbackAsset: AppAssets.docProof,
+                                          showStackedPreview: true,
+                                          isVerified: provider.hasAddress,
+                                          statusLabel: provider.statusLabel(
+                                            provider.hasAddress,
+                                          ),
+                                          onEdit: provider.tapOnEditAddress,
+                                        ),
+                                      if (provider.hasBank)
+                                        _DocCard(
+                                          iconAsset: AppAssets.bank,
+                                          title: AppStrings.bankDetails.tr(),
+                                          line1: provider.bankName,
+                                          line2: provider.bankMasked,
+                                          previewUrl: provider.bankPreviewUrl,
+                                          fallbackAsset: AppAssets.bank,
+                                          showStackedPreview: false,
+                                          isVerified: provider.hasBank,
+                                          statusLabel: provider.statusLabel(
+                                            provider.hasBank,
+                                          ),
+                                          onEdit: provider.tapOnEditBank,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                      ),
+                      if (provider.canSubmit) ...[
+                        AppSolidButton(
+                          label: AppStrings.submitForVerification.tr(),
+                          onTap: provider.tapOnSubmit,
+                          isLoading: provider.isSubmitting,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AppIcon(
+                              AppAssets.lock,
+                              size: 14,
+                              color: AppColors.black,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              AppStrings.documentsSafe.tr(),
+                              style: AppTextStyles.style(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -224,8 +265,11 @@ class _DocCard extends StatelessWidget {
     required this.title,
     required this.line1,
     required this.line2,
-    required this.previewAsset,
+    required this.fallbackAsset,
     required this.onEdit,
+    required this.isVerified,
+    required this.statusLabel,
+    this.previewUrl,
     this.showStackedPreview = false,
   });
 
@@ -233,8 +277,11 @@ class _DocCard extends StatelessWidget {
   final String title;
   final String line1;
   final String line2;
-  final String previewAsset;
+  final String? previewUrl;
+  final String fallbackAsset;
   final bool showStackedPreview;
+  final bool isVerified;
+  final String statusLabel;
   final VoidCallback onEdit;
 
   void _onView(BuildContext context) {
@@ -243,7 +290,8 @@ class _DocCard extends StatelessWidget {
       title: title,
       line1: line1,
       line2: line2,
-      previewAsset: previewAsset,
+      previewUrl: previewUrl,
+      fallbackAsset: fallbackAsset,
     );
   }
 
@@ -350,7 +398,8 @@ class _DocCard extends StatelessWidget {
                 onTap: () => _onView(context),
                 behavior: HitTestBehavior.opaque,
                 child: _DocPreview(
-                  asset: previewAsset,
+                  url: previewUrl,
+                  asset: fallbackAsset,
                   stacked: showStackedPreview,
                 ),
               ),
@@ -369,13 +418,15 @@ class _DocCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AppIcon(
-                      AppAssets.shieldFilled,
+                      isVerified
+                          ? AppAssets.shieldFilled
+                          : AppAssets.kycPending,
                       size: 14,
                       color: AppColors.accentOrange,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      AppStrings.verified.tr(),
+                      statusLabel,
                       style: AppTextStyles.style(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
@@ -416,9 +467,74 @@ class _DocCard extends StatelessWidget {
   }
 }
 
-class _DocPreview extends StatelessWidget {
-  const _DocPreview({required this.asset, required this.stacked});
+class _DocImage extends StatelessWidget {
+  const _DocImage({
+    required this.fallbackAsset,
+    this.url,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.iconSize = 20,
+  });
 
+  final String? url;
+  final String fallbackAsset;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final double iconSize;
+
+  bool get _isNetwork {
+    final value = url?.trim() ?? '';
+    return value.startsWith('http://') || value.startsWith('https://');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isNetwork) {
+      return Image.network(
+        url!.trim(),
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (_, error, stackTrace) =>
+            _Fallback(asset: fallbackAsset, size: iconSize),
+      );
+    }
+    if (fallbackAsset == AppAssets.docProof) {
+      return AppImageView(
+        fallbackAsset,
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
+    return _Fallback(asset: fallbackAsset, size: iconSize);
+  }
+}
+
+class _Fallback extends StatelessWidget {
+  const _Fallback({required this.asset, required this.size});
+
+  final String asset;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: AppIcon(asset, size: size, color: AppColors.primary),
+    );
+  }
+}
+
+class _DocPreview extends StatelessWidget {
+  const _DocPreview({
+    required this.asset,
+    required this.stacked,
+    this.url,
+  });
+
+  final String? url;
   final String asset;
   final bool stacked;
 
@@ -448,11 +564,13 @@ class _DocPreview extends StatelessWidget {
             ],
           ),
           clipBehavior: Clip.antiAlias,
-          child: const AppImageView(
-            AppAssets.docProof,
+          child: _DocImage(
+            url: url,
+            fallbackAsset: AppAssets.docProof,
             width: 34,
             height: 42,
             fit: BoxFit.cover,
+            iconSize: 16,
           ),
         ),
       ),
@@ -469,8 +587,16 @@ class _DocPreview extends StatelessWidget {
           color: AppColors.peachLight,
           borderRadius: BorderRadius.circular(8),
         ),
+        clipBehavior: Clip.antiAlias,
         alignment: Alignment.center,
-        child: AppIcon(asset, size: 20, color: AppColors.textMuted),
+        child: _DocImage(
+          url: url,
+          fallbackAsset: asset,
+          width: 42,
+          height: 42,
+          fit: BoxFit.cover,
+          iconSize: 20,
+        ),
       );
     }
 

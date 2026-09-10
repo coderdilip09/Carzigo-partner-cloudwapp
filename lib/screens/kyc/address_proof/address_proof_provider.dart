@@ -15,11 +15,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddressProofProvider extends BaseProvider {
-  AddressProofProvider({this.loadSaved = false}) {
+  AddressProofProvider({
+    this.loadSaved = false,
+    this.editOnly = false,
+  }) {
     if (loadSaved) loadSavedData();
   }
 
   final bool loadSaved;
+
+  /// Profile Documents / Review edit: save then pop back (no Bank next).
+  final bool editOnly;
   final formKey = GlobalKey<FormState>();
   final numberController = TextEditingController();
 
@@ -117,8 +123,12 @@ class AddressProofProvider extends BaseProvider {
     return number != _savedNumber;
   }
 
-  void _goToBank() {
+  void _finishSuccess() {
     KycStatus.markAddressDone();
+    if (editOnly) {
+      AppNavigation.back();
+      return;
+    }
     AppNavigation.to(const BankDetailsScreen(loadSaved: true));
   }
 
@@ -131,7 +141,7 @@ class AddressProofProvider extends BaseProvider {
     if (!_validate()) return;
 
     if (!_hasChanges()) {
-      _goToBank();
+      _finishSuccess();
       return;
     }
 
@@ -167,7 +177,7 @@ class AddressProofProvider extends BaseProvider {
       }
 
       AppToast.success(res.message ?? AppStrings.profileCompleted.tr());
-      _goToBank();
+      _finishSuccess();
     } catch (e, st) {
       debugPrint('Address KYC failed: $e\n$st');
       AppToast.error(AppStrings.requestFailed.tr());

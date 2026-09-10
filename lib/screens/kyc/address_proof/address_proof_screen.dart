@@ -18,9 +18,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class AddressProofScreen extends StatelessWidget {
-  const AddressProofScreen({super.key, this.loadSaved = false});
+  const AddressProofScreen({
+    super.key,
+    this.loadSaved = false,
+    this.editOnly = false,
+  });
 
   final bool loadSaved;
+  final bool editOnly;
 
   static const _docIcons = [
     AppAssets.aadhaar,
@@ -31,7 +36,10 @@ class AddressProofScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => AddressProofProvider(loadSaved: loadSaved),
+      create: (_) => AddressProofProvider(
+        loadSaved: loadSaved,
+        editOnly: editOnly,
+      ),
       child: Consumer<AddressProofProvider>(
         builder: (context, provider, _) {
           return Scaffold(
@@ -51,8 +59,10 @@ class AddressProofScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppBackHeader(title: AppStrings.addressProof.tr()),
-                        const SizedBox(height: 16),
-                        const AppKycStepper(currentStep: KycStep.address),
+                        if (!editOnly) ...[
+                          const SizedBox(height: 16),
+                          const AppKycStepper(currentStep: KycStep.address),
+                        ],
                         const SizedBox(height: 24),
                         Text(
                           AppStrings.selectDocumentType.tr(),

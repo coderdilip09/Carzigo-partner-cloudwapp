@@ -144,30 +144,53 @@ class ReferEarnScreen extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Text(
-                        AppStrings.thisMonth.tr(),
-                        style: AppTextStyles.style(
-                          color: AppColors.accentOrange,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                      PopupMenuButton<ReferralSummaryPeriod>(
+                        padding: EdgeInsets.zero,
+                        offset: const Offset(0, 28),
+                        color: AppColors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 16,
-                        height: 16,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.accentOrange,
-                            width: 1,
+                        onSelected: provider.setSummaryPeriod,
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: ReferralSummaryPeriod.month,
+                            child: Text(AppStrings.thisMonth.tr()),
                           ),
-                        ),
-                        alignment: Alignment.center,
-                        child: AppIcon(
-                          AppAssets.chevronDown,
-                          size: 10,
-                          color: AppColors.accentOrange,
+                          PopupMenuItem(
+                            value: ReferralSummaryPeriod.week,
+                            child: Text(AppStrings.thisWeek.tr()),
+                          ),
+                        ],
+                        child: Row(
+                          children: [
+                            Text(
+                              provider.summaryPeriodLabel.tr(),
+                              style: AppTextStyles.style(
+                                color: AppColors.accentOrange,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.accentOrange,
+                                  width: 1,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: AppIcon(
+                                AppAssets.chevronDown,
+                                size: 10,
+                                color: AppColors.accentOrange,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -381,7 +404,7 @@ class ReferEarnScreen extends StatelessWidget {
                       ),
                     )
                   else
-                    ...provider.customers.map(
+                    ...provider.previewCustomers.map(
                       (c) => ReferredCustomerCard(
                         initials: c.displayInitials,
                         name: c.displayName,

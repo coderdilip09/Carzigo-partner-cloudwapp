@@ -35,49 +35,51 @@ class LoginScreen extends StatelessWidget {
                   right: false,
                   child: Column(
                     children: [
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 16, top: 4),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                final next = context.locale.languageCode == 'en'
-                                    ? const Locale('hi')
-                                    : const Locale('en');
-                                context.setLocale(next);
-                              },
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: AppColors.border),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.translate, size: 16, color: AppColors.primary),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      context.locale.languageCode == 'en'
-                                          ? AppStrings.languageEn.tr()
-                                          : AppStrings.languageHi.tr(),
-                                      style: AppTextStyles.style(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Language toggle (temporarily disabled)
+                      // Align(
+                      //   alignment: Alignment.centerRight,
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.only(right: 16, top: 4),
+                      //     child: Material(
+                      //       color: Colors.transparent,
+                      //       child: InkWell(
+                      //         onTap: () {
+                      //           final next = context.locale.languageCode == 'en'
+                      //               ? const Locale('hi')
+                      //               : const Locale('en');
+                      //           context.setLocale(next);
+                      //         },
+                      //         borderRadius: BorderRadius.circular(20),
+                      //         child: Container(
+                      //           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      //           decoration: BoxDecoration(
+                      //             color: AppColors.white,
+                      //             borderRadius: BorderRadius.circular(20),
+                      //             border: Border.all(color: AppColors.border),
+                      //           ),
+                      //           child: Row(
+                      //             mainAxisSize: MainAxisSize.min,
+                      //             children: [
+                      //               const Icon(Icons.translate, size: 16, color: AppColors.primary),
+                      //               const SizedBox(width: 4),
+                      //               Text(
+                      //                 context.locale.languageCode == 'en'
+                      //                     ? AppStrings.languageEn.tr()
+                      //                     : AppStrings.languageHi.tr(),
+                      //                 style: AppTextStyles.style(
+                      //                   color: AppColors.primary,
+                      //                   fontWeight: FontWeight.w600,
+                      //                   fontSize: 12,
+                      //                 ),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      const SizedBox(height: 25),
                       Expanded(
                         child: SingleChildScrollView(
                           child: Column(
@@ -185,26 +187,12 @@ class LoginScreen extends StatelessWidget {
                                           ).firstMatch(legal);
                                           final termsLabel = split == null
                                               ? legal
-<<<<<<< Updated upstream
-                                              : legal
-                                                    .substring(0, split.start)
-                                                    .trim();
-                                          final privacyLabel = split == null
-                                              ? AppStrings.privacyPolicy.tr()
-                                              : legal
-                                                    .substring(split.end)
-                                                    .trim();
-                                          final joiner =
-                                              split?.group(0) ??
-                                              ' ${AppStrings.and.tr()} ';
-=======
                                               : legal.substring(0, split.start).trim();
                                           final privacyLabel = split == null
                                               ? AppStrings.privacyPolicy.tr()
                                               : legal.substring(split.end).trim();
                                           final joiner =
                                               split?.group(0) ?? ' ${AppStrings.and.tr()} ';
->>>>>>> Stashed changes
                                           return RichText(
                                             textAlign: TextAlign.center,
                                             text: TextSpan(
@@ -244,13 +232,7 @@ class LoginScreen extends StatelessWidget {
                                                   ),
                                                   recognizer: TapGestureRecognizer()
                                                     ..onTap = () =>
-<<<<<<< Updated upstream
-                                                        AppNavigation.to(
-                                                          const PrivacyScreen(),
-                                                        ),
-=======
                                                         AppNavigation.to(const PrivacyScreen()),
->>>>>>> Stashed changes
                                                 ),
                                               ],
                                             ),

@@ -18,9 +18,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class IdentityProofScreen extends StatelessWidget {
-  const IdentityProofScreen({super.key, this.loadSaved = false});
+  const IdentityProofScreen({
+    super.key,
+    this.loadSaved = false,
+    this.editOnly = false,
+  });
 
   final bool loadSaved;
+  final bool editOnly;
 
   static const _docIcons = [
     AppAssets.aadhaar,
@@ -31,7 +36,10 @@ class IdentityProofScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => IdentityProofProvider(loadSaved: loadSaved),
+      create: (_) => IdentityProofProvider(
+        loadSaved: loadSaved,
+        editOnly: editOnly,
+      ),
       child: Consumer<IdentityProofProvider>(
         builder: (context, provider, _) {
           return Scaffold(
@@ -51,8 +59,10 @@ class IdentityProofScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppBackHeader(title: AppStrings.identityProof.tr()),
-                        const SizedBox(height: 16),
-                        const AppKycStepper(currentStep: KycStep.identity),
+                        if (!editOnly) ...[
+                          const SizedBox(height: 16),
+                          const AppKycStepper(currentStep: KycStep.identity),
+                        ],
                         const SizedBox(height: 24),
                         Text(
                           AppStrings.selectDocumentType.tr(),

@@ -98,6 +98,7 @@ class ReferralDataModel {
     this.rewardAmount,
     this.howItWorks = const [],
     this.stats,
+    this.weekStats,
     this.customers = const [],
   });
 
@@ -106,6 +107,7 @@ class ReferralDataModel {
   final int? rewardAmount;
   final List<ReferralHowItWorksStepModel> howItWorks;
   final ReferralStatsModel? stats;
+  final ReferralStatsModel? weekStats;
   final List<ReferredCustomerDataModel> customers;
 
   String get rewardLabel {
@@ -113,14 +115,11 @@ class ReferralDataModel {
     return '₹$rewardAmount';
   }
 
-  String get totalReferredLabel => _pad(stats?.totalReferred);
-  String get onboardedLabel => _pad(stats?.onboarded);
-  String get completedFirstWashLabel => _pad(stats?.completedFirstWash);
-
-  static String _pad(int? value) => (value ?? 0).toString().padLeft(2, '0');
+  static String pad(int? value) => (value ?? 0).toString().padLeft(2, '0');
 
   factory ReferralDataModel.fromJson(Map<String, dynamic> json) {
-    final statsMap = asMap(json['stats']);
+    final statsMap = asMap(json['stats'] ?? json['month_stats'] ?? json['monthStats']);
+    final weekStatsMap = asMap(json['week_stats'] ?? json['weekStats']);
     final rawCustomers =
         json['referred_customers'] ??
         json['referredCustomers'] ??
@@ -139,6 +138,8 @@ class ReferralDataModel {
         ReferralHowItWorksStepModel.fromJson,
       ),
       stats: statsMap == null ? null : ReferralStatsModel.fromJson(statsMap),
+      weekStats:
+          weekStatsMap == null ? null : ReferralStatsModel.fromJson(weekStatsMap),
       customers: asModelList(rawCustomers, ReferredCustomerDataModel.fromJson),
     );
   }

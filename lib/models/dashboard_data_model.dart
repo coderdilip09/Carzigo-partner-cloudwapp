@@ -70,6 +70,7 @@ class DashboardDataModel {
     this.todayStats,
     this.todaySchedule = const [],
     this.monthStats,
+    this.weekStats,
   });
 
   final DashboardPartnerModel? partner;
@@ -77,6 +78,7 @@ class DashboardDataModel {
   final DashboardTodayStatsModel? todayStats;
   final List<JobDataModel> todaySchedule;
   final DashboardMonthStatsModel? monthStats;
+  final DashboardMonthStatsModel? weekStats;
 
   String? get displayName => partner?.name;
   String? get serviceArea => partner?.serviceArea;
@@ -84,12 +86,15 @@ class DashboardDataModel {
   int get todayInProgress => todayStats?.inProgress ?? 0;
   int get monthCompleted => monthStats?.completed ?? 0;
   double? get monthAvgRating => monthStats?.avgRating;
+  int get weekCompleted => weekStats?.completed ?? 0;
+  double? get weekAvgRating => weekStats?.avgRating;
 
   factory DashboardDataModel.fromJson(Map<String, dynamic> json) {
     final partnerMap = asMap(json['partner']);
     final nextJobMap = asMap(json['next_job'] ?? json['nextJob']);
     final todayStatsMap = asMap(json['today_stats'] ?? json['todayStats']);
     final monthStatsMap = asMap(json['month_stats'] ?? json['monthStats']);
+    final weekStatsMap = asMap(json['week_stats'] ?? json['weekStats']);
     final rawSchedule =
         json['today_schedule'] ??
         json['todaySchedule'] ??
@@ -105,6 +110,7 @@ class DashboardDataModel {
       todayStats: DashboardTodayStatsModel.fromJson(todayStatsMap),
       todaySchedule: asModelList(rawSchedule, JobDataModel.fromJson),
       monthStats: DashboardMonthStatsModel.fromJson(monthStatsMap),
+      weekStats: DashboardMonthStatsModel.fromJson(weekStatsMap),
     );
   }
 }

@@ -20,24 +20,41 @@ class KycAccountStatusDataModel {
   final String? rejectionReason;
   final String? message;
 
+  String? get _approval => approval?.toLowerCase();
+  String? get _partnerStatus => partnerStatus?.toLowerCase();
+  String? get _kycStatus => kycStatus?.toLowerCase();
+
+  /// Partner account approved — only then open Dashboard.
   bool get isApproved =>
-      kycStatus == KycOverallStatus.approved ||
-      approval == KycOverallStatus.approved ||
-      partnerKycStatus == KycOverallStatus.approved ||
-      partnerStatus == KycOverallStatus.approved;
+      _approval == KycOverallStatus.approved ||
+      _partnerStatus == KycOverallStatus.approved ||
+      _partnerStatus == KycOverallStatus.active;
 
-  bool get isPendingReview =>
-      kycStatus == KycOverallStatus.pendingReview ||
-      kycStatus == KycOverallStatus.pending ||
-      kycStatus == KycOverallStatus.submitted ||
-      approval == KycOverallStatus.pending ||
-      partnerKycStatus == KycOverallStatus.pending;
-
+  /// KYC has been submitted and is waiting on review / partner approval.
+  /// Draft / in-progress KYC must stay on KYC Overview even if approval is pending.
   bool get isSubmittedForReview {
-    final status = kycStatus?.toLowerCase();
-    return status == KycOverallStatus.pendingReview ||
-        status == KycOverallStatus.submitted;
+    if (isApproved) return false;
+
+    final kyc = _kycStatus;
+    if (kyc == KycOverallStatus.pendingReview ||
+        kyc == KycOverallStatus.submitted) {
+      return true;
+    }
+
+    if (_approval == KycOverallStatus.pending ||
+        _partnerStatus == KycOverallStatus.pending) {
+      if (kyc == KycOverallStatus.approved ||
+          kyc == KycOverallStatus.verified ||
+          kyc == KycOverallStatus.pending ||
+          (submittedAt ?? '').trim().isNotEmpty) {
+        return true;
+      }
+    }
+
+    return false;
   }
+
+  bool get isPendingReview => isSubmittedForReview;
 
   factory KycAccountStatusDataModel.fromJson(Map<String, dynamic> json) {
     return KycAccountStatusDataModel(

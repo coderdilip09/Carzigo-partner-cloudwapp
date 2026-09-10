@@ -48,8 +48,7 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
   Color get _fillColor =>
       widget.readOnly ? AppColors.background : AppColors.white;
 
-  Color get _textColor =>
-      widget.readOnly ? AppColors.textSecondary : AppColors.black;
+  Color get _textColor => AppColors.black;
 
   void _openCountryPicker() {
     if (widget.readOnly) return;
@@ -105,7 +104,6 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
       style: TextStyle(
         fontSize: 16,
         height: 1,
-        color: widget.readOnly ? AppColors.textSecondary : null,
       ),
     );
   }

@@ -9,6 +9,8 @@ import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 
+enum PerformancePeriod { month, week }
+
 class DashboardProvider extends BaseProvider {
   DashboardProvider() {
     loadProfile();
@@ -20,6 +22,7 @@ class DashboardProvider extends BaseProvider {
   bool isLoading = false;
   int currentIndex = 0;
   ScheduleTab scheduleTab = ScheduleTab.upcoming;
+  PerformancePeriod performancePeriod = PerformancePeriod.month;
 
   String get helloName {
     final fromDashboard = dashboard?.displayName?.trim();
@@ -33,6 +36,25 @@ class DashboardProvider extends BaseProvider {
     final area = dashboard?.serviceArea?.trim();
     if (area != null && area.isNotEmpty) return area;
     return null;
+  }
+
+  String get performancePeriodLabel => performancePeriod == PerformancePeriod.week
+      ? AppStrings.thisWeek
+      : AppStrings.thisMonth;
+
+  int get performanceCompleted => performancePeriod == PerformancePeriod.week
+      ? (dashboard?.weekCompleted ?? 0)
+      : (dashboard?.monthCompleted ?? 0);
+
+  double? get performanceAvgRating =>
+      performancePeriod == PerformancePeriod.week
+      ? dashboard?.weekAvgRating
+      : dashboard?.monthAvgRating;
+
+  void setPerformancePeriod(PerformancePeriod period) {
+    if (performancePeriod == period) return;
+    performancePeriod = period;
+    safeNotifyListeners();
   }
 
   Future<void> loadProfile() async {

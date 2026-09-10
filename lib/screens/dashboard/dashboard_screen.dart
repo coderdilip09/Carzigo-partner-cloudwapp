@@ -158,6 +158,7 @@ class _DashboardHome extends StatelessWidget {
     final dashboard = provider.dashboard;
     final nextJob = dashboard?.nextJob;
     final jobs = dashboard?.todaySchedule ?? const [];
+    final previewJobs = jobs.take(3).toList();
     final serviceArea = provider.serviceArea;
 
     return SafeArea(
@@ -367,15 +368,15 @@ class _DashboardHome extends StatelessWidget {
                       )
                     : Column(
                         children: [
-                          for (var i = 0; i < jobs.length; i++)
+                          for (var i = 0; i < previewJobs.length; i++)
                             AppJobCard(
-                              status: _jobStatusLabel(jobs[i]),
-                              timeLabel: jobs[i].timeRange,
-                              serviceName: jobs[i].serviceName,
-                              customerName: jobs[i].customerName,
-                              carName: jobs[i].car,
+                              status: _jobStatusLabel(previewJobs[i]),
+                              timeLabel: previewJobs[i].timeRange,
+                              serviceName: previewJobs[i].serviceName,
+                              customerName: previewJobs[i].customerName,
+                              carName: previewJobs[i].car,
                               embedded: true,
-                              showBottomDivider: i < jobs.length - 1,
+                              showBottomDivider: i < previewJobs.length - 1,
                               onTap: () => AppNavigation.to(
                                 const ServiceDetailsScreen(),
                               ),
@@ -395,22 +396,41 @@ class _DashboardHome extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Row(
-                    children: [
-                      Text(
-                        AppStrings.thisMonth.tr(),
-                        style: AppTextStyles.style(
-                          color: AppColors.accentOrange,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  PopupMenuButton<PerformancePeriod>(
+                    padding: EdgeInsets.zero,
+                    offset: const Offset(0, 28),
+                    color: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    onSelected: provider.setPerformancePeriod,
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: PerformancePeriod.month,
+                        child: Text(AppStrings.thisMonth.tr()),
                       ),
-                      const SizedBox(width: 4),
-                      _smallCircleArrow(
-                        asset: AppAssets.chevronDown,
-                        color: AppColors.accentOrange,
+                      PopupMenuItem(
+                        value: PerformancePeriod.week,
+                        child: Text(AppStrings.thisWeek.tr()),
                       ),
                     ],
+                    child: Row(
+                      children: [
+                        Text(
+                          provider.performancePeriodLabel.tr(),
+                          style: AppTextStyles.style(
+                            color: AppColors.accentOrange,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        _smallCircleArrow(
+                          asset: AppAssets.chevronDown,
+                          color: AppColors.accentOrange,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -419,13 +439,13 @@ class _DashboardHome extends StatelessWidget {
                 children: [
                   _performanceCard(
                     icon: AppAssets.logoCar,
-                    value: '${dashboard?.monthCompleted ?? 0}',
+                    value: '${provider.performanceCompleted}',
                     label: AppStrings.completed.tr(),
                   ),
                   const SizedBox(width: 12),
                   _performanceCard(
                     icon: AppAssets.star,
-                    value: _ratingLabel(dashboard?.monthAvgRating),
+                    value: _ratingLabel(provider.performanceAvgRating),
                     label: AppStrings.avgRating.tr(),
                   ),
                 ],

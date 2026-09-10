@@ -10,7 +10,9 @@ class KycOverallStatus {
   static const String pending = 'pending';
   static const String pendingReview = 'pending_review';
   static const String approved = 'approved';
+  static const String verified = 'verified';
   static const String rejected = 'rejected';
+  static const String active = 'active';
 }
 
 class KycStepKey {

@@ -18,14 +18,22 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class BankDetailsScreen extends StatelessWidget {
-  const BankDetailsScreen({super.key, this.loadSaved = false});
+  const BankDetailsScreen({
+    super.key,
+    this.loadSaved = false,
+    this.editOnly = false,
+  });
 
   final bool loadSaved;
+  final bool editOnly;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => BankDetailsProvider(loadSaved: loadSaved),
+      create: (_) => BankDetailsProvider(
+        loadSaved: loadSaved,
+        editOnly: editOnly,
+      ),
       child: Consumer<BankDetailsProvider>(
         builder: (context, provider, _) {
           return Scaffold(
@@ -45,8 +53,10 @@ class BankDetailsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppBackHeader(title: AppStrings.bankDetails.tr()),
-                        const SizedBox(height: 16),
-                        const AppKycStepper(currentStep: KycStep.bank),
+                        if (!editOnly) ...[
+                          const SizedBox(height: 16),
+                          const AppKycStepper(currentStep: KycStep.bank),
+                        ],
                         const SizedBox(height: 24),
                         Text(
                           AppStrings.enterBankDetails.tr(),
