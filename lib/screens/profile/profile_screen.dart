@@ -44,17 +44,11 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   Text(
                     AppStrings.profile.tr(),
-                    style: AppTextStyles.style(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.style(fontSize: 24, fontWeight: FontWeight.w700),
                   ),
                   Text(
                     AppStrings.manageAccount.tr(),
-                    style: AppTextStyles.style(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTextStyles.style(fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 16),
                   Container(
@@ -76,10 +70,7 @@ class ProfileScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(2),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.white,
-                                  width: 2,
-                                ),
+                                border: Border.all(color: AppColors.white, width: 2),
                               ),
                               child: ClipOval(
                                 child: AppImageView(
@@ -101,10 +92,7 @@ class ProfileScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: AppColors.primary,
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.white,
-                                      width: 1.5,
-                                    ),
+                                    border: Border.all(color: AppColors.white, width: 1.5),
                                   ),
                                   child: AppIcon(
                                     AppAssets.camera,
@@ -123,9 +111,7 @@ class ProfileScreen extends StatelessWidget {
                             children: [
                               Text(
                                 MockData.userFullName,
-                                style: AppTextStyles.style(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: AppTextStyles.style(fontWeight: FontWeight.w700),
                               ),
                               Text(
                                 MockData.userEmail,
@@ -157,19 +143,13 @@ class ProfileScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 8),
                               visualDensity: VisualDensity.compact,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                AppIcon(
-                                  AppAssets.edit,
-                                  size: 10,
-                                  color: AppColors.white,
-                                ),
+                                AppIcon(AppAssets.edit, size: 10, color: AppColors.white),
                                 const SizedBox(width: 3),
                                 Text(
                                   AppStrings.edit.tr(),
@@ -193,12 +173,12 @@ class ProfileScreen extends StatelessWidget {
                     subtitle: AppStrings.myProfileSubtitle.tr(),
                     onTap: provider.tapOnMyProfile,
                   ),
-                  _MenuTile(
-                    iconAsset: AppAssets.location,
-                    title: AppStrings.savedAddresses.tr(),
-                    subtitle: AppStrings.savedAddressesSubtitle.tr(),
-                    onTap: () {},
-                  ),
+                  // _MenuTile(
+                  //   iconAsset: AppAssets.location,
+                  //   title: AppStrings.savedAddresses.tr(),
+                  //   subtitle: AppStrings.savedAddressesSubtitle.tr(),
+                  //   onTap: () {},
+                  // ),
                   _MenuTile(
                     iconAsset: AppAssets.headset,
                     title: AppStrings.helpSupport.tr(),
@@ -265,10 +245,8 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor =
-        isDestructive ? AppColors.destructive : AppColors.menuIcon;
-    final titleColor =
-        isDestructive ? AppColors.destructive : AppColors.textPrimary;
+    final iconColor = isDestructive ? AppColors.destructive : AppColors.menuIcon;
+    final titleColor = isDestructive ? AppColors.destructive : AppColors.textPrimary;
     final subtitleColor = isDestructive
         ? AppColors.destructive.withValues(alpha: 0.7)
         : AppColors.pureBlack;
@@ -306,26 +284,15 @@ class _MenuTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.style(
-                      fontWeight: FontWeight.w600,
-                      color: titleColor,
-                    ),
+                    style: AppTextStyles.style(fontWeight: FontWeight.w600, color: titleColor),
                   ),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.style(
-                      fontSize: 11,
-                      color: subtitleColor,
-                    ),
-                  ),
+                  Text(subtitle, style: AppTextStyles.style(fontSize: 11, color: subtitleColor)),
                 ],
               ),
             ),
             AppIcon(
               AppAssets.chevronRight,
-              color: isDestructive
-                  ? AppColors.destructive
-                  : AppColors.textPrimary,
+              color: isDestructive ? AppColors.destructive : AppColors.textPrimary,
             ),
           ],
         ),
