@@ -18,12 +18,14 @@ class OtpVerifyScreen extends StatefulWidget {
     required this.phone,
     this.countryCode = '+91',
     this.resendAfterSeconds = 45,
+    this.expiresInSeconds = 600,
     this.isChangeNumber = false,
   });
 
   final String phone;
   final String countryCode;
   final int resendAfterSeconds;
+  final int expiresInSeconds;
   final bool isChangeNumber;
 
   @override
@@ -38,8 +40,9 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
         phone: widget.phone,
         countryCode: widget.countryCode,
         resendAfterSeconds: widget.resendAfterSeconds,
+        expiresInSeconds: widget.expiresInSeconds,
         isChangeNumber: widget.isChangeNumber,
-      )..startTimer(),
+      )..startTimers(),
       child: Consumer<OtpVerifyProvider>(
         builder: (context, provider, _) {
           return Scaffold(
@@ -83,8 +86,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                               '${AppStrings.enterOtpSentTo.tr()} ',
                                         ),
                                         TextSpan(
-                                          text:
-                                              '${widget.countryCode} ${widget.phone}',
+                                          text: provider.maskedPhoneWithCode,
                                           style: AppTextStyles.style(
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w600,
@@ -122,7 +124,11 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                 color: AppColors.primary,
                               ),
                               const SizedBox(width: 8),
-                              Expanded(child: _OtpValidForText()),
+                              Expanded(
+                                child: _OtpValidForText(
+                                  time: provider.formattedExpiresTime,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -143,7 +149,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                     .primaryFocus
                                     ?.unfocus(),
                                 theme: MaterialPinTheme(
-                                  shape: MaterialPinShape.filled,
+                                  shape: MaterialPinShape.outlined,
                                   cellSize: Size(cellWidth, 48),
                                   spacing: spacing,
                                   borderRadius: BorderRadius.circular(10),
@@ -154,13 +160,19 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                   completeFillColor: const Color(0xFFF3F3F3),
                                   borderColor: hasError
                                       ? AppColors.destructive
-                                      : null,
+                                      : AppColors.border,
                                   focusedBorderColor: hasError
+                                      ? AppColors.destructive
+                                      : AppColors.primary,
+                                  filledBorderColor: hasError
                                       ? AppColors.destructive
                                       : AppColors.primary,
                                   followingBorderColor: hasError
                                       ? AppColors.destructive
-                                      : null,
+                                      : AppColors.border,
+                                  completeBorderColor: hasError
+                                      ? AppColors.destructive
+                                      : AppColors.primary,
                                   errorColor: AppColors.destructive,
                                   errorBorderColor: AppColors.destructive,
                                   cursorColor: AppColors.primary,
@@ -202,7 +214,9 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                                 color: AppColors.primary,
                               ),
                               const SizedBox(width: 4),
-                              _CodeExpiresText(time: provider.formattedTime),
+                              _CodeExpiresText(
+                                time: provider.formattedExpiresTime,
+                              ),
                             ],
                           ),
                         ),
@@ -318,9 +332,12 @@ class _CodeExpiresText extends StatelessWidget {
 }
 
 class _OtpValidForText extends StatelessWidget {
+  const _OtpValidForText({required this.time});
+
+  final String time;
+
   @override
   Widget build(BuildContext context) {
-    final time = AppStrings.otpValidDuration.tr();
     const marker = '§TIME§';
     final translated = AppStrings.otpValidFor.tr(args: [marker]);
     final parts = translated.split(marker);
@@ -353,7 +370,7 @@ class _ResendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canResend = provider.secondsLeft == 0;
+    final canResend = provider.resendSecondsLeft == 0;
     final resendColor = canResend ? AppColors.primary : AppColors.textMuted;
 
     return Container(
@@ -455,7 +472,9 @@ class _ResendCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: Text(
-                        AppStrings.resendIn.tr(args: [provider.formattedTime]),
+                        AppStrings.resendIn.tr(
+                          args: [provider.formattedResendTime],
+                        ),
                         style: AppTextStyles.style(
                           fontSize: 12,
                           height: 1,

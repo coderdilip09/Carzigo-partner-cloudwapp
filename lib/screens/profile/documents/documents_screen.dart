@@ -303,7 +303,7 @@ class _DocCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: AppColors.completedCardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,10 +356,20 @@ class _DocCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      AppIcon(
-                        AppAssets.edit,
-                        size: 14,
-                        color: AppColors.primary,
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppIcon(
+                            AppAssets.edit,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          Container(
+                            width: 14,
+                            height: 1,
+                            color: AppColors.primary,
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -8,6 +8,10 @@
 	<string>Carzigo Partner needs camera access to take photos for your profile and KYC documents.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Carzigo Partner needs photo library access to upload profile and KYC document images.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Carzigo Partner needs calendar access to add your scheduled jobs.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Carzigo Partner needs calendar access to add your scheduled jobs.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

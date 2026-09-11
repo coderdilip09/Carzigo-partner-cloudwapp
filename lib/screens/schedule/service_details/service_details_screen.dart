@@ -2,99 +2,141 @@ import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
+import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/screens/schedule/service_details/service_details_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
-import 'package:carzigo_partner/utils/mock_data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
-  const ServiceDetailsScreen({super.key});
+  const ServiceDetailsScreen({super.key, this.jobId, this.job});
+
+  final String? jobId;
+  final JobDataModel? job;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ServiceDetailsProvider(),
+      create: (_) => ServiceDetailsProvider(
+        jobId: jobId ?? job?.id,
+        initialJob: job,
+      ),
       child: Consumer<ServiceDetailsProvider>(
         builder: (context, provider, _) {
           return Scaffold(
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppBackHeader(
+                child: provider.isLoading && provider.job == null
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: AppBackHeader(
                               title: AppStrings.serviceDetails.tr(),
                               showBackText: false,
                               titleInline: true,
                             ),
-                            const SizedBox(height: 16),
-                            _ScheduleCard(),
-                            const SizedBox(height: 16),
-                            _CustomerDetailsCard(),
-                            const SizedBox(height: 16),
-                            _ServiceAddressCard(),
-                            const SizedBox(height: 20),
-                            Text(
-                              AppStrings.updateStatus.tr(),
-                              style: AppTextStyles.style(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.sectionTitle,
+                          ),
+                          const Expanded(
+                            child: Center(
+                              child: SizedBox(
+                                width: 28,
+                                height: 28,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            ..._buildSteps(provider),
-                            const SizedBox(height: 16),
-                            IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                          ),
+                        ],
+                      )
+                    : Column(
+                        children: [
+                          Expanded(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: _NoteCard(
-                                      title: AppStrings.serviceNotes.tr(),
-                                      text: AppStrings.mockServiceNotes.tr(),
+                                  AppBackHeader(
+                                    title: AppStrings.serviceDetails.tr(),
+                                    showBackText: false,
+                                    titleInline: true,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const _ScheduleCard(),
+                                  const SizedBox(height: 16),
+                                  const _CustomerDetailsCard(),
+                                  const SizedBox(height: 16),
+                                  const _ServiceAddressCard(),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    AppStrings.updateStatus.tr(),
+                                    style: AppTextStyles.style(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.sectionTitle,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _NoteCard(
-                                      title: AppStrings.customerInstructions
-                                          .tr(),
-                                      text: AppStrings.mockCustomerInstructions
-                                          .tr(),
+                                  const SizedBox(height: 12),
+                                  ..._buildSteps(provider),
+                                  const SizedBox(height: 16),
+                                  IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Expanded(
+                                          child: _NoteCard(
+                                            title:
+                                                AppStrings.serviceNotes.tr(),
+                                            text: provider.displayNotes.isEmpty
+                                                ? AppStrings.noData.tr()
+                                                : provider.displayNotes,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: _NoteCard(
+                                            title: AppStrings
+                                                .customerInstructions
+                                                .tr(),
+                                            text: provider
+                                                    .displayInstructions
+                                                    .isEmpty
+                                                ? AppStrings.noData.tr()
+                                                : provider.displayInstructions,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: AppSolidButton(
+                              label: AppStrings.addToCalendar.tr(),
+                              onTap: provider.tapOnAddToCalendar,
+                              isLoading: provider.isAddingToCalendar,
+                              leading: AppIcon(
+                                AppAssets.calendar,
+                                size: 18,
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: AppSolidButton(
-                        label: AppStrings.addToCalendar.tr(),
-                        onTap: () {},
-                        leading: AppIcon(
-                          AppAssets.calendar,
-                          size: 18,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           );
@@ -109,7 +151,7 @@ class ServiceDetailsScreen extends StatelessWidget {
         AppStrings.statusAssigned.tr(),
         AppStrings.statusAssignedDesc.tr(),
         AppAssets.calendar,
-        AppStrings.mockAssignedDatetime.tr(),
+        provider.displayAssignedAt,
       ),
       (
         AppStrings.statusOnTheWay.tr(),
@@ -149,7 +191,7 @@ class ServiceDetailsScreen extends StatelessWidget {
 
       return IntrinsicHeight(
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
               width: 28,
@@ -160,153 +202,119 @@ class ServiceDetailsScreen extends StatelessWidget {
                     height: 28,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isDone ? AppColors.destructive : AppColors.peach,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$stepNum',
-                        style: AppTextStyles.style(
-                          color: isDone
-                              ? AppColors.white
-                              : AppColors.navigateText,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: isDone ? AppColors.primary : AppColors.white,
+                      border: Border.all(
+                        color: isDone || isNext
+                            ? AppColors.primary
+                            : AppColors.border,
+                        width: 1.5,
                       ),
                     ),
+                    alignment: Alignment.center,
+                    child: isDone
+                        ? AppIcon(
+                            AppAssets.check,
+                            size: 14,
+                            color: AppColors.white,
+                          )
+                        : Text(
+                            '$stepNum',
+                            style: AppTextStyles.style(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: isNext
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
                   ),
                   if (!isLast)
                     Expanded(
                       child: Container(
                         width: 2,
                         margin: const EdgeInsets.symmetric(vertical: 4),
-                        color: AppColors.peachCard,
+                        color: isDone ? AppColors.primary : AppColors.border,
                       ),
                     ),
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(bottom: isLast ? 0 : 18),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: AppColors.peach,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: AppIcon(
-                          icon,
-                          size: 18,
-                          color: AppColors.destructive,
+                padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+                child: Material(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    onTap: isNext ? () => provider.markStep(stepNum) : null,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isNext
+                              ? AppColors.primary
+                              : AppColors.peachCard,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            title,
-                            style: AppTextStyles.style(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: AppColors.navigateText,
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.peach,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: AppIcon(
+                              icon,
+                              size: 18,
+                              color: AppColors.primary,
                             ),
                           ),
-                          Text(
-                            desc,
-                            style: AppTextStyles.style(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: AppTextStyles.style(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    color: AppColors.sectionTitle,
+                                  ),
+                                ),
+                                Text(
+                                  desc,
+                                  style: AppTextStyles.style(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                if (datetime != null &&
+                                    datetime.trim().isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      datetime,
+                                      style: AppTextStyles.style(
+                                        fontSize: 10,
+                                        color: AppColors.navigateText,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                          if (datetime != null)
-                            Text(
-                              datetime,
-                              style: AppTextStyles.style(
-                                fontSize: 7,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    if (isDone)
-                      SizedBox(
-                        height: 36,
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.peach,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              AppStrings.completed.tr(),
-                              style: AppTextStyles.style(
-                                fontSize: 11,
-                                color: AppColors.navigateText,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Flexible(
-                        child: SizedBox(
-                          height: 36,
-                          child: Center(
-                            child: OutlinedButton(
-                              onPressed: isNext
-                                  ? () => provider.markStep(stepNum)
-                                  : null,
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.navigateText,
-                                disabledForegroundColor: AppColors.navigateText,
-                                backgroundColor: Colors.transparent,
-                                side: const BorderSide(
-                                  color: AppColors.peachCard,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              child: Text(
-                                AppStrings.markAs.tr(args: [title]),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.style(
-                                  fontSize: 10,
-                                  color: AppColors.navigateText,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -318,8 +326,11 @@ class ServiceDetailsScreen extends StatelessWidget {
 }
 
 class _ScheduleCard extends StatelessWidget {
+  const _ScheduleCard();
+
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ServiceDetailsProvider>();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -358,7 +369,9 @@ class _ScheduleCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    MockData.scheduleId,
+                    provider.displayScheduleId.isEmpty
+                        ? '-'
+                        : provider.displayScheduleId,
                     style: AppTextStyles.style(
                       color: AppColors.white,
                       fontWeight: FontWeight.w700,
@@ -396,14 +409,16 @@ class _ScheduleCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      AppStrings.mockServiceDate.tr(),
+                      provider.displayDate.isEmpty ? '-' : provider.displayDate,
                       style: AppTextStyles.style(
                         color: AppColors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      AppStrings.mockServiceTimeRange.tr(),
+                      provider.displayTimeRange.isEmpty
+                          ? '-'
+                          : provider.displayTimeRange,
                       style: AppTextStyles.style(
                         color: AppColors.white,
                         fontSize: 13,
@@ -439,8 +454,11 @@ class _ScheduleCard extends StatelessWidget {
 }
 
 class _CustomerDetailsCard extends StatelessWidget {
+  const _CustomerDetailsCard();
+
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ServiceDetailsProvider>();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -468,7 +486,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                 CircleAvatar(
                   backgroundColor: AppColors.white,
                   child: Text(
-                    MockData.serviceCustomerInitials,
+                    provider.displayCustomerInitials.isEmpty
+                        ? '?'
+                        : provider.displayCustomerInitials,
                     style: AppTextStyles.style(
                       fontWeight: FontWeight.w600,
                       color: AppColors.sectionTitle,
@@ -481,7 +501,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        MockData.serviceCustomer,
+                        provider.displayCustomerName.isEmpty
+                            ? '-'
+                            : provider.displayCustomerName,
                         style: AppTextStyles.style(
                           fontWeight: FontWeight.w600,
                           color: AppColors.navigateText,
@@ -498,7 +520,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              MockData.serviceCustomerPhone,
+                              provider.displayPhone.isEmpty
+                                  ? '-'
+                                  : provider.displayPhone,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.style(
@@ -520,7 +544,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              MockData.serviceCustomerEmail,
+                              provider.displayEmail.isEmpty
+                                  ? '-'
+                                  : provider.displayEmail,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.style(
@@ -534,19 +560,32 @@ class _CustomerDetailsCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(
-                    color: AppColors.destructiveLight,
-                    shape: BoxShape.circle,
+                if (provider.displayPhone.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      final uri = Uri(
+                        scheme: 'tel',
+                        path: provider.displayPhone,
+                      );
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: AppColors.destructiveLight,
+                        shape: BoxShape.circle,
+                      ),
+                      child: AppIcon(
+                        AppAssets.phoneFilled,
+                        size: 18,
+                        color: AppColors.destructive,
+                      ),
+                    ),
                   ),
-                  child: AppIcon(
-                    AppAssets.phoneFilled,
-                    size: 18,
-                    color: AppColors.destructive,
-                  ),
-                ),
+                ],
               ],
             ),
           ),
@@ -557,8 +596,12 @@ class _CustomerDetailsCard extends StatelessWidget {
 }
 
 class _ServiceAddressCard extends StatelessWidget {
+  const _ServiceAddressCard();
+
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ServiceDetailsProvider>();
+    final address = provider.displayAddress;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -576,43 +619,52 @@ class _ServiceAddressCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            AppStrings.mockServiceAddress.tr(),
+            address.isEmpty ? '-' : address,
             style: AppTextStyles.style(
               fontSize: 13,
               color: AppColors.phoneNumber,
             ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton.icon(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.navigateText,
-                backgroundColor: AppColors.customerCard,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
+          if (address.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () async {
+                  final uri = Uri.parse(
+                    'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}',
+                  );
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.navigateText,
+                  backgroundColor: AppColors.customerCard,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  alignment: Alignment.centerLeft,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                alignment: Alignment.centerLeft,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              icon: AppIcon(
-                AppAssets.send,
-                size: 16,
-                color: AppColors.navigateText,
-              ),
-              label: Text(
-                AppStrings.navigate.tr(),
-                style: AppTextStyles.style(
-                  fontWeight: FontWeight.w500,
+                icon: AppIcon(
+                  AppAssets.send,
+                  size: 16,
                   color: AppColors.navigateText,
+                ),
+                label: Text(
+                  AppStrings.navigate.tr(),
+                  style: AppTextStyles.style(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.navigateText,
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

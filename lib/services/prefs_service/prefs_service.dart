@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:carzigo_partner/models/user_data_model.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PrefsService {
@@ -16,6 +17,11 @@ class PrefsService {
   static const String _fcmTokenKey = 'fcm_token';
 
   SharedPreferences? _prefs;
+  final FlutterSecureStorage _secure = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
+  bool _tokenMigrated = false;
 
   Future<SharedPreferences> _sp() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -24,16 +30,49 @@ class PrefsService {
 
   Future<void> init() async {
     await _sp();
+    await _migrateTokenIfNeeded();
+  }
+
+  /// Moves legacy SharedPreferences token into secure storage once.
+  Future<void> _migrateTokenIfNeeded() async {
+    if (_tokenMigrated) return;
+    _tokenMigrated = true;
+
+    try {
+      final existing = await _secure.read(key: _tokenKey);
+      if (existing != null && existing.isNotEmpty) {
+        final sp = await _sp();
+        if (sp.containsKey(_tokenKey)) {
+          await sp.remove(_tokenKey);
+        }
+        return;
+      }
+
+      final sp = await _sp();
+      final legacy = sp.getString(_tokenKey);
+      if (legacy == null || legacy.isEmpty) return;
+
+      await _secure.write(key: _tokenKey, value: legacy);
+      await sp.remove(_tokenKey);
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('PrefsService token migrate failed: $e\n$st');
+      }
+    }
   }
 
   Future<void> saveToken(String token) async {
+    await _migrateTokenIfNeeded();
+    await _secure.write(key: _tokenKey, value: token);
     final sp = await _sp();
-    await sp.setString(_tokenKey, token);
+    if (sp.containsKey(_tokenKey)) {
+      await sp.remove(_tokenKey);
+    }
   }
 
   Future<String?> getToken() async {
-    final sp = await _sp();
-    return sp.getString(_tokenKey);
+    await _migrateTokenIfNeeded();
+    return _secure.read(key: _tokenKey);
   }
 
   Future<bool> get isLoggedIn async {
@@ -59,7 +98,9 @@ class PrefsService {
         return UserDataModel.fromJson(Map<String, dynamic>.from(map));
       }
     } catch (e, st) {
-      debugPrint('PrefsService.getUser failed: $e\n$st');
+      if (kDebugMode) {
+        debugPrint('PrefsService.getUser failed: $e\n$st');
+      }
     }
     return null;
   }
@@ -69,9 +110,7 @@ class PrefsService {
       await saveToken(auth.token!);
     }
     if (auth.user != null) {
-      final complete = auth.needsProfile == true
-          ? false
-          : (auth.user!.isProfileComplete ?? false);
+      final complete = auth.needsProfile == true ? false : (auth.user!.isProfileComplete ?? false);
       await saveUser(auth.user!.copyWith(isProfileComplete: complete));
       return;
     }
@@ -89,6 +128,7 @@ class PrefsService {
   }
 
   Future<void> clear() async {
+    await _secure.delete(key: _tokenKey);
     final sp = await _sp();
     await sp.remove(_tokenKey);
     await sp.remove(_userKey);

@@ -378,7 +378,7 @@ class _DashboardHome extends StatelessWidget {
                               embedded: true,
                               showBottomDivider: i < previewJobs.length - 1,
                               onTap: () => AppNavigation.to(
-                                const ServiceDetailsScreen(),
+                                ServiceDetailsScreen(job: previewJobs[i]),
                               ),
                             ),
                         ],

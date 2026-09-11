@@ -85,6 +85,7 @@ class LoginProvider extends BaseProvider {
         phone: phone.trim(),
         countryCode: formattedCountryCode,
         resendAfterSeconds: res.data?.resendAfterSeconds ?? 45,
+        expiresInSeconds: res.data?.expiresInSeconds ?? 600,
       ),
     );
   }

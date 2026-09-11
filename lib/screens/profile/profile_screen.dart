@@ -320,6 +320,9 @@ class _MenuTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDestructive ? AppColors.pinkSection : AppColors.white,
           borderRadius: BorderRadius.circular(16),
+          border: isDestructive
+              ? null
+              : Border.all(color: AppColors.completedCardBorder),
           boxShadow: [
             BoxShadow(
               color: AppColors.black.withValues(alpha: 0.04),

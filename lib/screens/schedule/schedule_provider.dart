@@ -43,14 +43,17 @@ class ScheduleProvider extends BaseProvider {
   Future<void> setTab(ScheduleTab tab) async {
     if (currentTab == tab && data != null) return;
     currentTab = tab;
+    data = null;
     safeNotifyListeners();
     await load();
   }
 
-  Future<void> load() async {
+  Future<void> load({bool silent = false}) async {
     final tab = currentTab;
-    isLoading = true;
-    safeNotifyListeners();
+    if (!silent) {
+      isLoading = true;
+      safeNotifyListeners();
+    }
 
     try {
       final res = await Api.getJobs(tab: tab.name);

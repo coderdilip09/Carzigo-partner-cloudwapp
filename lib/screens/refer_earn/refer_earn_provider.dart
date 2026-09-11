@@ -49,9 +49,11 @@ class ReferEarnProvider extends BaseProvider {
     safeNotifyListeners();
   }
 
-  Future<void> load() async {
-    isLoading = true;
-    safeNotifyListeners();
+  Future<void> load({bool silent = false}) async {
+    if (!silent) {
+      isLoading = true;
+      safeNotifyListeners();
+    }
 
     try {
       final res = await Api.getReferral();

@@ -40,9 +40,31 @@ class BankDetailsScreen extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: Stack(
-                  children: [
-                    SingleChildScrollView(
+                child: provider.isFetching
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: AppBackHeader(
+                              title: AppStrings.bankDetails.tr(),
+                            ),
+                          ),
+                          const Expanded(
+                            child: Center(
+                              child: SizedBox(
+                                width: 28,
+                                height: 28,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Form(
                     key: provider.formKey,
@@ -163,23 +185,6 @@ class BankDetailsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                    ),
-                    if (provider.isFetching)
-                      const Positioned.fill(
-                        child: AbsorbPointer(
-                          child: Center(
-                            child: SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
                 ),
               ),
             ),

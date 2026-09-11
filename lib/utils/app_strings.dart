@@ -64,6 +64,7 @@ class AppStrings {
   static const String emailInvalid = 'email_invalid';
   static const String profileCompleted = 'profile_completed';
   static const String requestFailed = 'request_failed';
+  static const String sessionExpired = 'session_expired';
   static const String noData = 'no_data';
   static const String uploadFailed = 'upload_failed';
 
@@ -202,6 +203,8 @@ class AppStrings {
   static const String serviceNotes = 'service_notes';
   static const String customerInstructions = 'customer_instructions';
   static const String addToCalendar = 'add_to_calendar';
+  static const String calendarAdded = 'calendar_added';
+  static const String calendarAddFailed = 'calendar_add_failed';
   static const String markAs = 'mark_as';
   static const String statusAssigned = 'status_assigned';
   static const String statusAssignedDesc = 'status_assigned_desc';

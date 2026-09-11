@@ -14,18 +14,32 @@ class OtpVerifyProvider extends BaseProvider {
     required this.phone,
     required this.countryCode,
     this.resendAfterSeconds = 45,
+    this.expiresInSeconds = 600,
     this.isChangeNumber = false,
-  }) : secondsLeft = resendAfterSeconds;
+  })  : resendSecondsLeft = resendAfterSeconds,
+        expiresSecondsLeft = expiresInSeconds;
 
   final String phone;
   final String countryCode;
   final int resendAfterSeconds;
+  final int expiresInSeconds;
   final bool isChangeNumber;
   String otp = '';
   String? otpError;
   bool isLoading = false;
-  int secondsLeft;
+  int resendSecondsLeft;
+  int expiresSecondsLeft;
   Timer? _timer;
+
+  /// e.g. 9876543210 → ******3210
+  String get maskedPhone {
+    final digits = phone.trim();
+    if (digits.length <= 4) return digits;
+    final last4 = digits.substring(digits.length - 4);
+    return '${'*' * (digits.length - 4)}$last4';
+  }
+
+  String get maskedPhoneWithCode => '$countryCode $maskedPhone';
 
   void setOtp(String value) {
     otp = value;
@@ -35,22 +49,38 @@ class OtpVerifyProvider extends BaseProvider {
     safeNotifyListeners();
   }
 
-  void startTimer([int? seconds]) {
+  void startTimers({int? resendSeconds, int? expiresSeconds}) {
     _timer?.cancel();
-    secondsLeft = seconds ?? resendAfterSeconds;
+    resendSecondsLeft = resendSeconds ?? resendAfterSeconds;
+    expiresSecondsLeft = expiresSeconds ?? expiresInSeconds;
+    safeNotifyListeners();
+
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (secondsLeft > 0) {
-        secondsLeft--;
+      var changed = false;
+      if (resendSecondsLeft > 0) {
+        resendSecondsLeft--;
+        changed = true;
+      }
+      if (expiresSecondsLeft > 0) {
+        expiresSecondsLeft--;
+        changed = true;
+      }
+      if (changed) {
         safeNotifyListeners();
-      } else {
+      }
+      if (resendSecondsLeft <= 0 && expiresSecondsLeft <= 0) {
         t.cancel();
       }
     });
   }
 
-  String get formattedTime {
-    final m = (secondsLeft ~/ 60).toString().padLeft(2, '0');
-    final s = (secondsLeft % 60).toString().padLeft(2, '0');
+  String get formattedResendTime => _formatMmSs(resendSecondsLeft);
+
+  String get formattedExpiresTime => _formatMmSs(expiresSecondsLeft);
+
+  String _formatMmSs(int totalSeconds) {
+    final m = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final s = (totalSeconds % 60).toString().padLeft(2, '0');
     return '$m:$s';
   }
 
@@ -106,7 +136,7 @@ class OtpVerifyProvider extends BaseProvider {
   }
 
   Future<void> tapOnResend() async {
-    if (secondsLeft != 0 || isLoading || isChangeNumber) return;
+    if (resendSecondsLeft != 0 || isLoading || isChangeNumber) return;
 
     isLoading = true;
     safeNotifyListeners();
@@ -121,7 +151,10 @@ class OtpVerifyProvider extends BaseProvider {
       return;
     }
 
-    startTimer(res.data?.resendAfterSeconds ?? resendAfterSeconds);
+    startTimers(
+      resendSeconds: res.data?.resendAfterSeconds ?? resendAfterSeconds,
+      expiresSeconds: res.data?.expiresInSeconds ?? expiresInSeconds,
+    );
     AppToast.success(res.message ?? AppStrings.otpResent.tr());
   }
 

@@ -26,11 +26,19 @@ class ReferEarnScreen extends StatelessWidget {
       child: Consumer<ReferEarnProvider>(
         builder: (context, provider, _) {
           return SafeArea(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-            RefreshIndicator(
-              onRefresh: provider.load,
+            child: provider.isLoading && provider.data == null
+                ? const Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  )
+                : RefreshIndicator(
+              onRefresh: () => provider.load(silent: true),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(16, 16, 16, showBottomNav ? 80 : 16),
@@ -393,7 +401,7 @@ class ReferEarnScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  if (!provider.isLoading && provider.customers.isEmpty)
+                  if (provider.customers.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Center(
@@ -419,23 +427,6 @@ class ReferEarnScreen extends StatelessWidget {
                 ],
               ),
             ),
-            ),
-                if (provider.isLoading)
-                  const Positioned.fill(
-                    child: AbsorbPointer(
-                      child: Center(
-                        child: SizedBox(
-                          width: 28,
-                          height: 28,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
             ),
           );
         },

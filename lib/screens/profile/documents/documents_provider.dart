@@ -60,9 +60,20 @@ class DocumentsProvider extends BaseProvider {
   }
 
   String get bankMasked {
-    final value = review?.bank?.accountNumberMasked?.trim();
-    if (value != null && value.isNotEmpty) return value;
-    return AppStrings.noData.tr();
+    final raw = (review?.bank?.accountNumberMasked ??
+            review?.bank?.accountNumber)
+        ?.trim();
+    if (raw == null || raw.isEmpty) return AppStrings.noData.tr();
+
+    final digits = raw.replaceAll(RegExp(r'\D'), '');
+    if (digits.length >= 4) {
+      final last4 = digits.substring(digits.length - 4);
+      return 'A/C No. xxxx $last4';
+    }
+
+    final lower = raw.toLowerCase();
+    if (lower.contains('a/c') || lower.contains('account')) return raw;
+    return 'A/C No. $raw';
   }
 
   String? get bankPreviewUrl => review?.bank?.chequeUrl;

@@ -1,11 +1,11 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/Users/cloudwapp/fvm/versions/3.44.4"
-export "FLUTTER_APPLICATION_PATH=/Users/cloudwapp/Documents/dev_rp/dilip_sir_project/carzigopartner"
-export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/Users/cloudwapp/Documents/dev_rp/dilip_sir_project/carzigopartner/macos/Flutter/ephemeral/Packages/.packages/FlutterFramework"
+export "FLUTTER_ROOT=/home/cw-001/snap/flutter/common/flutter"
+export "FLUTTER_APPLICATION_PATH=/home/cw-001/Documents/GitHub/Carzigo_Partner/Carzigo-partner-cloudwapp"
+export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/home/cw-001/Documents/GitHub/Carzigo_Partner/Carzigo-partner-cloudwapp/macos/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
-export "FLUTTER_BUILD_NAME=0.1.0"
+export "FLUTTER_BUILD_NAME=1.0.0"
 export "FLUTTER_BUILD_NUMBER=1"
 export "DART_OBFUSCATION=false"
 export "TRACK_WIDGET_CREATION=true"
