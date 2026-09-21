@@ -86,6 +86,10 @@ class AuthRouteService {
       return const ApplicationPendingScreen();
     }
 
+    if (k == KycOverallStatus.rejected) {
+      return const KycOverviewScreen();
+    }
+
     if (a == KycOverallStatus.pending &&
         (k == KycOverallStatus.approved ||
             k == KycOverallStatus.verified ||

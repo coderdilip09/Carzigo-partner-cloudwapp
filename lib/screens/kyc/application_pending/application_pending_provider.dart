@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/screens/dashboard/dashboard_screen.dart';
+import 'package:carzigo_partner/screens/kyc/kyc_overview/kyc_overview_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -25,6 +26,14 @@ class ApplicationPendingProvider extends BaseProvider {
 
       if (res.data!.isApproved) {
         AppNavigation.offAll(const DashboardScreen());
+        return;
+      }
+
+      if (res.data!.isRejected) {
+        AppToast.error(
+          res.data!.message ?? AppStrings.kycRejectedBody.tr(),
+        );
+        AppNavigation.offAll(const KycOverviewScreen());
         return;
       }
 

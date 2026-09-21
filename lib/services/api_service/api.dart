@@ -251,6 +251,7 @@ class Api {
     required String accountNumber,
     required String ifsc,
     required String bankName,
+    String? bankBranch,
     required String chequeUrl,
   }) {
     return _putParsed(ApiUrls.kycBankUrl(), {
@@ -258,8 +259,19 @@ class Api {
       RequestKeys.accountNumber: accountNumber,
       RequestKeys.ifsc: ifsc,
       RequestKeys.bankName: bankName,
+      if (bankBranch != null && bankBranch.isNotEmpty)
+        RequestKeys.bankBranch: bankBranch,
       RequestKeys.chequeUrl: chequeUrl,
     }, (data) => KycStatusModel.fromJson(asMap(data) ?? {}));
+  }
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> lookupIfsc(
+    String code,
+  ) async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.kycIfscUrl(code.trim().toUpperCase()),
+    );
+    return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
   }
 
   static Future<ResponseWrapperModel<KycSubmitDataModel?>> submitKyc() {

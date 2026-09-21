@@ -21,6 +21,15 @@ class KycOverviewProvider extends BaseProvider {
   bool get isProfilePhotoDone => overview?.isProfilePhotoDone ?? false;
   bool get canSubmit => overview?.canSubmit == true;
   String? get bannerMessage => overview?.message;
+  bool get isRejected => overview?.isRejected == true;
+  bool get isAddressRejected => overview?.isAddressRejected == true;
+  bool get isBankRejected => overview?.isBankRejected == true;
+  String? get addressRejectReason => overview?.rejectedAddressReason;
+  String? get bankRejectReason => overview?.rejectedBankReason;
+
+  /// When sections were rejected, only those need rework.
+  bool get hasPartialRejection =>
+      isRejected && (isAddressRejected || isBankRejected);
 
   Future<void> load() async {
     isLoading = true;
@@ -48,6 +57,10 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnIdentity() async {
+    if (hasPartialRejection && isIdentityDone) {
+      AppToast.error(AppStrings.kycSectionLocked.tr());
+      return;
+    }
     await AppNavigation.to(
       IdentityProofScreen(
         loadSaved: isIdentityDone,
@@ -62,18 +75,34 @@ class KycOverviewProvider extends BaseProvider {
       AppToast.error(AppStrings.completeIdentityFirst.tr());
       return;
     }
+    if (hasPartialRejection && !isAddressRejected && isAddressProofDone) {
+      AppToast.error(AppStrings.kycSectionLocked.tr());
+      return;
+    }
     await AppNavigation.to(
-      LocalAddressScreen(editOnly: isAddressProofDone),
+      LocalAddressScreen(
+        editOnly: isAddressProofDone || isAddressRejected,
+      ),
     );
     await load();
   }
 
   Future<void> tapOnBank() async {
-    await AppNavigation.to(BankDetailsScreen(loadSaved: isBankDone));
+    if (hasPartialRejection && !isBankRejected && isBankDone) {
+      AppToast.error(AppStrings.kycSectionLocked.tr());
+      return;
+    }
+    await AppNavigation.to(
+      BankDetailsScreen(loadSaved: isBankDone || isBankRejected),
+    );
     await load();
   }
 
   Future<void> tapOnProfilePhoto() async {
+    if (hasPartialRejection && isProfilePhotoDone) {
+      AppToast.error(AppStrings.kycSectionLocked.tr());
+      return;
+    }
     if (!isIdentityDone) {
       AppToast.error(AppStrings.completeIdentityFirst.tr());
       return;
@@ -91,6 +120,16 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> _openFirstPendingStep() async {
+    if (hasPartialRejection) {
+      if (isAddressRejected) {
+        await AppNavigation.to(const LocalAddressScreen(editOnly: true));
+        return;
+      }
+      if (isBankRejected) {
+        await AppNavigation.to(const BankDetailsScreen(loadSaved: true));
+        return;
+      }
+    }
     if (!isIdentityDone) {
       await AppNavigation.to(const IdentityProofScreen());
       return;

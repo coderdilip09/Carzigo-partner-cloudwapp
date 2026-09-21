@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
@@ -28,22 +29,34 @@ class BankDetailsProvider extends BaseProvider {
   final bool editOnly;
   final formKey = GlobalKey<FormState>();
   final holderNameController = TextEditingController();
-  final bankNameController = TextEditingController();
   final accountNumberController = TextEditingController();
+  final confirmAccountController = TextEditingController();
   final ifscController = TextEditingController();
 
   File? chequeImage;
   String? chequeUrl;
+  String? resolvedBankName;
+  String? resolvedBranch;
   String _savedHolder = '';
   String _savedBankName = '';
+  String _savedBranch = '';
   String _savedIfsc = '';
   String _savedAccount = '';
   bool submitted = false;
   bool isLoading = false;
   bool isFetching = false;
+  bool isLookingUpIfsc = false;
+  String? ifscError;
+  Timer? _ifscDebounce;
+  int _ifscLookupToken = 0;
 
   bool get hasCheque =>
       chequeImage != null || (chequeUrl?.isNotEmpty ?? false);
+
+  bool get hasVerifiedIfsc =>
+      resolvedBankName != null &&
+      resolvedBankName!.trim().isNotEmpty &&
+      ifscError == null;
 
   Future<void> loadSavedData() async {
     if (!loadSaved) return;
@@ -62,17 +75,29 @@ class BankDetailsProvider extends BaseProvider {
       }
 
       holderNameController.text = bank.holderName ?? '';
-      bankNameController.text = bank.bankName ?? '';
       ifscController.text = bank.ifsc ?? '';
+      resolvedBankName = bank.bankName?.trim().isNotEmpty == true
+          ? bank.bankName!.trim()
+          : null;
+      resolvedBranch = bank.bankBranch?.trim().isNotEmpty == true
+          ? bank.bankBranch!.trim()
+          : null;
       chequeUrl = bank.chequeUrl;
       final account = bank.accountNumber ?? bank.accountNumberMasked ?? '';
       if (account.isNotEmpty) {
         accountNumberController.text = account;
+        confirmAccountController.text = account;
       }
       _savedHolder = holderNameController.text.trim();
-      _savedBankName = bankNameController.text.trim();
+      _savedBankName = resolvedBankName ?? '';
+      _savedBranch = resolvedBranch ?? '';
       _savedIfsc = ifscController.text.trim().toUpperCase();
       _savedAccount = accountNumberController.text.trim();
+
+      if (_savedIfsc.isNotEmpty &&
+          (resolvedBankName == null || resolvedBranch == null)) {
+        await lookupIfsc(force: true);
+      }
     } catch (e, st) {
       debugPrint('Load saved bank failed: $e\n$st');
       AppToast.error(AppStrings.requestFailed.tr());
@@ -89,16 +114,96 @@ class BankDetailsProvider extends BaseProvider {
     safeNotifyListeners();
   }
 
+  void onIfscChanged(String value) {
+    final code = value.trim().toUpperCase();
+    ifscError = null;
+    if (code != _savedIfsc ||
+        resolvedBankName == null ||
+        resolvedBankName!.isEmpty) {
+      resolvedBankName = null;
+      resolvedBranch = null;
+    }
+    safeNotifyListeners();
+
+    _ifscDebounce?.cancel();
+    if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(code)) {
+      isLookingUpIfsc = false;
+      safeNotifyListeners();
+      return;
+    }
+
+    _ifscDebounce = Timer(const Duration(milliseconds: 450), () {
+      lookupIfsc();
+    });
+  }
+
+  Future<void> lookupIfsc({bool force = false}) async {
+    final code = ifscController.text.trim().toUpperCase();
+    if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(code)) {
+      ifscError = AppStrings.ifscInvalid.tr();
+      resolvedBankName = null;
+      resolvedBranch = null;
+      safeNotifyListeners();
+      return;
+    }
+
+    if (!force &&
+        code == _savedIfsc &&
+        resolvedBankName != null &&
+        resolvedBankName!.isNotEmpty) {
+      return;
+    }
+
+    final token = ++_ifscLookupToken;
+    isLookingUpIfsc = true;
+    ifscError = null;
+    safeNotifyListeners();
+
+    try {
+      final res = await Api.lookupIfsc(code);
+      if (token != _ifscLookupToken) return;
+      if (!res.isSuccess || res.data == null) {
+        resolvedBankName = null;
+        resolvedBranch = null;
+        ifscError = res.message ?? AppStrings.ifscInvalid.tr();
+        return;
+      }
+
+      final bank = (res.data!['bank_name'] ?? res.data!['BANK'] ?? '')
+          .toString()
+          .trim();
+      final branch = (res.data!['branch'] ??
+              res.data!['bank_branch'] ??
+              res.data!['BRANCH'] ??
+              '')
+          .toString()
+          .trim();
+      if (bank.isEmpty) {
+        resolvedBankName = null;
+        resolvedBranch = null;
+        ifscError = AppStrings.ifscInvalid.tr();
+        return;
+      }
+      resolvedBankName = bank;
+      resolvedBranch = branch.isEmpty ? null : branch;
+      ifscError = null;
+    } catch (e, st) {
+      debugPrint('IFSC lookup failed: $e\n$st');
+      if (token != _ifscLookupToken) return;
+      resolvedBankName = null;
+      resolvedBranch = null;
+      ifscError = AppStrings.requestFailed.tr();
+    } finally {
+      if (token == _ifscLookupToken) {
+        isLookingUpIfsc = false;
+        safeNotifyListeners();
+      }
+    }
+  }
+
   String? validateHolderName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return AppStrings.accountHolderRequired.tr();
-    }
-    return null;
-  }
-
-  String? validateBankName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return AppStrings.bankNameRequired.tr();
     }
     return null;
   }
@@ -119,6 +224,26 @@ class BankDetailsProvider extends BaseProvider {
     return null;
   }
 
+  String? validateConfirmAccount(String? value) {
+    final account = accountNumberController.text.trim();
+    final confirm = value?.trim() ?? '';
+    final replacing = chequeImage != null;
+    final hasSaved = chequeUrl != null;
+    if (!replacing &&
+        hasSaved &&
+        KycDocNumber.isPlaceholder(account) &&
+        (confirm.isEmpty || confirm == account)) {
+      return null;
+    }
+    if (confirm.isEmpty) {
+      return AppStrings.confirmAccountRequired.tr();
+    }
+    if (confirm != account) {
+      return AppStrings.accountNumberMismatch.tr();
+    }
+    return null;
+  }
+
   String? validateIfsc(String? value) {
     final code = (value ?? '').trim().toUpperCase();
     if (code.isEmpty) {
@@ -127,13 +252,20 @@ class BankDetailsProvider extends BaseProvider {
     if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(code)) {
       return AppStrings.ifscInvalid.tr();
     }
+    if (isLookingUpIfsc) {
+      return AppStrings.ifscLookingUp.tr();
+    }
+    if (!hasVerifiedIfsc) {
+      return ifscError ?? AppStrings.ifscNotVerified.tr();
+    }
     return null;
   }
 
   bool _hasChanges() {
     if (chequeImage != null) return true;
     if (holderNameController.text.trim() != _savedHolder) return true;
-    if (bankNameController.text.trim() != _savedBankName) return true;
+    if ((resolvedBankName ?? '').trim() != _savedBankName) return true;
+    if ((resolvedBranch ?? '').trim() != _savedBranch) return true;
     if (ifscController.text.trim().toUpperCase() != _savedIfsc) return true;
     final account = accountNumberController.text.trim();
     if (KycDocNumber.isPlaceholder(account)) return false;
@@ -141,11 +273,22 @@ class BankDetailsProvider extends BaseProvider {
   }
 
   Future<void> tapOnSubmit() async {
-    if (isLoading || isFetching) return;
+    if (isLoading || isFetching || isLookingUpIfsc) return;
     submitted = true;
+
+    final code = ifscController.text.trim().toUpperCase();
+    if (RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(code) &&
+        !hasVerifiedIfsc) {
+      await lookupIfsc(force: true);
+    }
+
     final fieldsOk = formKey.currentState?.validate() ?? false;
     safeNotifyListeners();
     if (!fieldsOk) return;
+    if (!hasVerifiedIfsc) {
+      AppToast.error(ifscError ?? AppStrings.ifscNotVerified.tr());
+      return;
+    }
     if (!hasCheque) {
       AppToast.error(AppStrings.chequeImageRequired.tr());
       return;
@@ -153,6 +296,13 @@ class BankDetailsProvider extends BaseProvider {
 
     if (!_hasChanges()) {
       _finishSuccess();
+      return;
+    }
+
+    final account = accountNumberController.text.trim();
+    if (KycDocNumber.isPlaceholder(account) ||
+        !RegExp(r'^\d{9,18}$').hasMatch(account)) {
+      AppToast.error(AppStrings.accountNumberRequired.tr());
       return;
     }
 
@@ -181,7 +331,8 @@ class BankDetailsProvider extends BaseProvider {
         holderName: holderNameController.text.trim(),
         accountNumber: accountNumberController.text.trim(),
         ifsc: ifscController.text.trim().toUpperCase(),
-        bankName: bankNameController.text.trim(),
+        bankName: resolvedBankName!.trim(),
+        bankBranch: resolvedBranch?.trim(),
         chequeUrl: nextCheque,
       );
       if (!res.isSuccess) {
@@ -211,9 +362,10 @@ class BankDetailsProvider extends BaseProvider {
 
   @override
   void dispose() {
+    _ifscDebounce?.cancel();
     holderNameController.dispose();
-    bankNameController.dispose();
     accountNumberController.dispose();
+    confirmAccountController.dispose();
     ifscController.dispose();
     super.dispose();
   }

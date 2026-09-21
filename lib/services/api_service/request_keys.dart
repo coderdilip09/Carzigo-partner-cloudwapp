@@ -33,6 +33,7 @@ class RequestKeys {
   static const String accountNumber = 'account_number';
   static const String ifsc = 'ifsc';
   static const String bankName = 'bank_name';
+  static const String bankBranch = 'bank_branch';
   static const String chequeUrl = 'cheque_url';
   static const String status = 'status';
   static const String tab = 'tab';

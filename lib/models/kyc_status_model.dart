@@ -42,6 +42,7 @@ class KycStepDataModel {
 
   bool get isCompleted => status == 'completed';
   bool get isPending => status == 'pending' || status == null;
+  bool get isRejected => status == 'rejected';
 
   factory KycStepDataModel.fromJson(Map<String, dynamic> json) {
     return KycStepDataModel(
@@ -190,6 +191,7 @@ class BankDetailsDataModel {
     this.accountNumberMasked,
     this.ifsc,
     this.bankName,
+    this.bankBranch,
     this.chequeUrl,
     this.status,
     this.completed,
@@ -200,6 +202,7 @@ class BankDetailsDataModel {
   final String? accountNumberMasked;
   final String? ifsc;
   final String? bankName;
+  final String? bankBranch;
   final String? chequeUrl;
   final String? status;
   final bool? completed;
@@ -230,6 +233,9 @@ class BankDetailsDataModel {
       ),
       ifsc: asString(json['ifsc'] ?? json['ifscCode'] ?? json['ifsc_code']),
       bankName: asString(json['bankName'] ?? json['bank_name']),
+      bankBranch: asString(
+        json['bankBranch'] ?? json['bank_branch'] ?? json['branch'],
+      ),
       chequeUrl: asString(
         json['chequeUrl'] ?? json['cheque_url'] ?? json['cheque'],
       ),
@@ -246,6 +252,8 @@ class KycStatusModel {
     this.approval,
     this.message,
     this.rejectReason,
+    this.rejectedAddressReason,
+    this.rejectedBankReason,
     this.canSubmit,
     this.steps = const [],
     this.identityDone,
@@ -266,6 +274,8 @@ class KycStatusModel {
   final String? approval;
   final String? message;
   final String? rejectReason;
+  final String? rejectedAddressReason;
+  final String? rejectedBankReason;
   final bool? canSubmit;
   final List<KycStepDataModel> steps;
   final bool? identityDone;
@@ -288,8 +298,20 @@ class KycStatusModel {
     return null;
   }
 
+  bool get isAddressRejected =>
+      (rejectedAddressReason != null &&
+          rejectedAddressReason!.trim().isNotEmpty) ||
+      stepByKey(KycStepKey.address)?.isRejected == true;
+
+  bool get isBankRejected =>
+      (rejectedBankReason != null && rejectedBankReason!.trim().isNotEmpty) ||
+      stepByKey(KycStepKey.bank)?.isRejected == true;
+
+  bool get hasSectionRejection => isAddressRejected || isBankRejected;
+
   bool _isStepCompleted(String key, bool? fallback, bool nestedDone) {
     final step = stepByKey(key);
+    if (step?.isRejected == true) return false;
     if (step?.isCompleted == true) return true;
     return fallback == true || nestedDone;
   }
@@ -349,6 +371,10 @@ class KycStatusModel {
       json['steps_complete'] ?? json['stepsComplete'],
     );
 
+    final rejectedSections = asMap(
+      json['rejected_sections'] ?? json['rejectedSections'],
+    );
+
     return KycStatusModel(
       overallStatus: asString(
         json['kyc_status'] ??
@@ -366,6 +392,16 @@ class KycStatusModel {
             json['rejectReason'] ??
             json['reject_reason'] ??
             json['reason'],
+      ),
+      rejectedAddressReason: asString(
+        rejectedSections?['address'] ??
+            json['address_rejection_reason'] ??
+            json['addressRejectionReason'],
+      ),
+      rejectedBankReason: asString(
+        rejectedSections?['bank'] ??
+            json['bank_rejection_reason'] ??
+            json['bankRejectionReason'],
       ),
       canSubmit: asBool(json['can_submit'] ?? json['canSubmit']),
       steps: asModelList(json['steps'], KycStepDataModel.fromJson),

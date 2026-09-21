@@ -73,6 +73,12 @@ class AppStrings {
   static const String startKycVerification = 'start_kyc_verification';
   static const String kycPending = 'kyc_pending';
   static const String kycPendingBody = 'kyc_pending_body';
+  static const String kycRejected = 'kyc_rejected';
+  static const String kycRejectedBody = 'kyc_rejected_body';
+  static const String kycSectionLocked = 'kyc_section_locked';
+  static const String rejected = 'rejected';
+  static const String resubmitForReview = 'resubmit_for_review';
+  static const String fixRejectedSections = 'fix_rejected_sections';
   static const String planBenefits = 'plan_benefits';
   static const String identityProof = 'identity_proof';
   static const String addressProof = 'address_proof';
@@ -196,8 +202,10 @@ class AppStrings {
   static const String enterBankDetails = 'enter_bank_details';
   static const String accountHolderName = 'account_holder_name';
   static const String bankAccountNumber = 'bank_account_number';
+  static const String confirmBankAccountNumber = 'confirm_bank_account_number';
   static const String ifscCode = 'ifsc_code';
   static const String bankName = 'bank_name_label';
+  static const String bankBranch = 'bank_branch_label';
   static const String bankNameRequired = 'bank_name_required';
   static const String uploadCheque = 'upload_cheque';
   static const String uploadClearImage = 'upload_clear_image';
@@ -207,8 +215,12 @@ class AppStrings {
   static const String accountHolderRequired = 'account_holder_required';
   static const String accountNumberRequired = 'account_number_required';
   static const String accountNumberInvalid = 'account_number_invalid';
+  static const String confirmAccountRequired = 'confirm_account_required';
+  static const String accountNumberMismatch = 'account_number_mismatch';
   static const String ifscRequired = 'ifsc_required';
   static const String ifscInvalid = 'ifsc_invalid';
+  static const String ifscNotVerified = 'ifsc_not_verified';
+  static const String ifscLookingUp = 'ifsc_looking_up';
   static const String chequeImageRequired = 'cheque_image_required';
   static const String identityDocsHint = 'identity_docs_hint';
   static const String addressDocsHint = 'address_docs_hint';

@@ -52,42 +52,9 @@ class KycOverviewScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        children: [
-                                          AppBackHeader(
-                                            title: AppStrings.completeKyc.tr(),
-                                            onBack: () =>
-                                                showLogoutDialog(context),
-                                          ),
-                                        ],
-                                      ),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: TextButton(
-                                          onPressed: () =>
-                                              showLogoutDialog(context),
-                                          child: Text(
-                                            AppStrings.logout.tr(),
-                                            style:
-                                                AppTextStyles.style(
-                                                  color: AppColors.primary,
-                                                  fontWeight: FontWeight.w600,
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                ).copyWith(
-                                                  decorationColor:
-                                                      AppColors.primary,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                      Text(
-                                        AppStrings.completeKyc.tr(),
-                                        style: AppTextStyles.style(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.textPrimary,
-                                        ),
+                                      AppBackHeader(
+                                        title: AppStrings.completeKyc.tr(),
+                                        onBack: () => showLogoutDialog(context),
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
@@ -102,16 +69,27 @@ class KycOverviewScreen extends StatelessWidget {
                                       Container(
                                         padding: const EdgeInsets.all(16),
                                         decoration: BoxDecoration(
-                                          color: AppColors.peach,
+                                          color: provider.isRejected
+                                              ? AppColors.destructiveLight
+                                              : AppColors.peach,
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
+                                          border: provider.isRejected
+                                              ? Border.all(
+                                                  color: AppColors
+                                                      .destructiveBorder,
+                                                )
+                                              : null,
                                         ),
                                         child: Row(
                                           children: [
-                                            const AppIcon(
+                                            AppIcon(
                                               AppAssets.kycPending,
                                               size: 32,
+                                              color: provider.isRejected
+                                                  ? AppColors.destructive
+                                                  : null,
                                             ),
                                             const SizedBox(width: 12),
                                             Expanded(
@@ -120,7 +98,12 @@ class KycOverviewScreen extends StatelessWidget {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    AppStrings.kycPending.tr(),
+                                                    provider.isRejected
+                                                        ? AppStrings
+                                                              .kycRejected
+                                                              .tr()
+                                                        : AppStrings.kycPending
+                                                              .tr(),
                                                     style: AppTextStyles.style(
                                                       fontWeight:
                                                           FontWeight.w700,
@@ -128,9 +111,13 @@ class KycOverviewScreen extends StatelessWidget {
                                                   ),
                                                   Text(
                                                     provider.bannerMessage ??
-                                                        AppStrings
-                                                            .kycPendingBody
-                                                            .tr(),
+                                                        (provider.isRejected
+                                                            ? AppStrings
+                                                                  .kycRejectedBody
+                                                                  .tr()
+                                                            : AppStrings
+                                                                  .kycPendingBody
+                                                                  .tr()),
                                                     style: AppTextStyles.style(
                                                       fontSize: 12,
                                                       fontWeight:
@@ -139,6 +126,30 @@ class KycOverviewScreen extends StatelessWidget {
                                                           .textSecondary,
                                                     ),
                                                   ),
+                                                  if (provider
+                                                      .isAddressRejected) ...[
+                                                    const SizedBox(height: 6),
+                                                    Text(
+                                                      '${AppStrings.addressProof.tr()}: ${provider.addressRejectReason ?? AppStrings.rejected.tr()}',
+                                                      style: AppTextStyles.style(
+                                                        fontSize: 11,
+                                                        color: AppColors
+                                                            .destructive,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  if (provider
+                                                      .isBankRejected) ...[
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      '${AppStrings.bankDetails.tr()}: ${provider.bankRejectReason ?? AppStrings.rejected.tr()}',
+                                                      style: AppTextStyles.style(
+                                                        fontSize: 11,
+                                                        color: AppColors
+                                                            .destructive,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ],
                                               ),
                                             ),
@@ -147,7 +158,10 @@ class KycOverviewScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 20),
                                       Text(
-                                        AppStrings.planBenefits.tr(),
+                                        provider.hasPartialRejection
+                                            ? AppStrings.fixRejectedSections
+                                                  .tr()
+                                            : AppStrings.planBenefits.tr(),
                                         style: AppTextStyles.style(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
@@ -156,8 +170,8 @@ class KycOverviewScreen extends StatelessWidget {
                                       const SizedBox(height: 12),
                                       _KycItem(
                                         title: AppStrings.identityProof.tr(),
-                                        subtitle: AppStrings.identityDocsHint
-                                            .tr(),
+                                        subtitle:
+                                            AppStrings.identityDocsHint.tr(),
                                         isDone: provider.isIdentityDone,
                                         isPending:
                                             !provider.isLoading &&
@@ -166,22 +180,33 @@ class KycOverviewScreen extends StatelessWidget {
                                       ),
                                       _KycItem(
                                         title: AppStrings.addressProof.tr(),
-                                        subtitle: AppStrings
-                                            .localAddressDocsHint
-                                            .tr(),
+                                        subtitle: provider.isAddressRejected
+                                            ? (provider.addressRejectReason ??
+                                                  AppStrings
+                                                      .localAddressDocsHint
+                                                      .tr())
+                                            : AppStrings.localAddressDocsHint
+                                                  .tr(),
                                         isDone: provider.isAddressProofDone,
                                         isPending:
                                             !provider.isLoading &&
-                                            !provider.isAddressProofDone,
+                                            !provider.isAddressProofDone &&
+                                            !provider.isAddressRejected,
+                                        isRejected: provider.isAddressRejected,
                                         onTap: provider.tapOnAddressProof,
                                       ),
                                       _KycItem(
                                         title: AppStrings.bankDetails.tr(),
-                                        subtitle: AppStrings.bankDocsHint.tr(),
+                                        subtitle: provider.isBankRejected
+                                            ? (provider.bankRejectReason ??
+                                                  AppStrings.bankDocsHint.tr())
+                                            : AppStrings.bankDocsHint.tr(),
                                         isDone: provider.isBankDone,
                                         isPending:
                                             !provider.isLoading &&
-                                            !provider.isBankDone,
+                                            !provider.isBankDone &&
+                                            !provider.isBankRejected,
+                                        isRejected: provider.isBankRejected,
                                         onTap: provider.tapOnBank,
                                       ),
                                       _KycItem(
@@ -198,9 +223,19 @@ class KycOverviewScreen extends StatelessWidget {
                                       const Spacer(),
                                       AppSolidButton(
                                         label: provider.canSubmit
-                                            ? AppStrings.reviewAndSubmit.tr()
-                                            : AppStrings.startKycVerification
-                                                  .tr(),
+                                            ? (provider.isRejected
+                                                  ? AppStrings
+                                                        .resubmitForReview
+                                                        .tr()
+                                                  : AppStrings.reviewAndSubmit
+                                                        .tr())
+                                            : (provider.hasPartialRejection
+                                                  ? AppStrings
+                                                        .fixRejectedSections
+                                                        .tr()
+                                                  : AppStrings
+                                                        .startKycVerification
+                                                        .tr()),
                                         onTap: provider.tapOnStartKyc,
                                         isLoading: provider.isLoading,
                                         trailing: Container(
@@ -248,6 +283,7 @@ class _KycItem extends StatelessWidget {
     required this.subtitle,
     this.isDone = false,
     this.isPending = false,
+    this.isRejected = false,
     this.onTap,
   });
 
@@ -255,6 +291,7 @@ class _KycItem extends StatelessWidget {
   final String subtitle;
   final bool isDone;
   final bool isPending;
+  final bool isRejected;
   final VoidCallback? onTap;
 
   @override
@@ -265,10 +302,18 @@ class _KycItem extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isDone ? AppColors.peachLight : AppColors.white,
+          color: isRejected
+              ? AppColors.destructiveLight
+              : isDone
+                  ? AppColors.peachLight
+                  : AppColors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isDone ? AppColors.completedCardBorder : AppColors.border,
+            color: isRejected
+                ? AppColors.destructiveBorder
+                : isDone
+                    ? AppColors.completedCardBorder
+                    : AppColors.border,
           ),
         ),
         child: Row(
@@ -287,13 +332,34 @@ class _KycItem extends StatelessWidget {
                     style: AppTextStyles.style(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                      color: isRejected
+                          ? AppColors.destructive
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isDone)
+            if (isRejected)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.destructive,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  AppStrings.rejected.tr(),
+                  style: AppTextStyles.style(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.white,
+                  ),
+                ),
+              )
+            else if (isDone)
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(

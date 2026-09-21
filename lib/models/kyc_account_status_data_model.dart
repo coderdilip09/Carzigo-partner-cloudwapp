@@ -9,6 +9,8 @@ class KycAccountStatusDataModel {
     this.partnerKycStatus,
     this.submittedAt,
     this.rejectionReason,
+    this.rejectedAddressReason,
+    this.rejectedBankReason,
     this.message,
   });
 
@@ -18,6 +20,8 @@ class KycAccountStatusDataModel {
   final String? partnerKycStatus;
   final String? submittedAt;
   final String? rejectionReason;
+  final String? rejectedAddressReason;
+  final String? rejectedBankReason;
   final String? message;
 
   String? get _approval => approval?.toLowerCase();
@@ -30,10 +34,15 @@ class KycAccountStatusDataModel {
       _partnerStatus == KycOverallStatus.approved ||
       _partnerStatus == KycOverallStatus.active;
 
+  bool get isRejected =>
+      _kycStatus == KycOverallStatus.rejected ||
+      partnerKycStatus?.toLowerCase() == KycOverallStatus.rejected;
+
   /// KYC has been submitted and is waiting on review / partner approval.
-  /// Draft / in-progress KYC must stay on KYC Overview even if approval is pending.
+  /// Draft / rejected / in-progress KYC must stay on KYC Overview.
   bool get isSubmittedForReview {
     if (isApproved) return false;
+    if (isRejected) return false;
 
     final kyc = _kycStatus;
     if (kyc == KycOverallStatus.pendingReview ||
@@ -57,6 +66,9 @@ class KycAccountStatusDataModel {
   bool get isPendingReview => isSubmittedForReview;
 
   factory KycAccountStatusDataModel.fromJson(Map<String, dynamic> json) {
+    final rejectedSections = asMap(
+      json['rejected_sections'] ?? json['rejectedSections'],
+    );
     return KycAccountStatusDataModel(
       kycStatus: asString(json['kyc_status'] ?? json['kycStatus']),
       partnerStatus: asString(
@@ -72,6 +84,8 @@ class KycAccountStatusDataModel {
             json['rejectReason'] ??
             json['reject_reason'],
       ),
+      rejectedAddressReason: asString(rejectedSections?['address']),
+      rejectedBankReason: asString(rejectedSections?['bank']),
       message: asString(json['message']),
     );
   }

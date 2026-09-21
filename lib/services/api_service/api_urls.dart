@@ -26,6 +26,7 @@ class ApiUrls {
   static const String kycDigilockerStart = 'kyc/digilocker/start';
   static const String kycDigilockerComplete = 'kyc/digilocker/complete';
   static const String kycBank = 'kyc/bank';
+  static const String kycIfsc = 'kyc/ifsc';
   static const String kycReview = 'kyc/review';
   static const String kycSubmit = 'kyc/submit';
 
@@ -61,6 +62,7 @@ class ApiUrls {
   static String kycDigilockerStartUrl() => _join(kycDigilockerStart);
   static String kycDigilockerCompleteUrl() => _join(kycDigilockerComplete);
   static String kycBankUrl() => _join(kycBank);
+  static String kycIfscUrl(String code) => _join('$kycIfsc/$code');
   static String kycReviewUrl() => _join(kycReview);
   static String kycSubmitUrl() => _join(kycSubmit);
 
