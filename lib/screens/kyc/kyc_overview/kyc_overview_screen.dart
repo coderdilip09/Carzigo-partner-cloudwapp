@@ -49,127 +49,180 @@ class KycOverviewScreen extends StatelessWidget {
                                 ),
                                 child: IntrinsicHeight(
                                   child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppBackHeader(
-                            title: AppStrings.completeKyc.tr(),
-                            onBack: () => showLogoutDialog(context),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            AppStrings.kycSubtitle.tr(),
-                            style: AppTextStyles.style(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.peach,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                const AppIcon(AppAssets.kycPending, size: 32),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        AppStrings.kycPending.tr(),
-                                        style: AppTextStyles.style(
-                                          fontWeight: FontWeight.w700,
+                                      Row(
+                                        children: [
+                                          AppBackHeader(
+                                            title: AppStrings.completeKyc.tr(),
+                                            onBack: () =>
+                                                showLogoutDialog(context),
+                                          ),
+                                        ],
+                                      ),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton(
+                                          onPressed: () =>
+                                              showLogoutDialog(context),
+                                          child: Text(
+                                            AppStrings.logout.tr(),
+                                            style:
+                                                AppTextStyles.style(
+                                                  color: AppColors.primary,
+                                                  fontWeight: FontWeight.w600,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ).copyWith(
+                                                  decorationColor:
+                                                      AppColors.primary,
+                                                ),
+                                          ),
                                         ),
                                       ),
                                       Text(
-                                        provider.bannerMessage ??
-                                            AppStrings.kycPendingBody.tr(),
+                                        AppStrings.completeKyc.tr(),
                                         style: AppTextStyles.style(
-                                          fontSize: 12,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        AppStrings.kycSubtitle.tr(),
+                                        style: AppTextStyles.style(
+                                          fontSize: 13,
                                           fontWeight: FontWeight.w500,
                                           color: AppColors.textSecondary,
                                         ),
                                       ),
+                                      const SizedBox(height: 20),
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.peach,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const AppIcon(
+                                              AppAssets.kycPending,
+                                              size: 32,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    AppStrings.kycPending.tr(),
+                                                    style: AppTextStyles.style(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    provider.bannerMessage ??
+                                                        AppStrings
+                                                            .kycPendingBody
+                                                            .tr(),
+                                                    style: AppTextStyles.style(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Text(
+                                        AppStrings.planBenefits.tr(),
+                                        style: AppTextStyles.style(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _KycItem(
+                                        title: AppStrings.identityProof.tr(),
+                                        subtitle: AppStrings.identityDocsHint
+                                            .tr(),
+                                        isDone: provider.isIdentityDone,
+                                        isPending:
+                                            !provider.isLoading &&
+                                            !provider.isIdentityDone,
+                                        onTap: provider.tapOnIdentity,
+                                      ),
+                                      _KycItem(
+                                        title: AppStrings.addressProof.tr(),
+                                        subtitle: AppStrings
+                                            .localAddressDocsHint
+                                            .tr(),
+                                        isDone: provider.isAddressProofDone,
+                                        isPending:
+                                            !provider.isLoading &&
+                                            !provider.isAddressProofDone,
+                                        onTap: provider.tapOnAddressProof,
+                                      ),
+                                      _KycItem(
+                                        title: AppStrings.bankDetails.tr(),
+                                        subtitle: AppStrings.bankDocsHint.tr(),
+                                        isDone: provider.isBankDone,
+                                        isPending:
+                                            !provider.isLoading &&
+                                            !provider.isBankDone,
+                                        onTap: provider.tapOnBank,
+                                      ),
+                                      _KycItem(
+                                        title: AppStrings.profilePhoto.tr(),
+                                        subtitle: AppStrings
+                                            .clearPhotoVerification
+                                            .tr(),
+                                        isDone: provider.isProfilePhotoDone,
+                                        isPending:
+                                            !provider.isLoading &&
+                                            !provider.isProfilePhotoDone,
+                                        onTap: provider.tapOnProfilePhoto,
+                                      ),
+                                      const Spacer(),
+                                      AppSolidButton(
+                                        label: provider.canSubmit
+                                            ? AppStrings.reviewAndSubmit.tr()
+                                            : AppStrings.startKycVerification
+                                                  .tr(),
+                                        onTap: provider.tapOnStartKyc,
+                                        isLoading: provider.isLoading,
+                                        trailing: Container(
+                                          width: 28,
+                                          height: 28,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: AppColors.white,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: AppIcon(
+                                            AppAssets.arrowForward,
+                                            size: 16,
+                                            color: AppColors.white,
+                                          ),
+                                        ),
+                                      ),
                                     ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            AppStrings.planBenefits.tr(),
-                            style: AppTextStyles.style(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _KycItem(
-                            title: AppStrings.identityProof.tr(),
-                            subtitle: AppStrings.identityDocsHint.tr(),
-                            isDone: provider.isIdentityDone,
-                            isPending:
-                                !provider.isLoading && !provider.isIdentityDone,
-                            onTap: provider.tapOnIdentity,
-                          ),
-                          _KycItem(
-                            title: AppStrings.addressProof.tr(),
-                            subtitle: AppStrings.addressDocsHint.tr(),
-                            isDone: provider.isAddressDone,
-                            isPending:
-                                !provider.isLoading && !provider.isAddressDone,
-                            onTap: provider.tapOnAddress,
-                          ),
-                          _KycItem(
-                            title: AppStrings.bankDetails.tr(),
-                            subtitle: AppStrings.bankDocsHint.tr(),
-                            isDone: provider.isBankDone,
-                            isPending:
-                                !provider.isLoading && !provider.isBankDone,
-                            onTap: provider.tapOnBank,
-                          ),
-                          _KycItem(
-                            title: AppStrings.profilePhoto.tr(),
-                            subtitle: AppStrings.clearPhotoVerification.tr(),
-                            isDone: provider.isProfilePhotoDone,
-                            isPending:
-                                !provider.isLoading &&
-                                !provider.isProfilePhotoDone,
-                            onTap: provider.tapOnProfilePhoto,
-                          ),
-                          const Spacer(),
-                          AppSolidButton(
-                            label: provider.canSubmit
-                                ? AppStrings.reviewAndSubmit.tr()
-                                : AppStrings.startKycVerification.tr(),
-                            onTap: provider.tapOnStartKyc,
-                            isLoading: provider.isLoading,
-                            trailing: Container(
-                              width: 28,
-                              height: 28,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.white,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: AppIcon(
-                                AppAssets.arrowForward,
-                                size: 16,
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ),
-                        ],
                                   ),
                                 ),
                               ),

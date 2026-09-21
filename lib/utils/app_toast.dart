@@ -18,7 +18,7 @@ class AppToast {
       msg: message,
       toastLength: length,
       gravity: gravity,
-      timeInSecForIosWeb: 2,
+      timeInSecForIosWeb: length == Toast.LENGTH_LONG ? 4 : 2,
       backgroundColor: backgroundColor,
       textColor: textColor,
       fontSize: 14,
@@ -30,6 +30,10 @@ class AppToast {
   }
 
   static void error(String message) {
-    show(message, backgroundColor: AppColors.destructive);
+    show(
+      message,
+      backgroundColor: AppColors.destructive,
+      length: Toast.LENGTH_LONG,
+    );
   }
 }

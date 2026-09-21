@@ -15,6 +15,7 @@ class PrefsService {
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
   static const String _fcmTokenKey = 'fcm_token';
+  static const String _localAddressKey = 'kyc_local_address';
 
   SharedPreferences? _prefs;
   final FlutterSecureStorage _secure = const FlutterSecureStorage(
@@ -127,10 +128,92 @@ class PrefsService {
     return sp.getString(_fcmTokenKey);
   }
 
+  Future<void> saveLocalAddress(LocalAddressData address) async {
+    final sp = await _sp();
+    await sp.setString(_localAddressKey, jsonEncode(address.toJson()));
+  }
+
+  Future<LocalAddressData?> getLocalAddress() async {
+    final sp = await _sp();
+    final raw = sp.getString(_localAddressKey);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final map = jsonDecode(raw);
+      if (map is Map<String, dynamic>) {
+        return LocalAddressData.fromJson(map);
+      }
+      if (map is Map) {
+        return LocalAddressData.fromJson(Map<String, dynamic>.from(map));
+      }
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('PrefsService.getLocalAddress failed: $e\n$st');
+      }
+    }
+    return null;
+  }
+
+  Future<bool> hasLocalAddress() async {
+    final saved = await getLocalAddress();
+    return saved?.isComplete == true;
+  }
+
   Future<void> clear() async {
     await _secure.delete(key: _tokenKey);
     final sp = await _sp();
     await sp.remove(_tokenKey);
     await sp.remove(_userKey);
+    await sp.remove(_localAddressKey);
+  }
+}
+
+class LocalAddressData {
+  LocalAddressData({
+    required this.line,
+    this.landmark,
+    required this.city,
+    required this.state,
+    required this.pincode,
+  });
+
+  final String line;
+  final String? landmark;
+  final String city;
+  final String state;
+  final String pincode;
+
+  bool get isComplete =>
+      line.trim().isNotEmpty &&
+      city.trim().isNotEmpty &&
+      state.trim().isNotEmpty &&
+      RegExp(r'^\d{6}$').hasMatch(pincode.trim());
+
+  String get displayLine =>
+      [
+        line,
+        if ((landmark ?? '').trim().isNotEmpty) landmark!.trim(),
+        city,
+        state,
+        pincode,
+      ].where((e) => e.trim().isNotEmpty).join(', ');
+
+  factory LocalAddressData.fromJson(Map<String, dynamic> json) {
+    return LocalAddressData(
+      line: (json['line'] ?? json['address_line'] ?? '').toString(),
+      landmark: json['landmark']?.toString(),
+      city: (json['city'] ?? '').toString(),
+      state: (json['state'] ?? '').toString(),
+      pincode: (json['pincode'] ?? json['pin_code'] ?? '').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'line': line,
+      if ((landmark ?? '').trim().isNotEmpty) 'landmark': landmark!.trim(),
+      'city': city,
+      'state': state,
+      'pincode': pincode,
+    };
   }
 }

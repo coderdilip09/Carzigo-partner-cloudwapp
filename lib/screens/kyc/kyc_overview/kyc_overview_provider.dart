@@ -1,8 +1,8 @@
 import 'package:carzigo_partner/models/kyc_status_model.dart';
-import 'package:carzigo_partner/screens/kyc/address_proof/address_proof_screen.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
 import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_review/kyc_review_screen.dart';
+import 'package:carzigo_partner/screens/kyc/local_address/local_address_screen.dart';
 import 'package:carzigo_partner/screens/profile/edit_profile/edit_profile_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
@@ -16,7 +16,7 @@ class KycOverviewProvider extends BaseProvider {
   bool isLoading = false;
 
   bool get isIdentityDone => overview?.isIdentityDone ?? false;
-  bool get isAddressDone => overview?.isAddressDone ?? false;
+  bool get isAddressProofDone => overview?.isAddressProofDone ?? false;
   bool get isBankDone => overview?.isBankDone ?? false;
   bool get isProfilePhotoDone => overview?.isProfilePhotoDone ?? false;
   bool get canSubmit => overview?.canSubmit == true;
@@ -48,12 +48,23 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnIdentity() async {
-    await AppNavigation.to(IdentityProofScreen(loadSaved: isIdentityDone));
+    await AppNavigation.to(
+      IdentityProofScreen(
+        loadSaved: isIdentityDone,
+        editOnly: isIdentityDone,
+      ),
+    );
     await load();
   }
 
-  Future<void> tapOnAddress() async {
-    await AppNavigation.to(AddressProofScreen(loadSaved: isAddressDone));
+  Future<void> tapOnAddressProof() async {
+    if (!isIdentityDone) {
+      AppToast.error(AppStrings.completeIdentityFirst.tr());
+      return;
+    }
+    await AppNavigation.to(
+      LocalAddressScreen(editOnly: isAddressProofDone),
+    );
     await load();
   }
 
@@ -63,6 +74,18 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnProfilePhoto() async {
+    if (!isIdentityDone) {
+      AppToast.error(AppStrings.completeIdentityFirst.tr());
+      return;
+    }
+    if (!isAddressProofDone) {
+      AppToast.error(AppStrings.completeAddressFirst.tr());
+      return;
+    }
+    if (!isBankDone) {
+      AppToast.error(AppStrings.completeBankFirst.tr());
+      return;
+    }
     await AppNavigation.to(const EditProfileScreen());
     await load();
   }
@@ -72,8 +95,8 @@ class KycOverviewProvider extends BaseProvider {
       await AppNavigation.to(const IdentityProofScreen());
       return;
     }
-    if (!isAddressDone) {
-      await AppNavigation.to(const AddressProofScreen());
+    if (!isAddressProofDone) {
+      await AppNavigation.to(const LocalAddressScreen());
       return;
     }
     if (!isBankDone) {

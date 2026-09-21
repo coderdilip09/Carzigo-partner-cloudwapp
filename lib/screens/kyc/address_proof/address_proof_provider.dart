@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
+import 'package:carzigo_partner/models/kyc_status_model.dart';
+import 'package:carzigo_partner/screens/kyc/local_address/local_address_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_status.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
@@ -24,13 +25,13 @@ class AddressProofProvider extends BaseProvider {
 
   final bool loadSaved;
 
-  /// Profile Documents / Review edit: save then pop back (no Bank next).
+  /// Profile Documents / Review edit: save then pop back (no Local Address next).
   final bool editOnly;
   final formKey = GlobalKey<FormState>();
   final numberController = TextEditingController();
 
-  int selectedDoc = 0;
-  int _savedDoc = 0;
+  int selectedDoc = KycDocNumber.aadhaar;
+  int _savedDoc = KycDocNumber.aadhaar;
   File? documentImage;
   String? documentUrl;
   String _savedNumber = '';
@@ -38,11 +39,7 @@ class AddressProofProvider extends BaseProvider {
   bool isLoading = false;
   bool isFetching = false;
 
-  final docs = [
-    AppStrings.aadhaarCard,
-    AppStrings.panCard,
-    AppStrings.drivingLicense,
-  ];
+  final docs = [AppStrings.aadhaarCard];
 
   bool get hasDocument =>
       documentImage != null || (documentUrl?.isNotEmpty ?? false);
@@ -63,7 +60,7 @@ class AddressProofProvider extends BaseProvider {
       final address = res.data?.address;
       if (address == null || !address.isDone) return;
 
-      selectedDoc = KycDocNumber.indexFromApi(address.docType);
+      selectedDoc = KycDocNumber.aadhaar;
       _savedDoc = selectedDoc;
       documentUrl = address.documentUrl;
       final number = address.maskedNumber?.trim() ?? '';
@@ -81,13 +78,7 @@ class AddressProofProvider extends BaseProvider {
   }
 
   void selectDoc(int index) {
-    if (selectedDoc == index) return;
-    selectedDoc = index;
-    numberController.clear();
-    submitted = false;
-    documentImage = null;
-    documentUrl = null;
-    safeNotifyListeners();
+    // Aadhaar only — selection is fixed.
   }
 
   String? validateDocumentNumber(String? value) {
@@ -129,7 +120,7 @@ class AddressProofProvider extends BaseProvider {
       AppNavigation.back();
       return;
     }
-    AppNavigation.to(const BankDetailsScreen(loadSaved: true));
+    AppNavigation.to(const LocalAddressScreen());
   }
 
   Future<void> tapOnSubmit() async {
@@ -167,7 +158,7 @@ class AddressProofProvider extends BaseProvider {
       }
 
       final res = await Api.uploadAddress(
-        docType: KycDocNumber.apiType(selectedDoc),
+        docType: KycDocType.aadhaar,
         docNumber: numberController.text.trim(),
         docUrl: nextUrl,
       );

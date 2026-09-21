@@ -20,6 +20,7 @@ class KycStepKey {
 
   static const String identity = 'identity';
   static const String address = 'address';
+  static const String localAddress = 'local_address';
   static const String bank = 'bank';
   static const String photo = 'photo';
 }
@@ -58,6 +59,8 @@ class KycDocumentDataModel {
     this.frontUrl,
     this.backUrl,
     this.documentUrl,
+    this.fullName,
+    this.verifiedVia,
     this.status,
     this.completed,
   });
@@ -67,6 +70,8 @@ class KycDocumentDataModel {
   final String? frontUrl;
   final String? backUrl;
   final String? documentUrl;
+  final String? fullName;
+  final String? verifiedVia;
   final String? status;
   final bool? completed;
 
@@ -78,7 +83,8 @@ class KycDocumentDataModel {
       status == 'approved' ||
       status == 'completed' ||
       frontUrl != null ||
-      documentUrl != null;
+      documentUrl != null ||
+      verifiedVia == 'digilocker';
 
   factory KycDocumentDataModel.fromJson(Map<String, dynamic> json) {
     return KycDocumentDataModel(
@@ -99,8 +105,80 @@ class KycDocumentDataModel {
             json['document_url'] ??
             json['url'],
       ),
+      fullName: asString(json['full_name'] ?? json['fullName'] ?? json['name']),
+      verifiedVia: asString(json['verified_via'] ?? json['verifiedVia']),
       status: asString(json['status']),
       completed: asBool(json['completed']),
+    );
+  }
+}
+
+class LocalAddressDataModel {
+  LocalAddressDataModel({
+    this.addressLine,
+    this.landmark,
+    this.city,
+    this.state,
+    this.pincode,
+    this.completed,
+  });
+
+  final String? addressLine;
+  final String? landmark;
+  final String? city;
+  final String? state;
+  final String? pincode;
+  final bool? completed;
+
+  bool get isDone =>
+      completed == true ||
+      ((addressLine?.trim().isNotEmpty ?? false) &&
+          (city?.trim().isNotEmpty ?? false) &&
+          (state?.trim().isNotEmpty ?? false) &&
+          (pincode?.trim().isNotEmpty ?? false));
+
+  factory LocalAddressDataModel.fromJson(Map<String, dynamic> json) {
+    return LocalAddressDataModel(
+      addressLine: asString(
+        json['address_line'] ?? json['addressLine'] ?? json['line'],
+      ),
+      landmark: asString(json['landmark']),
+      city: asString(json['city']),
+      state: asString(json['state']),
+      pincode: asString(json['pincode'] ?? json['pin_code'] ?? json['pinCode']),
+      completed: asBool(json['completed']),
+    );
+  }
+}
+
+class DigilockerStartDataModel {
+  DigilockerStartDataModel({
+    this.clientId,
+    this.token,
+    this.url,
+    this.gateway,
+    this.expirySeconds,
+  });
+
+  final String? clientId;
+  final String? token;
+  final String? url;
+  final String? gateway;
+  final num? expirySeconds;
+
+  factory DigilockerStartDataModel.fromJson(Map<String, dynamic> json) {
+    return DigilockerStartDataModel(
+      clientId: asString(json['client_id'] ?? json['clientId']),
+      token: asString(json['token'] ?? json['sdk_token'] ?? json['sdkToken']),
+      url: asString(
+        json['url'] ??
+            json['link'] ??
+            json['redirect_url'] ??
+            json['redirectUrl'],
+      ),
+      gateway: asString(json['gateway']),
+      expirySeconds: json['expiry_seconds'] as num? ??
+          json['expirySeconds'] as num?,
     );
   }
 }
@@ -172,10 +250,13 @@ class KycStatusModel {
     this.steps = const [],
     this.identityDone,
     this.addressDone,
+    this.localAddressDone,
     this.bankDone,
     this.profilePhotoDone,
     this.identity,
     this.address,
+    this.localAddress,
+    this.addressSameAsDocument,
     this.bank,
     this.profile,
   });
@@ -189,10 +270,14 @@ class KycStatusModel {
   final List<KycStepDataModel> steps;
   final bool? identityDone;
   final bool? addressDone;
+  final bool? localAddressDone;
   final bool? bankDone;
   final bool? profilePhotoDone;
   final KycDocumentDataModel? identity;
   final KycDocumentDataModel? address;
+  final LocalAddressDataModel? localAddress;
+  /// null = not answered yet; true = Yes; false = No.
+  final bool? addressSameAsDocument;
   final BankDetailsDataModel? bank;
   final KycProfileDataModel? profile;
 
@@ -217,8 +302,16 @@ class KycStatusModel {
   bool get isAddressDone => _isStepCompleted(
     KycStepKey.address,
     addressDone,
-    address?.isDone ?? false,
+    (address?.isDone ?? false) && (localAddress?.isDone ?? false),
   );
+  bool get isLocalAddressDone => _isStepCompleted(
+    KycStepKey.localAddress,
+    localAddressDone,
+    localAddress?.isDone ?? false,
+  );
+  /// Address Proof card (unified doc + residential fields).
+  bool get isAddressProofDone =>
+      isAddressDone || (isLocalAddressDone && (address?.isDone ?? false));
   bool get isBankDone =>
       _isStepCompleted(KycStepKey.bank, bankDone, bank?.isDone ?? false);
   bool get isProfilePhotoDone => _isStepCompleted(
@@ -242,6 +335,12 @@ class KycStatusModel {
   factory KycStatusModel.fromJson(Map<String, dynamic> json) {
     final identityMap = asMap(json['identity'] ?? json['identityProof']);
     final addressMap = asMap(json['address'] ?? json['addressProof']);
+    final localAddressMap = asMap(
+      json['local_address'] ?? json['localAddress'],
+    );
+    final addressProofMap = asMap(
+      json['address_proof'] ?? json['addressProof'],
+    );
     final bankMap = asMap(
       json['bank'] ?? json['bankDetails'] ?? json['bank_details'],
     );
@@ -280,6 +379,11 @@ class KycStatusModel {
             json['address_done'] ??
             stepsComplete?['address'],
       ),
+      localAddressDone: asBool(
+        json['localAddressDone'] ??
+            json['local_address_done'] ??
+            stepsComplete?['local_address'],
+      ),
       bankDone: asBool(
         json['bankDone'] ?? json['bank_done'] ?? stepsComplete?['bank'],
       ),
@@ -294,6 +398,15 @@ class KycStatusModel {
       address: addressMap == null
           ? null
           : KycDocumentDataModel.fromJson(addressMap),
+      localAddress: localAddressMap == null
+          ? null
+          : LocalAddressDataModel.fromJson(localAddressMap),
+      addressSameAsDocument: asBool(
+        addressProofMap?['same_as_document'] ??
+            addressProofMap?['sameAsDocument'] ??
+            json['address_same_as_document'] ??
+            json['addressSameAsDocument'],
+      ),
       bank: bankMap == null ? null : BankDetailsDataModel.fromJson(bankMap),
       profile: profileMap == null
           ? null

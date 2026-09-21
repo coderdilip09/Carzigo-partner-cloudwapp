@@ -1,9 +1,9 @@
 import 'package:carzigo_partner/models/kyc_status_model.dart';
 import 'package:carzigo_partner/screens/kyc/application_pending/application_pending_screen.dart';
-import 'package:carzigo_partner/screens/kyc/address_proof/address_proof_screen.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
 import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
+import 'package:carzigo_partner/screens/kyc/local_address/local_address_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -27,14 +27,28 @@ class KycReviewProvider extends BaseProvider {
       ? review!.identity!.maskedNumber!
       : '-';
 
-  String get addressDocLabel =>
-      KycDocNumber.cardLabel(review?.address?.docType);
+  String get addressDocLabel {
+    final line = review?.localAddress?.addressLine?.trim();
+    if (line != null && line.isNotEmpty) return line;
+    return KycDocNumber.cardLabel(review?.address?.docType);
+  }
 
-  String get addressMasked =>
-      review?.address?.maskedNumber?.trim().isNotEmpty == true
-      ? review!.address!.maskedNumber!
-      : '-';
-
+  String get addressMasked {
+    final local = review?.localAddress;
+    final city = local?.city?.trim();
+    final pin = local?.pincode?.trim();
+    if (city != null && city.isNotEmpty) {
+      final parts = [
+        city,
+        if (local?.state?.trim().isNotEmpty == true) local!.state!.trim(),
+        if (pin != null && pin.isNotEmpty) pin,
+      ];
+      return parts.join(', ');
+    }
+    return review?.address?.maskedNumber?.trim().isNotEmpty == true
+        ? review!.address!.maskedNumber!
+        : '-';
+  }
   String get bankName =>
       review?.bank?.bankName?.trim().isNotEmpty == true
       ? review!.bank!.bankName!
@@ -68,7 +82,13 @@ class KycReviewProvider extends BaseProvider {
   Future<void> tapOnSubmit() async {
     if (isSubmitting || isLoading) return;
     if (!canSubmit) {
-      AppToast.error(AppStrings.requestFailed.tr());
+      if (review?.isIdentityDone != true) {
+        AppToast.error(AppStrings.completeIdentityFirst.tr());
+      } else if (review?.isAddressProofDone != true) {
+        AppToast.error(AppStrings.completeAddressFirst.tr());
+      } else {
+        AppToast.error(AppStrings.kycIncomplete.tr());
+      }
       return;
     }
 
@@ -105,7 +125,7 @@ class KycReviewProvider extends BaseProvider {
 
   Future<void> tapOnEditAddress() async {
     await AppNavigation.to(
-      const AddressProofScreen(loadSaved: true, editOnly: true),
+      const LocalAddressScreen(editOnly: true),
     );
     await load();
   }

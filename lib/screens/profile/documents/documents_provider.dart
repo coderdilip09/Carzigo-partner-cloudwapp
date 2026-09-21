@@ -1,5 +1,4 @@
 import 'package:carzigo_partner/models/kyc_status_model.dart';
-import 'package:carzigo_partner/screens/kyc/address_proof/address_proof_screen.dart';
 import 'package:carzigo_partner/screens/kyc/application_pending/application_pending_screen.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
 import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_screen.dart';
@@ -110,7 +109,7 @@ class DocumentsProvider extends BaseProvider {
 
   Future<void> tapOnEditAddress() async {
     await AppNavigation.to(
-      const AddressProofScreen(loadSaved: true, editOnly: true),
+      const IdentityProofScreen(loadSaved: true, editOnly: true),
     );
     await load();
   }

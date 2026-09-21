@@ -27,11 +27,7 @@ class AddressProofScreen extends StatelessWidget {
   final bool loadSaved;
   final bool editOnly;
 
-  static const _docIcons = [
-    AppAssets.aadhaar,
-    AppAssets.pan,
-    AppAssets.drivingLicense,
-  ];
+  static const _docIcons = [AppAssets.aadhaar];
 
   @override
   Widget build(BuildContext context) {
@@ -90,13 +86,6 @@ class AddressProofScreen extends StatelessWidget {
                           AppStrings.selectDocumentType.tr(),
                           style: AppTextStyles.style(
                             fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          AppStrings.chooseAnyOne.tr(),
-                          style: AppTextStyles.style(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 12),

@@ -58,11 +58,16 @@ class EditProfileScreen extends StatelessWidget {
                               const SizedBox(height: 28),
                               Center(
                                 child: GestureDetector(
-                                  onTap: () => showImageSourceSheet(
-                                    context,
-                                    onCamera: provider.pickFromCamera,
-                                    onGallery: provider.pickFromGallery,
-                                  ),
+                                  onTap: () async {
+                                    // Local navigator: sheet stays on Edit Profile
+                                    // and never skips straight to the camera.
+                                    await showImageSourceSheet(
+                                      context,
+                                      useRootNavigator: false,
+                                      onCamera: provider.pickFromCamera,
+                                      onGallery: provider.pickFromGallery,
+                                    );
+                                  },
                                   child: Stack(
                                     clipBehavior: Clip.none,
                                     children: [

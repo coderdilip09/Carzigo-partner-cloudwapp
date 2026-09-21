@@ -21,6 +21,14 @@ class RequestKeys {
   static const String frontUrl = 'front_url';
   static const String backUrl = 'back_url';
   static const String docUrl = 'doc_url';
+  static const String addressLine = 'address_line';
+  static const String landmark = 'landmark';
+  static const String city = 'city';
+  static const String state = 'state';
+  static const String pincode = 'pincode';
+  static const String sameAsDocument = 'same_as_document';
+  static const String clientId = 'client_id';
+  static const String redirectUrl = 'redirect_url';
   static const String holderName = 'account_holder_name';
   static const String accountNumber = 'account_number';
   static const String ifsc = 'ifsc';

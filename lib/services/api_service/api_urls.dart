@@ -21,6 +21,10 @@ class ApiUrls {
   static const String kycAccountStatus = 'kyc/status';
   static const String kycIdentity = 'kyc/identity';
   static const String kycAddress = 'kyc/address';
+  static const String kycLocalAddress = 'kyc/local-address';
+  static const String kycAddressProof = 'kyc/address-proof';
+  static const String kycDigilockerStart = 'kyc/digilocker/start';
+  static const String kycDigilockerComplete = 'kyc/digilocker/complete';
   static const String kycBank = 'kyc/bank';
   static const String kycReview = 'kyc/review';
   static const String kycSubmit = 'kyc/submit';
@@ -52,6 +56,10 @@ class ApiUrls {
   static String kycAccountStatusUrl() => _join(kycAccountStatus);
   static String kycIdentityUrl() => _join(kycIdentity);
   static String kycAddressUrl() => _join(kycAddress);
+  static String kycLocalAddressUrl() => _join(kycLocalAddress);
+  static String kycAddressProofUrl() => _join(kycAddressProof);
+  static String kycDigilockerStartUrl() => _join(kycDigilockerStart);
+  static String kycDigilockerCompleteUrl() => _join(kycDigilockerComplete);
   static String kycBankUrl() => _join(kycBank);
   static String kycReviewUrl() => _join(kycReview);
   static String kycSubmitUrl() => _join(kycSubmit);

@@ -186,6 +186,66 @@ class Api {
     }, (data) => KycStatusModel.fromJson(asMap(data) ?? {}));
   }
 
+  static Future<ResponseWrapperModel<LocalAddressDataModel?>>
+  saveLocalAddress({
+    required String addressLine,
+    String? landmark,
+    required String city,
+    required String state,
+    required String pincode,
+  }) {
+    return _putParsed(ApiUrls.kycLocalAddressUrl(), {
+      RequestKeys.addressLine: addressLine,
+      if (landmark != null) RequestKeys.landmark: landmark,
+      RequestKeys.city: city,
+      RequestKeys.state: state,
+      RequestKeys.pincode: pincode,
+    }, (data) => LocalAddressDataModel.fromJson(asMap(data) ?? {}));
+  }
+
+  /// Unified Address Proof: Yes = same_as_document true; No = fields + doc.
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> saveAddressProof({
+    required bool sameAsDocument,
+    String? addressLine,
+    String? landmark,
+    String? city,
+    String? state,
+    String? pincode,
+    String? docType,
+    String? docNumber,
+    String? docUrl,
+  }) {
+    return _putParsed(ApiUrls.kycAddressProofUrl(), {
+      RequestKeys.sameAsDocument: sameAsDocument,
+      if (!sameAsDocument) ...{
+        RequestKeys.addressLine: addressLine,
+        RequestKeys.landmark: landmark,
+        RequestKeys.city: city,
+        RequestKeys.state: state,
+        RequestKeys.pincode: pincode,
+        RequestKeys.docType: docType,
+        RequestKeys.docNumber: docNumber,
+        RequestKeys.docUrl: docUrl,
+      },
+    }, (data) => asMap(data));
+  }
+
+  static Future<ResponseWrapperModel<DigilockerStartDataModel?>>
+  startDigilocker({String? redirectUrl}) {
+    return _postParsed(ApiUrls.kycDigilockerStartUrl(), {
+      if (redirectUrl != null && redirectUrl.isNotEmpty)
+        RequestKeys.redirectUrl: redirectUrl,
+    }, (data) => DigilockerStartDataModel.fromJson(asMap(data) ?? {}));
+  }
+
+  static Future<ResponseWrapperModel<KycStatusModel?>> completeDigilocker({
+    required String clientId,
+  }) {
+    return _postParsed(ApiUrls.kycDigilockerCompleteUrl(), {
+      RequestKeys.clientId: clientId,
+    }, (data) => KycStatusModel.fromJson(asMap(data) ?? {}));
+  }
+
   static Future<ResponseWrapperModel<KycStatusModel?>> uploadBank({
     required String holderName,
     required String accountNumber,
