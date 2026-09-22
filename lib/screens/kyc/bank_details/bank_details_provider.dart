@@ -19,6 +19,7 @@ class BankDetailsProvider extends BaseProvider {
   BankDetailsProvider({
     this.loadSaved = false,
     this.editOnly = false,
+    this.forDocumentChange = false,
   }) {
     if (loadSaved) loadSavedData();
   }
@@ -27,6 +28,9 @@ class BankDetailsProvider extends BaseProvider {
 
   /// Profile Documents / Review edit: save then pop back (no Review next).
   final bool editOnly;
+
+  /// Save into document-change draft APIs (post-KYC update flow).
+  final bool forDocumentChange;
   final formKey = GlobalKey<FormState>();
   final holderNameController = TextEditingController();
   final accountNumberController = TextEditingController();
@@ -336,14 +340,27 @@ class BankDetailsProvider extends BaseProvider {
         return;
       }
 
-      final res = await Api.uploadBank(
-        holderName: holderNameController.text.trim(),
-        accountNumber: accountNumberController.text.trim(),
-        ifsc: ifscController.text.trim().toUpperCase(),
-        bankName: resolvedBankName!.trim(),
-        bankBranch: resolvedBranch?.trim(),
-        chequeUrl: nextCheque,
-      );
+      final res = forDocumentChange
+          ? await Api.saveDocumentChangeSection(
+              section: 'bank',
+              body: {
+                RequestKeys.holderName: holderNameController.text.trim(),
+                RequestKeys.accountNumber: accountNumberController.text.trim(),
+                RequestKeys.ifsc: ifscController.text.trim().toUpperCase(),
+                RequestKeys.bankName: resolvedBankName!.trim(),
+                if ((resolvedBranch?.trim() ?? '').isNotEmpty)
+                  RequestKeys.bankBranch: resolvedBranch!.trim(),
+                RequestKeys.chequeUrl: nextCheque,
+              },
+            )
+          : await Api.uploadBank(
+              holderName: holderNameController.text.trim(),
+              accountNumber: accountNumberController.text.trim(),
+              ifsc: ifscController.text.trim().toUpperCase(),
+              bankName: resolvedBankName!.trim(),
+              bankBranch: resolvedBranch?.trim(),
+              chequeUrl: nextCheque,
+            );
       if (!res.isSuccess) {
         AppToast.error(res.message ?? AppStrings.requestFailed.tr());
         return;
@@ -361,8 +378,10 @@ class BankDetailsProvider extends BaseProvider {
   }
 
   void _finishSuccess() {
-    KycStatus.markBankDone();
-    if (editOnly) {
+    if (!forDocumentChange) {
+      KycStatus.markBankDone();
+    }
+    if (editOnly || forDocumentChange) {
       AppNavigation.back();
       return;
     }

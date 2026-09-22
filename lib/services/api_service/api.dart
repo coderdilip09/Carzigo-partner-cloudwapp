@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:carzigo_partner/models/document_change_request_model.dart';
 import 'package:carzigo_partner/models/cms_data_model.dart';
 import 'package:carzigo_partner/models/delete_account_data_model.dart';
 import 'package:carzigo_partner/models/dashboard_data_model.dart';
@@ -292,6 +293,54 @@ class Api {
       ApiUrls.kycSubmitUrl(),
       {},
       (data) => KycSubmitDataModel.fromJson(asMap(data) ?? {}),
+    );
+  }
+
+  static Future<ResponseWrapperModel<DocumentChangeRequestModel?>>
+  getDocumentChangeCurrent() async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.documentChangeCurrentUrl(),
+    );
+    return ResponseWrapperModel.fromJson(json, (data) {
+      final map = asMap(data);
+      if (map == null || map.isEmpty) return null;
+      return DocumentChangeRequestModel.fromJson(map);
+    });
+  }
+
+  static Future<ResponseWrapperModel<DocumentChangeRequestModel?>>
+  createDocumentChangeRequest({
+    required List<String> sections,
+    required String reason,
+  }) {
+    return _postParsed(
+      ApiUrls.documentChangeRequestsUrl(),
+      {
+        RequestKeys.sections: sections,
+        RequestKeys.reason: reason,
+      },
+      (data) => DocumentChangeRequestModel.fromJson(asMap(data) ?? {}),
+    );
+  }
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>>
+  saveDocumentChangeSection({
+    required String section,
+    required Map<String, dynamic> body,
+  }) {
+    return _putParsed(
+      ApiUrls.documentChangeSectionUrl(section),
+      body,
+      (data) => asMap(data),
+    );
+  }
+
+  static Future<ResponseWrapperModel<DocumentChangeRequestModel?>>
+  submitDocumentChange() {
+    return _postParsed(
+      ApiUrls.documentChangeSubmitUrl(),
+      {},
+      (data) => DocumentChangeRequestModel.fromJson(asMap(data) ?? {}),
     );
   }
 

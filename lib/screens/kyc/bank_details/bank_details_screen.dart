@@ -23,10 +23,12 @@ class BankDetailsScreen extends StatelessWidget {
     super.key,
     this.loadSaved = false,
     this.editOnly = false,
+    this.forDocumentChange = false,
   });
 
   final bool loadSaved;
   final bool editOnly;
+  final bool forDocumentChange;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class BankDetailsScreen extends StatelessWidget {
       create: (_) => BankDetailsProvider(
         loadSaved: loadSaved,
         editOnly: editOnly,
+        forDocumentChange: forDocumentChange,
       ),
       child: Consumer<BankDetailsProvider>(
         builder: (context, provider, _) {

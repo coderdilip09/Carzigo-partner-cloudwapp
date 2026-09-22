@@ -177,6 +177,20 @@ class AppStrings {
   static const String termsSubtitle = 'terms_subtitle';
   static const String privacySubtitle = 'privacy_subtitle';
   static const String documentsSubtitle = 'documents_subtitle';
+  static const String requestDocumentChange = 'request_document_change';
+  static const String docChangeReasonHint = 'doc_change_reason_hint';
+  static const String docChangeReasonRequired = 'doc_change_reason_required';
+  static const String docChangeSelectSection = 'doc_change_select_section';
+  static const String docChangeRequestSubmitted = 'doc_change_request_submitted';
+  static const String docChangeSubmittedForReview =
+      'doc_change_submitted_for_review';
+  static const String docChangeAwaitingApproval = 'doc_change_awaiting_approval';
+  static const String docChangeUpdateAllowed = 'doc_change_update_allowed';
+  static const String docChangeUnderReview = 'doc_change_under_review';
+  static const String docChangeDocsRejected = 'doc_change_docs_rejected';
+  static const String docChangePermissionRejected =
+      'doc_change_permission_rejected';
+  static const String update = 'update';
   static const String proofType = 'proof_type';
   static const String documentNumber = 'document_number';
   static const String documentUnavailable = 'document_unavailable';

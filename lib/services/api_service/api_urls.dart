@@ -30,6 +30,10 @@ class ApiUrls {
   static const String kycReview = 'kyc/review';
   static const String kycSubmit = 'kyc/submit';
 
+  static const String documentChangeRequests = 'document-change-requests';
+  static const String documentChangeCurrent = 'document-change-requests/current';
+  static const String documentChangeSubmit = 'document-change-requests/submit';
+
   static const String dashboard = 'partner/dashboard';
   static const String jobs = 'jobs';
   static const String services = 'partner/services';
@@ -71,6 +75,12 @@ class ApiUrls {
   static String kycIfscUrl(String code) => _join('$kycIfsc/$code');
   static String kycReviewUrl() => _join(kycReview);
   static String kycSubmitUrl() => _join(kycSubmit);
+
+  static String documentChangeCurrentUrl() => _join(documentChangeCurrent);
+  static String documentChangeRequestsUrl() => _join(documentChangeRequests);
+  static String documentChangeSectionUrl(String section) =>
+      _join('$documentChangeRequests/sections/$section');
+  static String documentChangeSubmitUrl() => _join(documentChangeSubmit);
 
   static String dashboardUrl() => _join(dashboard);
   static String servicesUrl() => _join(services);

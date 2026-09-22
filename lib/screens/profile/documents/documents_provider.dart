@@ -1,8 +1,10 @@
+import 'package:carzigo_partner/models/document_change_request_model.dart';
 import 'package:carzigo_partner/models/kyc_status_model.dart';
 import 'package:carzigo_partner/screens/kyc/application_pending/application_pending_screen.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
 import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
+import 'package:carzigo_partner/screens/kyc/local_address/local_address_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -17,14 +19,29 @@ class DocumentsProvider extends BaseProvider {
   }
 
   KycStatusModel? review;
+  DocumentChangeRequestModel? changeRequest;
   bool isLoading = false;
   bool isSubmitting = false;
+  bool isRequestingChange = false;
+  bool isSubmittingChange = false;
 
   bool get canSubmit => review?.canSubmit == true;
   bool get hasIdentity => review?.identity?.isDone == true;
   bool get hasAddress => review?.address?.isDone == true;
   bool get hasBank => review?.bank?.isDone == true;
   bool get hasAnyDocument => hasIdentity || hasAddress || hasBank;
+
+  bool get hasOpenChangeRequest => changeRequest?.isOpen == true;
+  bool get canRequestChange =>
+      !hasOpenChangeRequest &&
+      (review?.overallStatus == KycOverallStatus.approved ||
+          review?.partnerKycStatus == KycOverallStatus.verified ||
+          review?.partnerKycStatus == KycOverallStatus.approved ||
+          review?.approval == 'approved' ||
+          (hasIdentity && hasAddress && hasBank && review?.canSubmit != true));
+
+  bool get canSubmitDocumentChanges =>
+      changeRequest?.canSubmitChanges == true;
 
   String get identityDocLabel =>
       KycDocNumber.cardLabel(review?.identity?.docType);
@@ -64,6 +81,20 @@ class DocumentsProvider extends BaseProvider {
   String? get addressPreviewUrl =>
       review?.address?.documentUrl ?? review?.address?.frontUrl;
 
+  List<String> get addressDocumentUrls {
+    final urls = <String>[];
+    void add(String? value) {
+      final trimmed = value?.trim() ?? '';
+      if (trimmed.isEmpty) return;
+      if (!urls.contains(trimmed)) urls.add(trimmed);
+    }
+
+    add(review?.address?.documentUrl);
+    add(review?.address?.frontUrl);
+    add(review?.address?.backUrl);
+    return urls;
+  }
+
   String get bankName {
     final name = review?.bank?.bankName?.trim();
     if (name != null && name.isNotEmpty) return name;
@@ -91,19 +122,67 @@ class DocumentsProvider extends BaseProvider {
 
   String? get bankPreviewUrl => review?.bank?.chequeUrl;
 
-  String statusLabel(bool isDone) =>
-      isDone ? AppStrings.verified.tr() : AppStrings.pending.tr();
+  List<String> get bankDocumentUrls {
+    final url = bankPreviewUrl?.trim() ?? '';
+    if (url.isEmpty) return const [];
+    return [url];
+  }
+
+  DocumentChangeSectionModel? sectionStatus(String section) =>
+      changeRequest?.sectionOf(section);
+
+  String statusLabelFor(String section, bool isDone) {
+    final change = sectionStatus(section);
+    if (change != null) {
+      switch (change.status) {
+        case 'requested':
+          return AppStrings.docChangeAwaitingApproval.tr();
+        case 'unlocked':
+          return AppStrings.docChangeUpdateAllowed.tr();
+        case 'pending_review':
+          return AppStrings.docChangeUnderReview.tr();
+        case 'rejected_docs':
+          return AppStrings.docChangeDocsRejected.tr();
+        case 'rejected_permission':
+          return AppStrings.docChangePermissionRejected.tr();
+        case 'approved':
+          return AppStrings.verified.tr();
+      }
+    }
+    return isDone ? AppStrings.verified.tr() : AppStrings.pending.tr();
+  }
+
+  bool isSectionVerified(String section, bool isDone) {
+    final change = sectionStatus(section);
+    if (change == null) return isDone;
+    if (change.isApproved) return true;
+    if (change.isRequested ||
+        change.canUpdate ||
+        change.isPendingReview ||
+        change.isPermissionRejected) {
+      return false;
+    }
+    return isDone;
+  }
+
+  bool canUpdateSection(String section) =>
+      sectionStatus(section)?.canUpdate == true;
 
   Future<void> load() async {
     isLoading = true;
     safeNotifyListeners();
 
     try {
-      final res = await Api.getKycReview();
-      if (res.isSuccess && res.data != null) {
-        review = res.data;
-      } else {
-        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+      final reviewRes = await Api.getKycReview();
+      if (reviewRes.isSuccess && reviewRes.data != null) {
+        review = reviewRes.data;
+      } else if (!reviewRes.isSuccess) {
+        AppToast.error(reviewRes.message ?? AppStrings.requestFailed.tr());
+      }
+
+      final changeRes = await Api.getDocumentChangeCurrent();
+      if (changeRes.isSuccess) {
+        changeRequest = changeRes.data;
       }
     } catch (e, st) {
       debugPrint('Get documents failed: $e\n$st');
@@ -123,16 +202,88 @@ class DocumentsProvider extends BaseProvider {
 
   Future<void> tapOnEditAddress() async {
     await AppNavigation.to(
-      const IdentityProofScreen(loadSaved: true, editOnly: true),
+      const LocalAddressScreen(
+        editOnly: true,
+        forDocumentChange: true,
+      ),
     );
     await load();
   }
 
   Future<void> tapOnEditBank() async {
     await AppNavigation.to(
-      const BankDetailsScreen(loadSaved: true, editOnly: true),
+      const BankDetailsScreen(
+        loadSaved: true,
+        editOnly: true,
+        forDocumentChange: true,
+      ),
     );
     await load();
+  }
+
+  Future<bool> submitChangeRequest({
+    required List<String> sections,
+    required String reason,
+  }) async {
+    if (isRequestingChange) return false;
+    final trimmed = reason.trim();
+    if (sections.isEmpty) {
+      AppToast.error(AppStrings.docChangeSelectSection.tr());
+      return false;
+    }
+    if (trimmed.length < 3) {
+      AppToast.error(AppStrings.docChangeReasonRequired.tr());
+      return false;
+    }
+
+    isRequestingChange = true;
+    safeNotifyListeners();
+    try {
+      final res = await Api.createDocumentChangeRequest(
+        sections: sections,
+        reason: trimmed,
+      );
+      if (!res.isSuccess || res.data == null) {
+        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+        return false;
+      }
+      changeRequest = res.data;
+      AppToast.success(
+        res.message ?? AppStrings.docChangeRequestSubmitted.tr(),
+      );
+      safeNotifyListeners();
+      return true;
+    } catch (e, st) {
+      debugPrint('Create document change failed: $e\n$st');
+      AppToast.error(AppStrings.requestFailed.tr());
+      return false;
+    } finally {
+      isRequestingChange = false;
+      safeNotifyListeners();
+    }
+  }
+
+  Future<void> tapOnSubmitDocumentChanges() async {
+    if (isSubmittingChange || !canSubmitDocumentChanges) return;
+    isSubmittingChange = true;
+    safeNotifyListeners();
+    try {
+      final res = await Api.submitDocumentChange();
+      if (!res.isSuccess || res.data == null) {
+        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+        return;
+      }
+      changeRequest = res.data;
+      AppToast.success(
+        res.message ?? AppStrings.docChangeSubmittedForReview.tr(),
+      );
+    } catch (e, st) {
+      debugPrint('Submit document change failed: $e\n$st');
+      AppToast.error(AppStrings.requestFailed.tr());
+    } finally {
+      isSubmittingChange = false;
+      safeNotifyListeners();
+    }
   }
 
   Future<void> tapOnSubmit() async {

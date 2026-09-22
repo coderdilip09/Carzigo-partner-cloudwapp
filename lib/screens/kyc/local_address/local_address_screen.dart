@@ -20,9 +20,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class LocalAddressScreen extends StatelessWidget {
-  const LocalAddressScreen({super.key, this.editOnly = false});
+  const LocalAddressScreen({
+    super.key,
+    this.editOnly = false,
+    this.forDocumentChange = false,
+  });
 
   final bool editOnly;
+  final bool forDocumentChange;
 
   Future<void> _pickState(
     BuildContext context,
@@ -115,7 +120,10 @@ class LocalAddressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => LocalAddressProvider(editOnly: editOnly),
+      create: (_) => LocalAddressProvider(
+        editOnly: editOnly,
+        forDocumentChange: forDocumentChange,
+      ),
       child: Consumer<LocalAddressProvider>(
         builder: (context, provider, _) {
           return Scaffold(

@@ -45,4 +45,6 @@ class RequestKeys {
   static const String q = 'q';
   static const String audience = 'audience';
   static const String partnerAudience = 'partner';
+  static const String reason = 'reason';
+  static const String sections = 'sections';
 }

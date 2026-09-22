@@ -18,12 +18,18 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class LocalAddressProvider extends BaseProvider {
-  LocalAddressProvider({this.editOnly = false}) {
+  LocalAddressProvider({
+    this.editOnly = false,
+    this.forDocumentChange = false,
+  }) {
     loadSavedData();
   }
 
   /// Overview / review edit: save then pop back (no Bank next).
   final bool editOnly;
+
+  /// Save into document-change draft APIs (post-KYC update flow).
+  final bool forDocumentChange;
   final formKey = GlobalKey<FormState>();
   final lineController = TextEditingController();
   final landmarkController = TextEditingController();
@@ -361,7 +367,8 @@ class LocalAddressProvider extends BaseProvider {
 
     final statusRes = await Api.getKycStatus();
     final identityDone =
-        statusRes.isSuccess && statusRes.data?.isIdentityDone == true;
+        forDocumentChange ||
+        (statusRes.isSuccess && statusRes.data?.isIdentityDone == true);
     if (!identityDone) {
       AppToast.error(AppStrings.completeIdentityFirst.tr());
       return;
@@ -438,20 +445,37 @@ class LocalAddressProvider extends BaseProvider {
         }
       }
 
-      final res = await Api.saveAddressProof(
-        sameAsDocument: sameAsDocument,
-        addressLine: sameAsDocument ? null : line,
-        landmark: sameAsDocument
-            ? null
-            : (landmark == null || landmark.isEmpty ? '' : landmark),
-        city: sameAsDocument ? null : city,
-        state: sameAsDocument ? null : state,
-        pincode: sameAsDocument ? null : pin,
-        // Doc type/number UI is hidden; API still requires a type when address differs.
-        docType: sameAsDocument ? null : KycDocType.aadhaar,
-        docNumber: null,
-        docUrl: sameAsDocument ? null : nextDocUrl,
-      );
+      final res = forDocumentChange
+          ? await Api.saveDocumentChangeSection(
+              section: 'address',
+              body: {
+                RequestKeys.sameAsDocument: sameAsDocument,
+                RequestKeys.addressLine: line,
+                RequestKeys.landmark:
+                    landmark == null || landmark.isEmpty ? '' : landmark,
+                RequestKeys.city: city,
+                RequestKeys.state: state,
+                RequestKeys.pincode: pin,
+                if (!sameAsDocument) ...{
+                  RequestKeys.docType: KycDocType.aadhaar,
+                  RequestKeys.docUrl: nextDocUrl,
+                },
+              },
+            )
+          : await Api.saveAddressProof(
+              sameAsDocument: sameAsDocument,
+              addressLine: sameAsDocument ? null : line,
+              landmark: sameAsDocument
+                  ? null
+                  : (landmark == null || landmark.isEmpty ? '' : landmark),
+              city: sameAsDocument ? null : city,
+              state: sameAsDocument ? null : state,
+              pincode: sameAsDocument ? null : pin,
+              // Doc type/number UI is hidden; API still requires a type when address differs.
+              docType: sameAsDocument ? null : KycDocType.aadhaar,
+              docNumber: null,
+              docUrl: sameAsDocument ? null : nextDocUrl,
+            );
       if (!res.isSuccess) {
         AppToast.error(res.message ?? AppStrings.requestFailed.tr());
         return;
@@ -468,7 +492,7 @@ class LocalAddressProvider extends BaseProvider {
       );
 
       AppToast.success(res.message ?? AppStrings.localAddressSaved.tr());
-      if (editOnly) {
+      if (editOnly || forDocumentChange) {
         AppNavigation.back();
         return;
       }
