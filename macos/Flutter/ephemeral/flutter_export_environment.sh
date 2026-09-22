@@ -1,6 +1,6 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/Users/cloudwapp/fvm/versions/3.44.4"
+export "FLUTTER_ROOT=/Users/cloudwapp/fvm/versions/stable"
 export "FLUTTER_APPLICATION_PATH=/Users/cloudwapp/Documents/dev_rp/dilip_sir_project/carzigopartner"
 export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/Users/cloudwapp/Documents/dev_rp/dilip_sir_project/carzigopartner/macos/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
