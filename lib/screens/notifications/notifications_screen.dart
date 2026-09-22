@@ -1,6 +1,7 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/screens/notifications/notifications_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
@@ -53,11 +54,9 @@ class _NotificationsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (provider.isLoading && provider.notifications.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    final isLoading = provider.isLoading && provider.notifications.isEmpty;
 
-    if (provider.notifications.isEmpty) {
+    if (!isLoading && provider.notifications.isEmpty) {
       return RefreshIndicator(
         onRefresh: provider.load,
         child: CustomScrollView(
@@ -81,56 +80,70 @@ class _NotificationsBody extends StatelessWidget {
       );
     }
 
+    final itemCount = isLoading ? 6 : provider.notifications.length;
+
     return RefreshIndicator(
       onRefresh: provider.load,
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: provider.notifications.length,
-        separatorBuilder: (context, index) =>
-            const Divider(height: 1, indent: 72),
-        itemBuilder: (context, i) {
-          final n = provider.notifications[i];
-          return ListTile(
-            leading: Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.peach,
-                shape: BoxShape.circle,
+      child: AppShimmer(
+        enabled: isLoading,
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: itemCount,
+          separatorBuilder: (context, index) =>
+              const Divider(height: 1, indent: 72),
+          itemBuilder: (context, i) {
+            final title = isLoading
+                ? 'Notification title placeholder'
+                : (provider.notifications[i].title ?? '');
+            final body = isLoading
+                ? 'Notification body text placeholder line'
+                : (provider.notifications[i].body ?? '');
+            final time = isLoading
+                ? '2 hours ago'
+                : (provider.notifications[i].time ?? '');
+
+            return ListTile(
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.peach,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: const AppIcon(AppAssets.notificationFilled, size: 22),
               ),
-              alignment: Alignment.center,
-              child: const AppIcon(AppAssets.notificationFilled, size: 22),
-            ),
-            title: Text(
-              n.title ?? '',
-              style: AppTextStyles.style(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+              title: Text(
+                title,
+                style: AppTextStyles.style(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
               ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if ((n.body ?? '').isNotEmpty)
-                  Text(
-                    n.body!,
-                    style: AppTextStyles.style(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (body.isNotEmpty)
+                    Text(
+                      body,
+                      style: AppTextStyles.style(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                if ((n.time ?? '').isNotEmpty)
-                  Text(
-                    n.time!,
-                    style: AppTextStyles.style(
-                      fontSize: 11,
-                      color: AppColors.black,
+                  if (time.isNotEmpty)
+                    Text(
+                      time,
+                      style: AppTextStyles.style(
+                        fontSize: 11,
+                        color: AppColors.black,
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

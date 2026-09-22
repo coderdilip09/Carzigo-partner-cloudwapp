@@ -14,8 +14,8 @@ class ApiUrls {
 
   static const String profile = 'auth/profile';
   static const String uploads = 'uploads';
-  static const String changePhoneSendOtp = 'partner/change-phone/send-otp';
-  static const String changePhoneVerify = 'partner/change-phone/verify';
+  static const String changePhoneSendOtp = 'auth/change-phone/send-otp';
+  static const String changePhoneVerify = 'auth/change-phone/verify';
 
   static const String kycStatus = 'kyc';
   static const String kycAccountStatus = 'kyc/status';
@@ -74,9 +74,9 @@ class ApiUrls {
 
   static String dashboardUrl() => _join(dashboard);
   static String servicesUrl() => _join(services);
-  static String jobsUrl() => _join(jobs);
-  static String jobDetailsUrl(String id) => _join('$jobs/$id');
-  static String jobStatusUrl(String id) => _join('$jobs/$id/status');
+  static String jobsUrl() => _join(services);
+  static String jobDetailsUrl(String id) => _join('$services/$id');
+  static String jobStatusUrl(String id) => _join('$services/$id/status');
 
   static String referralsUrl() => _join(referrals);
 

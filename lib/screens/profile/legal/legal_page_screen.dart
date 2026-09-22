@@ -1,5 +1,6 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/screens/profile/legal/legal_page_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
@@ -33,10 +34,15 @@ class LegalPageScreen extends StatelessWidget {
       create: (_) => LegalPageProvider(slug)..load(),
       child: Consumer<LegalPageProvider>(
         builder: (context, provider, _) {
+          final isPageLoading = provider.isLoading && provider.page == null;
           final title = provider.page?.title?.trim().isNotEmpty == true
               ? provider.page!.title!
               : fallbackTitle;
-          final html = provider.page?.body ?? '';
+          final html = isPageLoading
+              ? '<p>Loading legal page content placeholder paragraph one.</p>'
+                    '<p>Loading legal page content placeholder paragraph two for shimmer layout.</p>'
+                    '<p>Loading legal page content placeholder paragraph three.</p>'
+              : (provider.page?.body ?? '');
 
           return Scaffold(
             backgroundColor: AppColors.background,
@@ -53,33 +59,34 @@ class LegalPageScreen extends StatelessWidget {
                         titleInline: true,
                       ),
                       Expanded(
-                        child: provider.isLoading && provider.page == null
-                            ? const Center(child: CircularProgressIndicator())
-                            : SingleChildScrollView(
-                                child: Html(
-                                  data: html,
-                                  style: {
-                                    'body': Style(
-                                      margin: Margins.zero,
-                                      padding: HtmlPaddings.zero,
-                                      fontSize: FontSize(14),
-                                      lineHeight: const LineHeight(1.6),
-                                      color: AppColors.textPrimary,
-                                      fontFamily: AppTextStyles.fontFamily,
-                                    ),
-                                    'p': Style(
-                                      margin: Margins.only(bottom: 10),
-                                    ),
-                                    'ol': Style(
-                                      margin: Margins.only(bottom: 8),
-                                    ),
-                                    'a': Style(
-                                      color: AppColors.primary,
-                                    ),
-                                  },
-                                  onLinkTap: (url, _, _) => _openLink(url),
+                        child: AppShimmer(
+                          enabled: isPageLoading,
+                          child: SingleChildScrollView(
+                            child: Html(
+                              data: html,
+                              style: {
+                                'body': Style(
+                                  margin: Margins.zero,
+                                  padding: HtmlPaddings.zero,
+                                  fontSize: FontSize(14),
+                                  lineHeight: const LineHeight(1.6),
+                                  color: AppColors.textPrimary,
+                                  fontFamily: AppTextStyles.fontFamily,
                                 ),
-                              ),
+                                'p': Style(
+                                  margin: Margins.only(bottom: 10),
+                                ),
+                                'ol': Style(
+                                  margin: Margins.only(bottom: 8),
+                                ),
+                                'a': Style(
+                                  color: AppColors.primary,
+                                ),
+                              },
+                              onLinkTap: (url, _, _) => _openLink(url),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),

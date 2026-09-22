@@ -3,6 +3,7 @@ import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_kyc_stepper.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_review/kyc_review_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
@@ -55,35 +56,54 @@ class KycReviewScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      if (provider.isLoading && provider.review == null)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 48),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else ...[
-                        _ReviewCard(
-                          title: AppStrings.identityProof.tr(),
-                          line1: provider.identityDocLabel,
-                          line2: provider.identityMasked,
-                          onEdit: provider.tapOnEditIdentity,
-                          trailingAsset: AppAssets.docProof,
+                      AppShimmer(
+                        enabled:
+                            provider.isLoading && provider.review == null,
+                        child: Column(
+                          children: [
+                            _ReviewCard(
+                              title: AppStrings.identityProof.tr(),
+                              line1: provider.isLoading &&
+                                      provider.review == null
+                                  ? 'Document type placeholder'
+                                  : provider.identityDocLabel,
+                              line2: provider.isLoading &&
+                                      provider.review == null
+                                  ? 'XXXX XXXX XXXX'
+                                  : provider.identityMasked,
+                              onEdit: provider.tapOnEditIdentity,
+                              trailingAsset: AppAssets.docProof,
+                            ),
+                            _ReviewCard(
+                              title: AppStrings.addressProof.tr(),
+                              line1: provider.isLoading &&
+                                      provider.review == null
+                                  ? 'Document type placeholder'
+                                  : provider.addressDocLabel,
+                              line2: provider.isLoading &&
+                                      provider.review == null
+                                  ? 'XXXX XXXX XXXX'
+                                  : provider.addressMasked,
+                              onEdit: provider.tapOnEditAddress,
+                              trailingAsset: AppAssets.docProof,
+                            ),
+                            _ReviewCard(
+                              title: AppStrings.bankDetails.tr(),
+                              line1: provider.isLoading &&
+                                      provider.review == null
+                                  ? 'Bank name placeholder'
+                                  : provider.bankName,
+                              line2: provider.isLoading &&
+                                      provider.review == null
+                                  ? 'XXXX XXXX XXXX'
+                                  : provider.bankMasked,
+                              onEdit: provider.tapOnEditBank,
+                              trailingAsset: AppAssets.bank,
+                              tintTrailing: true,
+                            ),
+                          ],
                         ),
-                        _ReviewCard(
-                          title: AppStrings.addressProof.tr(),
-                          line1: provider.addressDocLabel,
-                          line2: provider.addressMasked,
-                          onEdit: provider.tapOnEditAddress,
-                          trailingAsset: AppAssets.docProof,
-                        ),
-                        _ReviewCard(
-                          title: AppStrings.bankDetails.tr(),
-                          line1: provider.bankName,
-                          line2: provider.bankMasked,
-                          onEdit: provider.tapOnEditBank,
-                          trailingAsset: AppAssets.bank,
-                          tintTrailing: true,
-                        ),
-                      ],
+                      ),
                       const SizedBox(height: 24),
                       AppSolidButton(
                         label: AppStrings.submitForVerification.tr(),

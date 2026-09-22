@@ -126,7 +126,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _OtpValidForText(
-                                  time: provider.formattedExpiresTime,
+                                  time: provider.formattedValidForTime,
                                 ),
                               ),
                             ],

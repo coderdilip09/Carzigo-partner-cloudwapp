@@ -2,6 +2,7 @@ import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_kyc_stepper.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_text_field.dart';
 import 'package:carzigo_partner/common_widgets/app_upload_box.dart';
@@ -40,31 +41,9 @@ class BankDetailsScreen extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: provider.isFetching
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: AppBackHeader(
-                              title: AppStrings.bankDetails.tr(),
-                            ),
-                          ),
-                          const Expanded(
-                            child: Center(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : SingleChildScrollView(
+                child: AppShimmer(
+                  enabled: provider.isFetching,
+                  child: SingleChildScrollView(
                         padding: const EdgeInsets.all(20),
                         child: Form(
                           key: provider.formKey,
@@ -307,6 +286,7 @@ class BankDetailsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                ),
               ),
             ),
           );

@@ -2,6 +2,7 @@ import 'package:carzigo_partner/common_widgets/app_bottom_nav_bar.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_job_card.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_user_avatar.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/screens/dashboard/dashboard_provider.dart';
@@ -80,8 +81,28 @@ class _DashboardHome extends StatelessWidget {
   }
 
   String _jobStatusLabel(JobDataModel job) {
+    final tag = (job.displayTag ?? '').toLowerCase().trim();
+    if (tag == 'not_complete') return AppStrings.notComplete.tr();
+    if (tag == 'rejected') return AppStrings.reject.tr();
+    if (tag == 'cancelled') return AppStrings.cancelled.tr();
+    if (tag == 'completed') return AppStrings.completed.tr();
+
+    final ui = (job.uiStatus ?? '').trim().toLowerCase();
+    if (ui == 'not complete' || ui == 'not_complete') {
+      return AppStrings.notComplete.tr();
+    }
+    if (ui == 'reject' || ui == 'rejected') return AppStrings.reject.tr();
+    if (ui == 'cancelled' || ui == 'canceled') {
+      return AppStrings.cancelled.tr();
+    }
+    if (job.uiStatus?.trim().isNotEmpty == true) return job.uiStatus!.trim();
+
     final raw = (job.listStatus ?? job.workflowStatus ?? '').toLowerCase();
-    if (raw.contains('complete')) return AppStrings.completed.tr();
+    if (raw.contains('not_complete')) return AppStrings.notComplete.tr();
+    if (raw.contains('reject')) return AppStrings.reject.tr();
+    if (raw == 'completed' || raw.endsWith('_completed')) {
+      return AppStrings.completed.tr();
+    }
     if (raw.contains('cancel')) return AppStrings.cancelled.tr();
     if (raw.contains('progress')) return AppStrings.inProgress.tr();
     return AppStrings.upcoming.tr();
@@ -348,41 +369,54 @@ class _DashboardHome extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.peachCard),
                 ),
-                child: provider.isLoading && dashboard == null
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 28),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : jobs.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 28),
-                        child: Center(
-                          child: Text(
-                            AppStrings.noData.tr(),
-                            style: AppTextStyles.style(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Column(
-                        children: [
-                          for (var i = 0; i < previewJobs.length; i++)
-                            AppJobCard(
-                              status: _jobStatusLabel(previewJobs[i]),
-                              timeLabel: previewJobs[i].timeRange,
-                              serviceName: previewJobs[i].serviceName,
-                              customerName: previewJobs[i].customerName,
-                              carName: previewJobs[i].car,
-                              embedded: true,
-                              showBottomDivider: i < previewJobs.length - 1,
-                              onTap: () => AppNavigation.to(
-                                ServiceDetailsScreen(job: previewJobs[i]),
+                child: AppShimmer(
+                  enabled: provider.isLoading && dashboard == null,
+                  child: provider.isLoading && dashboard == null
+                      ? Column(
+                          children: [
+                            for (var i = 0; i < 3; i++)
+                              AppJobCard(
+                                status: AppStrings.upcoming.tr(),
+                                timeLabel: '09:00 AM - 10:00 AM',
+                                serviceName: 'Exterior Wash Service',
+                                customerName: 'Customer Name',
+                                carName: 'Car Model Name',
+                                embedded: true,
+                                showBottomDivider: i < 2,
+                              ),
+                          ],
+                        )
+                      : jobs.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 28),
+                          child: Center(
+                            child: Text(
+                              AppStrings.noData.tr(),
+                              style: AppTextStyles.style(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            for (var i = 0; i < previewJobs.length; i++)
+                              AppJobCard(
+                                status: _jobStatusLabel(previewJobs[i]),
+                                timeLabel: previewJobs[i].timeRange,
+                                serviceName: previewJobs[i].serviceName,
+                                customerName: previewJobs[i].customerName,
+                                carName: previewJobs[i].car,
+                                embedded: true,
+                                showBottomDivider: i < previewJobs.length - 1,
+                                onTap: () => AppNavigation.to(
+                                  ServiceDetailsScreen(job: previewJobs[i]),
+                                ),
+                              ),
+                          ],
+                        ),
+                ),
               ),
               const SizedBox(height: 16),
               Row(

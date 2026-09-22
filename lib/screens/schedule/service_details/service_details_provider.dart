@@ -6,6 +6,7 @@ import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceDetailsProvider extends BaseProvider {
   ServiceDetailsProvider({this.jobId, JobDataModel? initialJob})
@@ -42,10 +43,36 @@ class ServiceDetailsProvider extends BaseProvider {
   String get displayPhone => job?.customerPhone?.trim() ?? '';
   String get displayEmail => job?.customerEmail?.trim() ?? '';
   String get displayAddress => job?.address?.trim() ?? '';
+  double? get displayLat => job?.lat;
+  double? get displayLng => job?.lng;
   String get displayNotes => job?.notes?.trim() ?? '';
   String get displayInstructions => job?.customerInstructions?.trim() ?? '';
   String get displayAssignedAt => job?.assignedAt?.trim() ?? '';
   String get displayServiceName => job?.serviceName?.trim() ?? '';
+  String get displayVehicleModel => job?.vehicleModel?.trim() ?? '';
+  String get displayPlateNumber => job?.plateNumber?.trim() ?? '';
+  String get displayCar {
+    final label = job?.car?.trim();
+    if (label != null && label.isNotEmpty) return label;
+    final parts = [
+      if (displayVehicleModel.isNotEmpty) displayVehicleModel,
+      if (displayPlateNumber.isNotEmpty) displayPlateNumber,
+    ];
+    return parts.join(' • ');
+  }
+
+  bool get hasCarDetails => displayCar.isNotEmpty;
+
+  String get displayStatus {
+    final tag = (job?.displayTag ?? '').toLowerCase().trim();
+    if (tag == 'not_complete') return AppStrings.notComplete.tr();
+    if (tag == 'rejected') return AppStrings.reject.tr();
+    if (tag == 'cancelled') return AppStrings.cancelled.tr();
+    if (tag == 'completed') return AppStrings.completed.tr();
+    final ui = job?.uiStatus?.trim();
+    if (ui != null && ui.isNotEmpty) return ui;
+    return AppStrings.upcoming.tr();
+  }
 
   Future<void> load() async {
     final id = jobId ?? job?.id;
@@ -65,26 +92,78 @@ class ServiceDetailsProvider extends BaseProvider {
     try {
       final res = await Api.getJobDetails(id);
       if (!res.isSuccess || res.data == null) {
-        if (job == null) {
-          AppToast.error(res.message ?? AppStrings.requestFailed.tr());
-        }
+        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
         return;
       }
       job = res.data;
       currentStep = res.data!.step;
     } catch (e, st) {
       debugPrint('Get job details failed: $e\n$st');
-      if (job == null) {
-        AppToast.error(AppStrings.requestFailed.tr());
-      }
+      AppToast.error(AppStrings.requestFailed.tr());
     } finally {
       isLoading = false;
       safeNotifyListeners();
     }
   }
 
+  Future<void> openPhone() async {
+    final phone = displayPhone.replaceAll(RegExp(r'[^\d+]'), '');
+    if (phone.isEmpty) {
+      AppToast.error(AppStrings.noData.tr());
+      return;
+    }
+    final uri = Uri(scheme: 'tel', path: phone);
+    try {
+      final launched = await launchUrl(uri);
+      if (!launched) {
+        AppToast.error(AppStrings.requestFailed.tr());
+      }
+    } catch (e, st) {
+      debugPrint('Open phone failed: $e\n$st');
+      AppToast.error(AppStrings.requestFailed.tr());
+    }
+  }
+
+  Future<void> openMaps() async {
+    final lat = displayLat;
+    final lng = displayLng;
+    final address = displayAddress;
+
+    Uri uri;
+    if (lat != null && lng != null) {
+      uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      );
+    } else if (address.isNotEmpty) {
+      uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}',
+      );
+    } else {
+      AppToast.error(AppStrings.noData.tr());
+      return;
+    }
+
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        AppToast.error(AppStrings.requestFailed.tr());
+      }
+    } catch (e, st) {
+      debugPrint('Open maps failed: $e\n$st');
+      AppToast.error(AppStrings.requestFailed.tr());
+    }
+  }
+
   Future<void> markStep(int step) async {
     if (step != currentStep + 1) return;
+    if (job?.canUpdate == false ||
+        (job?.displayTag ?? '').toLowerCase() == 'not_complete') {
+      AppToast.error(AppStrings.notComplete.tr());
+      return;
+    }
     final id = job?.id ?? jobId;
     if (id == null || id.isEmpty) {
       currentStep = step;
@@ -100,7 +179,10 @@ class ServiceDetailsProvider extends BaseProvider {
       _ => JobWorkflowStatus.assigned,
     };
 
-    final res = await Api.updateJobStatus(id: id, status: status);
+    final res = await Api.updateJobStatus(
+      id: id,
+      status: JobWorkflowStatus.toApiStatus(status),
+    );
     if (!res.isSuccess) {
       AppToast.error(res.message ?? AppStrings.requestFailed.tr());
       return;
@@ -130,12 +212,13 @@ class ServiceDetailsProvider extends BaseProvider {
           ? displayServiceName
           : AppStrings.serviceDetails.tr();
       final description = [
+        if (displayScheduleId.isNotEmpty) 'Schedule: $displayScheduleId',
         if (displayCustomerName.isNotEmpty) 'Customer: $displayCustomerName',
         if (displayPhone.isNotEmpty) 'Phone: $displayPhone',
+        if (displayCar.isNotEmpty) 'Vehicle: $displayCar',
         if (displayNotes.isNotEmpty) 'Notes: $displayNotes',
         if (displayInstructions.isNotEmpty)
           'Instructions: $displayInstructions',
-        if (displayScheduleId.isNotEmpty) 'Schedule: $displayScheduleId',
       ].join('\n');
 
       final event = Event(
@@ -144,6 +227,7 @@ class ServiceDetailsProvider extends BaseProvider {
         location: displayAddress,
         startDate: range.$1,
         endDate: range.$2,
+        allDay: false,
       );
 
       final added = await Add2Calendar.addEvent2Cal(event);
@@ -163,33 +247,49 @@ class ServiceDetailsProvider extends BaseProvider {
 
   /// Parses [date] + [timeRange] into start/end. Returns null if unusable.
   (DateTime, DateTime)? _resolveEventRange() {
-    final date = _parseDate(displayDate);
+    final date = _parseDate(displayDate) ?? _parseDate(job?.date ?? '');
     if (date == null) return null;
 
+    final slot = job?.slotMinutes != null && job!.slotMinutes! > 0
+        ? job!.slotMinutes!
+        : 60;
+
     final times = _parseTimeRange(displayTimeRange);
-    if (times == null) {
-      final start = DateTime(date.year, date.month, date.day, 9, 0);
-      return (start, start.add(const Duration(hours: 1)));
+    if (times != null) {
+      final start = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        times.$1.hour,
+        times.$1.minute,
+      );
+      var end = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        times.$2.hour,
+        times.$2.minute,
+      );
+      if (!end.isAfter(start)) {
+        end = start.add(Duration(minutes: slot));
+      }
+      return (start, end);
     }
 
-    final start = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      times.$1.hour,
-      times.$1.minute,
-    );
-    var end = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      times.$2.hour,
-      times.$2.minute,
-    );
-    if (!end.isAfter(start)) {
-      end = start.add(const Duration(hours: 1));
+    final single = _parseTimeOfDay(displayTimeRange);
+    if (single != null) {
+      final start = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        single.hour,
+        single.minute,
+      );
+      return (start, start.add(Duration(minutes: slot)));
     }
-    return (start, end);
+
+    final start = DateTime(date.year, date.month, date.day, 9, 0);
+    return (start, start.add(Duration(minutes: slot)));
   }
 
   DateTime? _parseDate(String raw) {
@@ -197,7 +297,7 @@ class ServiceDetailsProvider extends BaseProvider {
     if (value.isEmpty) return null;
 
     final iso = DateTime.tryParse(value);
-    if (iso != null) return iso;
+    if (iso != null) return DateTime(iso.year, iso.month, iso.day);
 
     // dd/MM/yyyy or dd-MM-yyyy
     final slash = RegExp(r'^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$');
@@ -210,9 +310,12 @@ class ServiceDetailsProvider extends BaseProvider {
       return DateTime(y, month, d);
     }
 
-    // e.g. 11 Sep 2024 / Sep 11, 2024
+    // e.g. 11 Sep 2024 / Sep 11, 2024 / 22 Sep 2026
     try {
       return DateFormat('d MMM yyyy').parseLoose(value);
+    } catch (_) {}
+    try {
+      return DateFormat('dd MMM yyyy').parseLoose(value);
     } catch (_) {}
     try {
       return DateFormat('MMM d, yyyy').parseLoose(value);
@@ -246,6 +349,9 @@ class ServiceDetailsProvider extends BaseProvider {
     } catch (_) {}
     try {
       return DateFormat('hh:mm a').parseLoose(value);
+    } catch (_) {}
+    try {
+      return DateFormat('h a').parseLoose(value);
     } catch (_) {}
     try {
       return DateFormat('H:mm').parseLoose(value);

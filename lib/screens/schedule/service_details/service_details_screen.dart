@@ -1,6 +1,7 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/screens/schedule/service_details/service_details_provider.dart';
@@ -11,7 +12,6 @@ import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
   const ServiceDetailsScreen({super.key, this.jobId, this.job});
@@ -28,115 +28,100 @@ class ServiceDetailsScreen extends StatelessWidget {
       ),
       child: Consumer<ServiceDetailsProvider>(
         builder: (context, provider, _) {
+          final isPageLoading = provider.isLoading && provider.job == null;
+
           return Scaffold(
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: provider.isLoading && provider.job == null
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: AppBackHeader(
-                              title: AppStrings.serviceDetails.tr(),
-                              showBackText: false,
-                              titleInline: true,
-                            ),
-                          ),
-                          const Expanded(
-                            child: Center(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: AppColors.primary,
+                child: AppShimmer(
+                  enabled: isPageLoading,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppBackHeader(
+                                title: AppStrings.serviceDetails.tr(),
+                                showBackText: false,
+                                titleInline: true,
+                              ),
+                              const SizedBox(height: 16),
+                              const _ScheduleCard(),
+                              const SizedBox(height: 16),
+                              const _CustomerDetailsCard(),
+                              const SizedBox(height: 16),
+                              const _VehicleDetailsCard(),
+                              const SizedBox(height: 16),
+                              const _ServiceAddressCard(),
+                              const SizedBox(height: 20),
+                              Text(
+                                AppStrings.updateStatus.tr(),
+                                style: AppTextStyles.style(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.sectionTitle,
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          Expanded(
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AppBackHeader(
-                                    title: AppStrings.serviceDetails.tr(),
-                                    showBackText: false,
-                                    titleInline: true,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const _ScheduleCard(),
-                                  const SizedBox(height: 16),
-                                  const _CustomerDetailsCard(),
-                                  const SizedBox(height: 16),
-                                  const _ServiceAddressCard(),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    AppStrings.updateStatus.tr(),
-                                    style: AppTextStyles.style(
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.sectionTitle,
+                              const SizedBox(height: 12),
+                              ..._buildSteps(provider),
+                              const SizedBox(height: 16),
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(
+                                      child: _NoteCard(
+                                        title: AppStrings.serviceNotes.tr(),
+                                        text: isPageLoading
+                                            ? 'Service notes placeholder text'
+                                            : provider.displayNotes.isEmpty
+                                            ? AppStrings.noData.tr()
+                                            : provider.displayNotes,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  ..._buildSteps(provider),
-                                  const SizedBox(height: 16),
-                                  IntrinsicHeight(
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Expanded(
-                                          child: _NoteCard(
-                                            title:
-                                                AppStrings.serviceNotes.tr(),
-                                            text: provider.displayNotes.isEmpty
-                                                ? AppStrings.noData.tr()
-                                                : provider.displayNotes,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: _NoteCard(
-                                            title: AppStrings
-                                                .customerInstructions
-                                                .tr(),
-                                            text: provider
-                                                    .displayInstructions
-                                                    .isEmpty
-                                                ? AppStrings.noData.tr()
-                                                : provider.displayInstructions,
-                                          ),
-                                        ),
-                                      ],
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _NoteCard(
+                                        title: AppStrings.customerInstructions
+                                            .tr(),
+                                        text: isPageLoading
+                                            ? 'Customer instructions text'
+                                            : provider
+                                                  .displayInstructions
+                                                  .isEmpty
+                                            ? AppStrings.noData.tr()
+                                            : provider.displayInstructions,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: AppSolidButton(
-                              label: AppStrings.addToCalendar.tr(),
-                              onTap: provider.tapOnAddToCalendar,
-                              isLoading: provider.isAddingToCalendar,
-                              leading: AppIcon(
-                                AppAssets.calendar,
-                                size: 18,
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: AppSolidButton(
+                          label: AppStrings.addToCalendar.tr(),
+                          onTap: isPageLoading
+                              ? null
+                              : provider.tapOnAddToCalendar,
+                          isLoading: provider.isAddingToCalendar,
+                          leading: AppIcon(
+                            AppAssets.calendar,
+                            size: 18,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           );
@@ -437,7 +422,7 @@ class _ScheduleCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  AppStrings.upcoming.tr(),
+                  provider.displayStatus,
                   style: AppTextStyles.style(
                     color: AppColors.white,
                     fontSize: 11,
@@ -563,15 +548,7 @@ class _CustomerDetailsCard extends StatelessWidget {
                 if (provider.displayPhone.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   GestureDetector(
-                    onTap: () async {
-                      final uri = Uri(
-                        scheme: 'tel',
-                        path: provider.displayPhone,
-                      );
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri);
-                      }
-                    },
+                    onTap: provider.openPhone,
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: const BoxDecoration(
@@ -595,6 +572,105 @@ class _CustomerDetailsCard extends StatelessWidget {
   }
 }
 
+class _VehicleDetailsCard extends StatelessWidget {
+  const _VehicleDetailsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<ServiceDetailsProvider>();
+    final model = provider.displayVehicleModel;
+    final plate = provider.displayPlateNumber;
+    final label = provider.displayCar;
+    final isLoading = provider.isLoading && provider.job == null;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.peachCard),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _CardHeader(
+            iconAsset: AppAssets.logoCar,
+            title: AppStrings.vehicleDetails.tr(),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.customerCard,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  alignment: Alignment.center,
+                  child: AppIcon(
+                    AppAssets.logoCar,
+                    size: 22,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isLoading
+                            ? '—'
+                            : (model.isNotEmpty
+                                  ? model
+                                  : (label.isNotEmpty ? label : '-')),
+                        style: AppTextStyles.style(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.navigateText,
+                        ),
+                      ),
+                      if (!isLoading && plate.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${AppStrings.plateNumber.tr()}: $plate',
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.phoneNumber,
+                          ),
+                        ),
+                      ] else if (!isLoading &&
+                          model.isEmpty &&
+                          label.isEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          AppStrings.noData.tr(),
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ServiceAddressCard extends StatelessWidget {
   const _ServiceAddressCard();
 
@@ -602,6 +678,9 @@ class _ServiceAddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<ServiceDetailsProvider>();
     final address = provider.displayAddress;
+    final canNavigate =
+        address.isNotEmpty ||
+        (provider.displayLat != null && provider.displayLng != null);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -625,19 +704,12 @@ class _ServiceAddressCard extends StatelessWidget {
               color: AppColors.phoneNumber,
             ),
           ),
-          if (address.isNotEmpty) ...[
+          if (canNavigate) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: TextButton.icon(
-                onPressed: () async {
-                  final uri = Uri.parse(
-                    'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}',
-                  );
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }
-                },
+                onPressed: provider.openMaps,
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.navigateText,
                   backgroundColor: AppColors.customerCard,

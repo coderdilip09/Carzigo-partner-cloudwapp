@@ -12,6 +12,8 @@
 	<string>Carzigo Partner needs calendar access to add your scheduled jobs.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Carzigo Partner needs calendar access to add your scheduled jobs.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Carzigo Partner needs contacts access when adding a job to your calendar.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

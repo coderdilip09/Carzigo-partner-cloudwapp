@@ -86,7 +86,9 @@ class EditProfileProvider extends BaseProvider {
   Future<void> tapOnChangeNumber() async {
     final newPhone = await AppNavigation.to<String>(const ChangeNumberScreen());
     if (newPhone == null || newPhone.isEmpty) return;
-    phoneController.text = newPhone;
+
+    final saved = await PrefsService().getUser();
+    phoneController.text = saved?.phone ?? newPhone;
     safeNotifyListeners();
   }
 

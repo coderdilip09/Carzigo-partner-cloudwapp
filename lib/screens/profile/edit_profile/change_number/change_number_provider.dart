@@ -1,6 +1,8 @@
 import 'package:carzigo_partner/screens/auth/otp_verify/otp_verify_screen.dart';
+import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
+import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -8,7 +10,13 @@ import 'package:easy_localization/easy_localization.dart';
 class ChangeNumberProvider extends BaseProvider {
   String phone = '';
   String? phoneError;
+  bool isLoading = false;
   Country country = CountryParser.parseCountryCode('IN');
+
+  String get formattedCountryCode {
+    final code = country.phoneCode.replaceAll('+', '');
+    return '+$code';
+  }
 
   void setPhone(String value) {
     phone = value;
@@ -50,10 +58,34 @@ class ChangeNumberProvider extends BaseProvider {
   }
 
   Future<void> tapOnSendOtp() async {
+    if (isLoading) return;
     if (!_validatePhone()) return;
 
+    isLoading = true;
+    safeNotifyListeners();
+
+    final res = await Api.changePhoneSendOtp(
+      countryCode: formattedCountryCode,
+      phone: phone.trim(),
+    );
+
+    isLoading = false;
+    safeNotifyListeners();
+
+    if (!res.isSuccess) {
+      AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+      return;
+    }
+
+    AppToast.success(res.message ?? AppStrings.otpResent.tr());
     final verified = await AppNavigation.to<bool>(
-      OtpVerifyScreen(phone: phone.trim(), isChangeNumber: true),
+      OtpVerifyScreen(
+        phone: phone.trim(),
+        countryCode: formattedCountryCode,
+        resendAfterSeconds: res.data?.resendAfterSeconds ?? 45,
+        expiresInSeconds: res.data?.expiresInSeconds ?? 600,
+        isChangeNumber: true,
+      ),
     );
     if (verified == true) {
       AppNavigation.back(phone.trim());

@@ -18,7 +18,8 @@ class OtpVerifyProvider extends BaseProvider {
     this.expiresInSeconds = 600,
     this.isChangeNumber = false,
   })  : resendSecondsLeft = resendAfterSeconds,
-        expiresSecondsLeft = expiresInSeconds;
+        expiresSecondsLeft = expiresInSeconds,
+        expiresInTotalSeconds = expiresInSeconds;
 
   final String phone;
   final String countryCode;
@@ -30,6 +31,8 @@ class OtpVerifyProvider extends BaseProvider {
   bool isLoading = false;
   int resendSecondsLeft;
   int expiresSecondsLeft;
+  /// Static OTP validity from API (e.g. 600 → "10:00"); does not count down.
+  int expiresInTotalSeconds;
   Timer? _timer;
 
   /// e.g. 9876543210 → ******3210
@@ -53,7 +56,12 @@ class OtpVerifyProvider extends BaseProvider {
   void startTimers({int? resendSeconds, int? expiresSeconds}) {
     _timer?.cancel();
     resendSecondsLeft = resendSeconds ?? resendAfterSeconds;
-    expiresSecondsLeft = expiresSeconds ?? expiresInSeconds;
+    if (expiresSeconds != null && expiresSeconds > 0) {
+      expiresInTotalSeconds = expiresSeconds;
+      expiresSecondsLeft = expiresSeconds;
+    } else {
+      expiresSecondsLeft = expiresInSeconds;
+    }
     safeNotifyListeners();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -77,7 +85,11 @@ class OtpVerifyProvider extends BaseProvider {
 
   String get formattedResendTime => _formatMmSs(resendSecondsLeft);
 
+  /// Countdown under the OTP field.
   String get formattedExpiresTime => _formatMmSs(expiresSecondsLeft);
+
+  /// Static "OTP valid for" banner value from API (does not tick).
+  String get formattedValidForTime => _formatMmSs(expiresInTotalSeconds);
 
   String _formatMmSs(int totalSeconds) {
     final m = (totalSeconds ~/ 60).toString().padLeft(2, '0');
@@ -106,14 +118,29 @@ class OtpVerifyProvider extends BaseProvider {
     if (isLoading) return;
     if (!_validateOtp()) return;
 
+    isLoading = true;
+    safeNotifyListeners();
+
     if (isChangeNumber) {
-      AppToast.success(AppStrings.phoneUpdated.tr());
+      final res = await Api.changePhoneVerify(
+        countryCode: countryCode,
+        phone: phone,
+        otp: otp.trim(),
+      );
+
+      isLoading = false;
+      safeNotifyListeners();
+
+      if (!res.isSuccess || res.data == null) {
+        AppToast.error(res.message ?? AppStrings.otpInvalid.tr());
+        return;
+      }
+
+      await PrefsService().saveUser(res.data!);
+      AppToast.success(res.message ?? AppStrings.phoneUpdated.tr());
       AppNavigation.back(true);
       return;
     }
-
-    isLoading = true;
-    safeNotifyListeners();
 
     final res = await Api.verifyOtp(
       countryCode: countryCode,
@@ -138,12 +165,14 @@ class OtpVerifyProvider extends BaseProvider {
   }
 
   Future<void> tapOnResend() async {
-    if (resendSecondsLeft != 0 || isLoading || isChangeNumber) return;
+    if (resendSecondsLeft != 0 || isLoading) return;
 
     isLoading = true;
     safeNotifyListeners();
 
-    final res = await Api.resendOtp(countryCode: countryCode, mobile: phone);
+    final res = isChangeNumber
+        ? await Api.changePhoneSendOtp(countryCode: countryCode, phone: phone)
+        : await Api.resendOtp(countryCode: countryCode, mobile: phone);
 
     isLoading = false;
     safeNotifyListeners();

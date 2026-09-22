@@ -103,6 +103,7 @@ class ChangeNumberScreen extends StatelessWidget {
                           AppSolidButton(
                             label: AppStrings.sendOtp.tr(),
                             onTap: provider.tapOnSendOtp,
+                            isLoading: provider.isLoading,
                           ),
                           const SizedBox(height: 12),
                           Row(

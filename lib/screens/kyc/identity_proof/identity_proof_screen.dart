@@ -1,6 +1,7 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_kyc_stepper.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
@@ -33,113 +34,92 @@ class IdentityProofScreen extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: provider.isFetching
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: AppBackHeader(
-                              title: AppStrings.identityProof.tr(),
-                            ),
+                child: AppShimmer(
+                  enabled: provider.isFetching,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppBackHeader(
+                          title: AppStrings.identityProof.tr(),
+                        ),
+                        if (!editOnly) ...[
+                          const SizedBox(height: 16),
+                          const AppKycStepper(
+                            currentStep: KycStep.identity,
                           ),
-                          const Expanded(
-                            child: Center(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: AppColors.primary,
-                                ),
+                        ],
+                        const SizedBox(height: 24),
+                        Text(
+                          AppStrings.verifyWithDigilocker.tr(),
+                          style: AppTextStyles.style(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          AppStrings.digilockerHint.tr(),
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        if (provider.isVerified &&
+                            (provider.verifiedName ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 20),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.peachLight,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.completedCardBorder,
                               ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  AppStrings.digilockerVerified.tr(),
+                                  style: AppTextStyles.style(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  provider.verifiedName!,
+                                  style: AppTextStyles.style(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
-                      )
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppBackHeader(
-                              title: AppStrings.identityProof.tr(),
-                            ),
-                            if (!editOnly) ...[
-                              const SizedBox(height: 16),
-                              const AppKycStepper(
-                                currentStep: KycStep.identity,
-                              ),
-                            ],
-                            const SizedBox(height: 24),
-                            Text(
-                              AppStrings.verifyWithDigilocker.tr(),
-                              style: AppTextStyles.style(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              AppStrings.digilockerHint.tr(),
-                              style: AppTextStyles.style(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            if (provider.isVerified &&
-                                (provider.verifiedName ?? '').isNotEmpty) ...[
-                              const SizedBox(height: 20),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: AppColors.peachLight,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: AppColors.completedCardBorder,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      AppStrings.digilockerVerified.tr(),
-                                      style: AppTextStyles.style(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      provider.verifiedName!,
-                                      style: AppTextStyles.style(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 24),
-                            if (!provider.isVerified)
-                              AppSolidButton(
-                                label: AppStrings.verifyWithDigilocker.tr(),
-                                onTap: () =>
-                                    provider.tapOnVerifyDigilocker(context),
-                                isLoading: provider.isLoading,
-                              )
-                            else
-                              AppSolidButton(
-                                label: AppStrings.digilockerContinue.tr(),
-                                onTap: provider.tapOnContinue,
-                                isLoading: provider.isLoading,
-                              ),
-                          ],
-                        ),
-                      ),
+                        const SizedBox(height: 24),
+                        if (!provider.isVerified)
+                          AppSolidButton(
+                            label: AppStrings.verifyWithDigilocker.tr(),
+                            onTap: () =>
+                                provider.tapOnVerifyDigilocker(context),
+                            isLoading: provider.isLoading,
+                          )
+                        else
+                          AppSolidButton(
+                            label: AppStrings.digilockerContinue.tr(),
+                            onTap: provider.tapOnContinue,
+                            isLoading: provider.isLoading,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           );

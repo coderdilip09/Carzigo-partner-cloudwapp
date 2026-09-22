@@ -170,6 +170,30 @@ class EditProfileScreen extends StatelessWidget {
                       readOnly: true,
                       showDivider: false,
                       borderColor: AppColors.textFieldBorderGrey,
+                      suffix: OutlinedButton(
+                        onPressed: provider.tapOnChangeNumber,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: Text(
+                          AppStrings.changeNumber.tr(),
+                          style: AppTextStyles.style(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     AppTextField(
@@ -178,70 +202,6 @@ class EditProfileScreen extends StatelessWidget {
                       prefixIconColor: AppColors.primary,
                       keyboardType: TextInputType.emailAddress,
                       validator: provider.validateEmail,
-                    ),
-                    const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: provider.tapOnChangeNumber,
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.textFieldBorder,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                color: AppColors.notificationCircle,
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: AppIcon(
-                                AppAssets.lock,
-                                size: 18,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    AppStrings.changeNumber.tr(),
-                                    style: AppTextStyles.style(
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    AppStrings.updatePhoneHint.tr(),
-                                    style: AppTextStyles.style(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            AppIcon(
-                              AppAssets.chevronRight,
-                              size: 18,
-                              color: AppColors.black,
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                   ],
                 ),

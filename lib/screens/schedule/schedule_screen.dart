@@ -1,6 +1,8 @@
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_job_card.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_stat_card.dart';
+import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/screens/schedule/schedule_provider.dart';
 import 'package:carzigo_partner/screens/schedule/service_details/service_details_screen.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
@@ -38,6 +40,28 @@ class ScheduleScreen extends StatelessWidget {
             ScheduleTab.completed => AppStrings.completed.tr(),
             ScheduleTab.cancelled => AppStrings.cancelled.tr(),
           };
+          String jobStatusLabel(JobDataModel job) {
+            final tag = (job.displayTag ?? '').toLowerCase().trim();
+            if (tag == 'not_complete') return AppStrings.notComplete.tr();
+            if (tag == 'rejected') return AppStrings.reject.tr();
+            if (tag == 'cancelled') return AppStrings.cancelled.tr();
+            if (tag == 'completed') return AppStrings.completed.tr();
+
+            final ui = (job.uiStatus ?? '').trim().toLowerCase();
+            if (ui == 'not complete' || ui == 'not_complete') {
+              return AppStrings.notComplete.tr();
+            }
+            if (ui == 'reject' || ui == 'rejected') {
+              return AppStrings.reject.tr();
+            }
+            if (ui == 'cancelled' || ui == 'canceled') {
+              return AppStrings.cancelled.tr();
+            }
+            if (job.uiStatus?.trim().isNotEmpty == true) {
+              return job.uiStatus!.trim();
+            }
+            return statusLabel;
+          }
           final tabMeta = {
             ScheduleTab.upcoming: (
               AppStrings.upcoming.tr(),
@@ -176,54 +200,62 @@ class ScheduleScreen extends StatelessWidget {
                       style: AppTextStyles.style(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 10),
-                    if (provider.isLoading && provider.data == null)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 48),
-                        child: Center(
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: AppColors.primary,
+                    AppShimmer(
+                      enabled: provider.isLoading && provider.data == null,
+                      child: provider.isLoading && provider.data == null
+                          ? Column(
+                              children: [
+                                for (var i = 0; i < 3; i++)
+                                  AppJobCard(
+                                    compact: false,
+                                    showPrice: true,
+                                    status: statusLabel,
+                                    timeLabel: '09:00 AM - 10:00 AM',
+                                    serviceName: 'Exterior Wash Service',
+                                    customerName: 'Customer Name',
+                                    carName: 'Car Model Name',
+                                    price: '₹999',
+                                  ),
+                              ],
+                            )
+                          : provider.jobs.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              child: Center(
+                                child: Text(
+                                  AppStrings.noData.tr(),
+                                  style: AppTextStyles.style(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Column(
+                              children: [
+                                for (final group in provider.groupedJobs) ...[
+                                  if (group.$1.isNotEmpty) ...[
+                                    _DateChip(label: group.$1),
+                                    const SizedBox(height: 12),
+                                  ],
+                                  for (final job in group.$2)
+                                    AppJobCard(
+                                      compact: false,
+                                      showPrice: true,
+                                      status: jobStatusLabel(job),
+                                      timeLabel: job.timeRange,
+                                      serviceName: job.serviceName,
+                                      customerName: job.customerName,
+                                      carName: job.car,
+                                      price: job.price,
+                                      onTap: () => AppNavigation.to(
+                                        ServiceDetailsScreen(job: job),
+                                      ),
+                                    ),
+                                ],
+                              ],
                             ),
-                          ),
-                        ),
-                      )
-                    else if (provider.jobs.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        child: Center(
-                          child: Text(
-                            AppStrings.noData.tr(),
-                            style: AppTextStyles.style(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      for (final group in provider.groupedJobs) ...[
-                        if (group.$1.isNotEmpty) ...[
-                          _DateChip(label: group.$1),
-                          const SizedBox(height: 12),
-                        ],
-                        for (final job in group.$2)
-                          AppJobCard(
-                            compact: false,
-                            showPrice: true,
-                            status: statusLabel,
-                            timeLabel: job.timeRange,
-                            serviceName: job.serviceName,
-                            customerName: job.customerName,
-                            carName: job.car,
-                            price: job.price,
-                            onTap: () => AppNavigation.to(
-                              ServiceDetailsScreen(job: job),
-                            ),
-                          ),
-                      ],
+                    ),
                   ],
                 ),
               ),

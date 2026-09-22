@@ -112,14 +112,18 @@ class Api {
     }, (data) => UserDataModel.fromJson(asMap(data) ?? {}));
   }
 
-  static Future<ResponseWrapperModel<dynamic>> changePhoneSendOtp({
+  static Future<ResponseWrapperModel<OtpDataModel?>> changePhoneSendOtp({
     required String countryCode,
     required String phone,
   }) {
-    return _post(ApiUrls.changePhoneSendOtpUrl(), {
-      RequestKeys.countryCode: countryCode,
-      RequestKeys.phone: phone,
-    });
+    return _postParsed(
+      ApiUrls.changePhoneSendOtpUrl(),
+      {
+        RequestKeys.countryCode: countryCode,
+        RequestKeys.mobile: phone,
+      },
+      (data) => OtpDataModel.fromJson(asMap(data) ?? {}),
+    );
   }
 
   static Future<ResponseWrapperModel<UserDataModel?>> changePhoneVerify({
@@ -131,7 +135,7 @@ class Api {
       ApiUrls.changePhoneVerifyUrl(),
       {
         RequestKeys.countryCode: countryCode,
-        RequestKeys.phone: phone,
+        RequestKeys.mobile: phone,
         RequestKeys.otp: otp,
       },
       (data) => UserDataModel.fromJson(asMap(data) ?? {}),
@@ -389,6 +393,7 @@ class Api {
   ) async {
     final json = await ApiClientMethods.getMethod(
       url: ApiUrls.legalUrl(slug),
+      query: _helpAudienceQuery,
     );
     return ResponseWrapperModel.fromJson(
       json,

@@ -1,30 +1,16 @@
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 
-class HelpArticleData {
-  const HelpArticleData({
-    required this.id,
-    required this.question,
-    required this.answer,
-  });
-
-  final String id;
-  final String question;
-  final String answer;
-}
-
 class HelpTopicData {
   const HelpTopicData({
     required this.key,
     required this.title,
     required this.subtitle,
-    this.articles = const [],
   });
 
   final String key;
   final String title;
   final String subtitle;
-  final List<HelpArticleData> articles;
 }
 
 class HelpSupportProvider extends BaseProvider {
@@ -36,7 +22,6 @@ class HelpSupportProvider extends BaseProvider {
   String searchQuery = '';
   List<HelpTopicData> topics = const [];
   List<HelpTopicData> _allTopics = const [];
-  List<HelpArticleData> searchArticles = const [];
   bool isSearching = false;
   String? headline;
   String? subtitle;
@@ -57,7 +42,6 @@ class HelpSupportProvider extends BaseProvider {
     safeNotifyListeners();
     if (searchQuery.isEmpty) {
       isSearching = false;
-      searchArticles = const [];
       topics = List<HelpTopicData>.from(_allTopics);
       safeNotifyListeners();
       return;
@@ -105,27 +89,35 @@ class HelpSupportProvider extends BaseProvider {
   }
 
   Future<void> searchHelp(String query) async {
+    final needle = query.toLowerCase();
+    final localMatches = _allTopics
+        .where(
+          (t) =>
+              t.title.toLowerCase().contains(needle) ||
+              t.subtitle.toLowerCase().contains(needle),
+        )
+        .toList();
+
     final response = await Api.searchHelp(query: query);
-    if (!response.isSuccess || response.data == null) return;
     if (searchQuery != query) return;
 
-    final data = response.data!;
-    final items = data['items'];
-    final matchedTopics = data['topics'];
-
-    searchArticles = _parseArticles(items is List ? items : null);
-    isSearching = true;
-
-    if (matchedTopics is List && matchedTopics.isNotEmpty) {
-      final keys = matchedTopics
-          .whereType<Map>()
-          .map((e) => (e['key'] ?? '').toString())
-          .where((k) => k.isNotEmpty)
-          .toSet();
-      topics = _allTopics.where((t) => keys.contains(t.key)).toList();
+    if (response.isSuccess && response.data != null) {
+      final matchedTopics = response.data!['topics'];
+      if (matchedTopics is List && matchedTopics.isNotEmpty) {
+        final keys = matchedTopics
+            .whereType<Map>()
+            .map((e) => (e['key'] ?? '').toString())
+            .where((k) => k.isNotEmpty)
+            .toSet();
+        topics = _allTopics.where((t) => keys.contains(t.key)).toList();
+      } else {
+        topics = localMatches;
+      }
     } else {
-      topics = const [];
+      topics = localMatches;
     }
+
+    isSearching = true;
     safeNotifyListeners();
   }
 
@@ -175,26 +167,14 @@ class HelpSupportProvider extends BaseProvider {
 
   List<HelpTopicData> _parseTopics(List<Map<String, dynamic>>? data) {
     if (data == null) return const [];
-    return data.map((item) {
-      final articlesRaw = item['articles'];
-      return HelpTopicData(
-        key: (item['key'] ?? item['id'] ?? item['title'] ?? '').toString(),
-        title: (item['title'] ?? item['name'] ?? '').toString(),
-        subtitle: (item['subtitle'] ?? item['summary'] ?? '').toString(),
-        articles: _parseArticles(articlesRaw is List ? articlesRaw : null),
-      );
-    }).toList();
-  }
-
-  List<HelpArticleData> _parseArticles(List<dynamic>? data) {
-    if (data == null) return const [];
-    return data.whereType<Map>().map((item) {
-      final map = Map<String, dynamic>.from(item);
-      return HelpArticleData(
-        id: (map['id'] ?? map['question'] ?? '').toString(),
-        question: (map['question'] ?? map['title'] ?? '').toString(),
-        answer: (map['answer'] ?? map['body'] ?? map['content'] ?? '').toString(),
-      );
-    }).toList();
+    return data
+        .map(
+          (item) => HelpTopicData(
+            key: (item['key'] ?? item['id'] ?? item['title'] ?? '').toString(),
+            title: (item['title'] ?? item['name'] ?? '').toString(),
+            subtitle: (item['subtitle'] ?? item['summary'] ?? '').toString(),
+          ),
+        )
+        .toList();
   }
 }

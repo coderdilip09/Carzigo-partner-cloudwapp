@@ -1,10 +1,11 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// Page shell with a pinned back header (stays visible while [body] scrolls).
-class AppPageScaffold extends StatelessWidget {
+class AppPageScaffold extends StatefulWidget {
   const AppPageScaffold({
     super.key,
     required this.body,
@@ -16,6 +17,8 @@ class AppPageScaffold extends StatelessWidget {
     this.headerExtra,
     this.bottomBar,
     this.backgroundColor = AppColors.background,
+    this.isLoading = false,
+    this.showLoadingShimmer = true,
   });
 
   final Widget body;
@@ -28,32 +31,70 @@ class AppPageScaffold extends StatelessWidget {
   final Widget? bottomBar;
   final Color backgroundColor;
 
+  /// Explicit loading (API / fetch). Shown in addition to the first-open shimmer.
+  final bool isLoading;
+
+  /// First-open skeleton of this screen's real layout. Off for splash / success.
+  final bool showLoadingShimmer;
+
+  @override
+  State<AppPageScaffold> createState() => _AppPageScaffoldState();
+}
+
+class _AppPageScaffoldState extends State<AppPageScaffold> {
+  static const _initialLoadDuration = Duration(milliseconds: 500);
+
+  bool _initialLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.showLoadingShimmer) {
+      _initialLoading = false;
+      return;
+    }
+    _finishInitialLoad();
+  }
+
+  Future<void> _finishInitialLoad() async {
+    await Future<void>.delayed(_initialLoadDuration);
+    if (!mounted) return;
+    setState(() => _initialLoading = false);
+  }
+
+  bool get _showShimmer => widget.isLoading || _initialLoading;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: widget.backgroundColor,
       body: AppBg(
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: headerPadding,
+                padding: widget.headerPadding,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppBackHeader(
-                      title: title,
-                      showBackText: showBackText,
-                      titleInline: titleInline,
-                      onBack: onBack,
+                      title: widget.title,
+                      showBackText: widget.showBackText,
+                      titleInline: widget.titleInline,
+                      onBack: widget.onBack,
                     ),
-                    if (headerExtra != null) headerExtra!,
+                    if (widget.headerExtra != null) widget.headerExtra!,
                   ],
                 ),
               ),
-              Expanded(child: body),
-              if (bottomBar != null) bottomBar!,
+              Expanded(
+                child: AppShimmer(
+                  enabled: _showShimmer,
+                  child: widget.body,
+                ),
+              ),
+              if (widget.bottomBar != null) widget.bottomBar!,
             ],
           ),
         ),

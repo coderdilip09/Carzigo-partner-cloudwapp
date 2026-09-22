@@ -158,6 +158,8 @@ class AppStrings {
   static const String upcoming = 'upcoming';
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';
+  static const String notComplete = 'not_complete';
+  static const String reject = 'reject';
   static const String inProgress = 'in_progress';
   static const String avgRating = 'avg_rating';
   static const String helloName = 'hello_name';
@@ -175,6 +177,12 @@ class AppStrings {
   static const String termsSubtitle = 'terms_subtitle';
   static const String privacySubtitle = 'privacy_subtitle';
   static const String documentsSubtitle = 'documents_subtitle';
+  static const String proofType = 'proof_type';
+  static const String documentNumber = 'document_number';
+  static const String documentUnavailable = 'document_unavailable';
+  static const String openDocument = 'open_document';
+  static const String frontSide = 'front_side';
+  static const String backSide = 'back_side';
   static const String logoutSubtitle = 'logout_subtitle';
   static const String deleteSubtitle = 'delete_subtitle';
   static const String serviceDetails = 'service_details';
@@ -199,8 +207,6 @@ class AppStrings {
   static const String selectDocumentType = 'select_document_type';
   static const String chooseAnyOne = 'choose_any_one';
   static const String uploadDocument = 'upload_document';
-  static const String frontSide = 'front_side';
-  static const String backSide = 'back_side';
   static const String uploadFrontSide = 'upload_front_side';
   static const String uploadBackSide = 'upload_back_side';
   static const String uploadClearDocument = 'upload_clear_document';
@@ -266,6 +272,8 @@ class AppStrings {
   static const String scheduleId = 'schedule_id';
   static const String dateTime = 'date_time';
   static const String customerDetails = 'customer_details';
+  static const String vehicleDetails = 'vehicle_details';
+  static const String plateNumber = 'plate_number';
   static const String updateStatus = 'update_status';
   static const String serviceNotes = 'service_notes';
   static const String customerInstructions = 'customer_instructions';

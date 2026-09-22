@@ -38,6 +38,20 @@ class DocumentsProvider extends BaseProvider {
   String? get identityPreviewUrl =>
       review?.identity?.frontUrl ?? review?.identity?.documentUrl;
 
+  List<String> get identityDocumentUrls {
+    final urls = <String>[];
+    void add(String? value) {
+      final trimmed = value?.trim() ?? '';
+      if (trimmed.isEmpty) return;
+      if (!urls.contains(trimmed)) urls.add(trimmed);
+    }
+
+    add(review?.identity?.frontUrl);
+    add(review?.identity?.backUrl);
+    add(review?.identity?.documentUrl);
+    return urls;
+  }
+
   String get addressDocLabel =>
       KycDocNumber.cardLabel(review?.address?.docType);
 

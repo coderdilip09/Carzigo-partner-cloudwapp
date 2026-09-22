@@ -1,5 +1,6 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/screens/refer_earn/refer_earn_provider.dart';
 import 'package:carzigo_partner/screens/refer_earn/widgets/referred_customer_card.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
@@ -18,6 +19,9 @@ class ReferredCustomersScreen extends StatelessWidget {
       create: (_) => ReferEarnProvider(),
       child: Consumer<ReferEarnProvider>(
         builder: (context, provider, _) {
+          final isLoading =
+              provider.isLoading && provider.customers.isEmpty;
+
           return Scaffold(
             backgroundColor: AppColors.background,
             body: AppBg(
@@ -36,30 +40,14 @@ class ReferredCustomersScreen extends StatelessWidget {
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: provider.load,
-                        child: provider.isLoading && provider.customers.isEmpty
-                            ? ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                children: const [
-                                  SizedBox(height: 120),
-                                  Center(
-                                    child: SizedBox(
-                                      width: 28,
-                                      height: 28,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : provider.customers.isEmpty
+                        child: !isLoading && provider.customers.isEmpty
                             ? ListView(
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 children: [
                                   SizedBox(
                                     height:
-                                        MediaQuery.of(context).size.height * 0.4,
+                                        MediaQuery.of(context).size.height *
+                                        0.4,
                                     child: Center(
                                       child: Text(
                                         AppStrings.noData.tr(),
@@ -72,25 +60,41 @@ class ReferredCustomersScreen extends StatelessWidget {
                                   ),
                                 ],
                               )
-                            : ListView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  8,
-                                  16,
-                                  20,
+                            : AppShimmer(
+                                enabled: isLoading,
+                                child: ListView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    8,
+                                    16,
+                                    20,
+                                  ),
+                                  itemCount: isLoading
+                                      ? 6
+                                      : provider.customers.length,
+                                  itemBuilder: (context, index) {
+                                    if (isLoading) {
+                                      return const ReferredCustomerCard(
+                                        initials: 'AB',
+                                        name: 'Customer Name Placeholder',
+                                        phone: '+91 00000 00000',
+                                        status: 'Pending',
+                                        amount: '₹100',
+                                      );
+                                    }
+                                    final c = provider.customers[index];
+                                    return ReferredCustomerCard(
+                                      initials: c.displayInitials,
+                                      name: c.displayName,
+                                      phone: c.displayPhone,
+                                      status: c.displayStatus,
+                                      amount:
+                                          c.amount ?? provider.rewardLabel,
+                                    );
+                                  },
                                 ),
-                                itemCount: provider.customers.length,
-                                itemBuilder: (context, index) {
-                                  final c = provider.customers[index];
-                                  return ReferredCustomerCard(
-                                    initials: c.displayInitials,
-                                    name: c.displayName,
-                                    phone: c.displayPhone,
-                                    status: c.displayStatus,
-                                    amount: c.amount ?? provider.rewardLabel,
-                                  );
-                                },
                               ),
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_stat_card.dart';
 import 'package:carzigo_partner/screens/refer_earn/refer_earn_provider.dart';
@@ -26,18 +27,9 @@ class ReferEarnScreen extends StatelessWidget {
       child: Consumer<ReferEarnProvider>(
         builder: (context, provider, _) {
           return SafeArea(
-            child: provider.isLoading && provider.data == null
-                ? const Center(
-                    child: SizedBox(
-                      width: 28,
-                      height: 28,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  )
-                : RefreshIndicator(
+            child: AppShimmer(
+              enabled: provider.isLoading && provider.data == null,
+              child: RefreshIndicator(
               onRefresh: () => provider.load(silent: true),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -401,7 +393,18 @@ class ReferEarnScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  if (provider.customers.isEmpty)
+                  if (provider.isLoading && provider.data == null)
+                    ...List.generate(
+                      3,
+                      (_) => const ReferredCustomerCard(
+                        initials: 'AB',
+                        name: 'Customer Name Placeholder',
+                        phone: '+91 00000 00000',
+                        status: 'Pending',
+                        amount: '₹100',
+                      ),
+                    )
+                  else if (provider.customers.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Center(
@@ -426,6 +429,7 @@ class ReferEarnScreen extends StatelessWidget {
                     ),
                 ],
               ),
+            ),
             ),
             ),
           );

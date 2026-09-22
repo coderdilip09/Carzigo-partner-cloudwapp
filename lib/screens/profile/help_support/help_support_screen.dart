@@ -9,7 +9,6 @@ import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,27 +56,51 @@ class _HelpSupportView extends StatelessWidget {
     await _launchUri(Uri.parse('mailto:$email?subject=$subject'));
   }
 
+  static const _placeholderTopics = [
+    HelpTopicData(
+      key: 'shimmer-1',
+      title: 'Loading topic title here',
+      subtitle: 'Loading subtitle text',
+    ),
+    HelpTopicData(
+      key: 'shimmer-2',
+      title: 'Loading second topic title',
+      subtitle: 'Loading subtitle text',
+    ),
+    HelpTopicData(
+      key: 'shimmer-3',
+      title: 'Loading third topic title',
+      subtitle: 'Loading subtitle text',
+    ),
+    HelpTopicData(
+      key: 'shimmer-4',
+      title: 'Loading fourth topic title',
+      subtitle: 'Loading subtitle text',
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HelpSupportProvider>();
-    final topics = provider.topics;
-    final searchArticles = provider.searchArticles;
     final showSearchResults =
         provider.isSearching && provider.searchQuery.length >= 2;
-    final showInitialLoader =
-        provider.isLoading && topics.isEmpty && provider.supportPhone == null;
+    final isPageLoading =
+        provider.isLoading &&
+        provider.topics.isEmpty &&
+        provider.supportPhone == null;
     final showError =
         provider.loadError != null &&
-        topics.isEmpty &&
+        provider.topics.isEmpty &&
         provider.supportPhone == null;
+    final topics = isPageLoading ? _placeholderTopics : provider.topics;
 
     return AppPageScaffold(
       title: AppStrings.helpSupport.tr(),
       showBackText: false,
       titleInline: true,
-      body: showInitialLoader
-          ? const Center(child: CircularProgressIndicator())
-          : showError
+      isLoading: isPageLoading,
+      showLoadingShimmer: false,
+      body: showError
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -114,10 +137,13 @@ class _HelpSupportView extends StatelessWidget {
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 4,
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 6,
                           children: [
                             Text(
                               provider.headline?.isNotEmpty == true
@@ -129,7 +155,6 @@ class _HelpSupportView extends StatelessWidget {
                                 color: AppColors.textPrimary,
                               ),
                             ),
-                            const SizedBox(height: 6),
                             Text(
                               provider.subtitle?.isNotEmpty == true
                                   ? provider.subtitle!
@@ -140,97 +165,96 @@ class _HelpSupportView extends StatelessWidget {
                                 color: AppColors.textSecondary,
                               ),
                             ),
-                            const SizedBox(height: 14),
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: SizedBox(
-                                    height: 40,
-                                    child: ElevatedButton(
-                                      onPressed: () => _callSupport(provider),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.notification,
-                                        foregroundColor: AppColors.white,
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const AppIcon(
-                                            AppAssets.headset,
-                                            size: 16,
-                                            color: AppColors.white,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Flexible(
-                                            child: Text(
-                                              AppStrings.contactSupport.tr(),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTextStyles.style(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  flex: 2,
-                                  child: SizedBox(
-                                    height: 40,
-                                    child: OutlinedButton(
-                                      onPressed: () => _emailSupport(provider),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: AppColors.textPrimary,
-                                        backgroundColor: AppColors.white,
-                                        side: const BorderSide(
-                                          color: AppColors.primary,
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        AppStrings.emailUs.tr(),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.style(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 4),
                       const AppImageView(
                         AppAssets.headphone,
                         width: 110,
                         height: 113,
                         fit: BoxFit.contain,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    spacing: 8,
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: isPageLoading
+                                ? null
+                                : () => _callSupport(provider),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.notification,
+                              foregroundColor: AppColors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const AppIcon(
+                                  AppAssets.headset,
+                                  size: 16,
+                                  color: AppColors.white,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    AppStrings.contactSupport.tr(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.style(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: SizedBox(
+                          height: 40,
+                          child: OutlinedButton(
+                            onPressed: isPageLoading
+                                ? null
+                                : () => _emailSupport(provider),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.textPrimary,
+                              backgroundColor: AppColors.white,
+                              side: const BorderSide(color: AppColors.primary),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              AppStrings.emailUs.tr(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.style(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -249,32 +273,18 @@ class _HelpSupportView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (showSearchResults) ...[
-                    if (searchArticles.isEmpty && topics.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Text(
-                          AppStrings.noResultsFound.tr(),
-                          style: AppTextStyles.style(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      )
-                    else ...[
-                      ...searchArticles.map(
-                        (article) => _ArticleTile(article: article),
-                      ),
-                      ...topics.map(
-                        (topic) => _TopicTile(
-                          key: ValueKey('topic-${topic.key}'),
-                          topic: topic,
-                          expanded: provider.expandedTopicKey == topic.key,
-                          onTap: () => provider.tapOnTopic(topic.key),
+                  if (showSearchResults && topics.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        AppStrings.noResultsFound.tr(),
+                        style: AppTextStyles.style(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                    ],
-                  ] else if (topics.isEmpty)
+                    )
+                  else if (!isPageLoading && topics.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
@@ -291,7 +301,9 @@ class _HelpSupportView extends StatelessWidget {
                         key: ValueKey('topic-${topic.key}'),
                         topic: topic,
                         expanded: provider.expandedTopicKey == topic.key,
-                        onTap: () => provider.tapOnTopic(topic.key),
+                        onTap: isPageLoading
+                            ? () {}
+                            : () => provider.tapOnTopic(topic.key),
                       ),
                     ),
                   const SizedBox(height: 20),
@@ -304,29 +316,39 @@ class _HelpSupportView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (provider.supportPhone?.isNotEmpty == true)
+                  if (isPageLoading || provider.supportPhone?.isNotEmpty == true)
                     _ContactCard(
                       iconAsset: AppAssets.phone,
                       title: AppStrings.callUs.tr(),
-                      value: provider.supportPhone!,
+                      value: provider.supportPhone?.isNotEmpty == true
+                          ? provider.supportPhone!
+                          : '+91 00000 00000',
                       action: AppStrings.callNow.tr(),
                       actionIcon: AppAssets.personCall,
-                      onAction: () => _callSupport(provider),
+                      onAction: isPageLoading
+                          ? null
+                          : () => _callSupport(provider),
                     ),
-                  if (provider.supportEmail?.isNotEmpty == true)
+                  if (isPageLoading || provider.supportEmail?.isNotEmpty == true)
                     _ContactCard(
                       iconAsset: AppAssets.email,
                       title: AppStrings.emailUsTitle.tr(),
-                      value: provider.supportEmail!,
+                      value: provider.supportEmail?.isNotEmpty == true
+                          ? provider.supportEmail!
+                          : 'support@carzigo.com',
                       action: AppStrings.sendEmail.tr(),
                       outlined: true,
-                      onAction: () => _emailSupport(provider),
+                      onAction: isPageLoading
+                          ? null
+                          : () => _emailSupport(provider),
                     ),
-                  if (provider.supportHours?.isNotEmpty == true)
+                  if (isPageLoading || provider.supportHours?.isNotEmpty == true)
                     _ContactCard(
                       iconAsset: AppAssets.clock,
                       title: AppStrings.supportHours.tr(),
-                      value: provider.supportHours!,
+                      value: provider.supportHours?.isNotEmpty == true
+                          ? provider.supportHours!
+                          : 'Mon–Sat, 9 AM – 6 PM',
                     ),
                 ],
               ),
@@ -336,10 +358,7 @@ class _HelpSupportView extends StatelessWidget {
 }
 
 class _HelpSearchField extends StatefulWidget {
-  const _HelpSearchField({
-    required this.onChanged,
-    required this.hasQuery,
-  });
+  const _HelpSearchField({required this.onChanged, required this.hasQuery});
 
   final ValueChanged<String> onChanged;
   final bool hasQuery;
@@ -368,20 +387,13 @@ class _HelpSearchFieldState extends State<_HelpSearchField> {
       ),
       child: Row(
         children: [
-          const AppIcon(
-            AppAssets.search,
-            size: 20,
-            color: AppColors.black,
-          ),
+          const AppIcon(AppAssets.search, size: 20, color: AppColors.black),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: _controller,
               onChanged: widget.onChanged,
-              style: AppTextStyles.style(
-                fontSize: 14,
-                color: AppColors.black,
-              ),
+              style: AppTextStyles.style(fontSize: 14, color: AppColors.black),
               cursorColor: AppColors.primary,
               decoration: InputDecoration(
                 hintText: AppStrings.searchForHelp.tr(),
@@ -398,6 +410,7 @@ class _HelpSearchFieldState extends State<_HelpSearchField> {
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
+              onTapOutside: (event) => FocusScope.of(context).unfocus(),
             ),
           ),
           if (widget.hasQuery)
@@ -406,11 +419,7 @@ class _HelpSearchFieldState extends State<_HelpSearchField> {
                 _controller.clear();
                 widget.onChanged('');
               },
-              child: const Icon(
-                Icons.close,
-                size: 18,
-                color: AppColors.black,
-              ),
+              child: const Icon(Icons.close, size: 18, color: AppColors.black),
             ),
         ],
       ),
@@ -479,47 +488,6 @@ class _TopicTile extends StatelessWidget {
           ),
         const Divider(height: 1, thickness: 1, color: AppColors.border),
       ],
-    );
-  }
-}
-
-class _ArticleTile extends StatelessWidget {
-  const _ArticleTile({required this.article, this.nested = false});
-
-  final HelpArticleData article;
-  final bool nested;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: nested ? 12 : 14, top: nested ? 0 : 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            article.question,
-            style: AppTextStyles.style(
-              fontSize: nested ? 13 : 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Html(
-            data: article.answer.isEmpty ? '<p></p>' : article.answer,
-            style: {
-              'body': Style(
-                margin: Margins.zero,
-                padding: HtmlPaddings.zero,
-                fontSize: FontSize(13),
-                color: AppColors.textPrimary,
-                lineHeight: const LineHeight(1.45),
-              ),
-              'p': Style(margin: Margins.only(bottom: 6)),
-            },
-          ),
-        ],
-      ),
     );
   }
 }

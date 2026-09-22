@@ -4,6 +4,7 @@ import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_kyc_stepper.dart';
+import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_upload_box.dart';
 import 'package:carzigo_partner/screens/kyc/address_proof/address_proof_provider.dart';
@@ -42,31 +43,9 @@ class AddressProofScreen extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: provider.isFetching
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: AppBackHeader(
-                              title: AppStrings.addressProof.tr(),
-                            ),
-                          ),
-                          const Expanded(
-                            child: Center(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : SingleChildScrollView(
+                child: AppShimmer(
+                  enabled: provider.isFetching,
+                  child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Form(
                     key: provider.formKey,
@@ -183,6 +162,7 @@ class AddressProofScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
                 ),
               ),
             ),
