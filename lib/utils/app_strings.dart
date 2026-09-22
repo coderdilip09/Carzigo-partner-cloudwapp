@@ -353,6 +353,7 @@ class AppStrings {
   static const String infoSafe = 'info_safe';
   static const String searchForHelp = 'search_for_help';
   static const String noResultsFound = 'no_results_found';
+  static const String tryAgain = 'try_again';
   static const String callNow = 'call_now';
   static const String sendEmail = 'send_email';
   static const String mockServiceNotes = 'mock_service_notes';

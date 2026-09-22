@@ -43,6 +43,11 @@ class ApiUrls {
   static const String legalTermsSlug = 'terms';
   static const String legalPrivacySlug = 'privacy';
 
+  static const String help = 'help';
+  static const String helpTopics = 'help/topics';
+  static const String helpSearch = 'help/search';
+  static const String helpContact = 'help/contact';
+
   static String sendOtpUrl() => _join(sendOtp);
   static String verifyOtpUrl() => _join(verifyOtp);
   static String resendOtpUrl() => _join(resendOtp);
@@ -82,6 +87,12 @@ class ApiUrls {
   static String legalUrl(String slug) => _join('$legal/$slug');
   static String cmsTermsUrl() => legalUrl(legalTermsSlug);
   static String cmsPrivacyUrl() => legalUrl(legalPrivacySlug);
+
+  static String helpUrl() => _join(help);
+  static String helpTopicsUrl() => _join(helpTopics);
+  static String helpTopicUrl(String key) => _join('$helpTopics/$key');
+  static String helpSearchUrl() => _join(helpSearch);
+  static String helpContactUrl() => _join(helpContact);
 
   static String _join(String path) {
     if (baseUrl.isEmpty) return '';

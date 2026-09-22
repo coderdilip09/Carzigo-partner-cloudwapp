@@ -77,7 +77,7 @@ class EditProfileProvider extends BaseProvider {
   Future<void> pickFromGallery() => _pick(ImageSource.gallery);
 
   Future<void> _pick(ImageSource source) async {
-    final file = await ImagePickService.pickAndCrop(source);
+    final file = await ImagePickService.pickAndCrop(source, squareOnly: true);
     if (file == null) return;
     profileImage = file;
     safeNotifyListeners();

@@ -15,9 +15,16 @@ class ImagePickService {
 
   static final ImagePicker _picker = ImagePicker();
 
+  static const _squareRatio = CropAspectRatio(ratioX: 1, ratioY: 1);
+
   /// Pick from camera/gallery, then open native image cropper.
   /// Returns null if user cancels pick or crop.
-  static Future<File?> pickAndCrop(ImageSource source) async {
+  ///
+  /// When [squareOnly] is true (profile photo), aspect is locked to 1:1.
+  static Future<File?> pickAndCrop(
+    ImageSource source, {
+    bool squareOnly = false,
+  }) async {
     try {
       final picked = await _picker.pickImage(
         source: source,
@@ -29,6 +36,7 @@ class ImagePickService {
       try {
         final cropped = await ImageCropper().cropImage(
           sourcePath: picked.path,
+          aspectRatio: squareOnly ? _squareRatio : null,
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 90,
           uiSettings: [
@@ -37,27 +45,37 @@ class ImagePickService {
               toolbarColor: AppColors.primary,
               toolbarWidgetColor: AppColors.white,
               activeControlsWidgetColor: AppColors.primary,
-              initAspectRatio: CropAspectRatioPreset.original,
-              lockAspectRatio: false,
-              aspectRatioPresets: [
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.square,
-                CropAspectRatioPreset.ratio3x2,
-                CropAspectRatioPreset.ratio4x3,
-                CropAspectRatioPreset.ratio16x9,
-              ],
+              cropStyle: squareOnly ? CropStyle.circle : CropStyle.rectangle,
+              initAspectRatio: squareOnly
+                  ? CropAspectRatioPreset.square
+                  : CropAspectRatioPreset.original,
+              lockAspectRatio: squareOnly,
+              aspectRatioPresets: squareOnly
+                  ? const [CropAspectRatioPreset.square]
+                  : const [
+                      CropAspectRatioPreset.original,
+                      CropAspectRatioPreset.square,
+                      CropAspectRatioPreset.ratio3x2,
+                      CropAspectRatioPreset.ratio4x3,
+                      CropAspectRatioPreset.ratio16x9,
+                    ],
             ),
             IOSUiSettings(
               title: AppStrings.cropImage.tr(),
               doneButtonTitle: AppStrings.done.tr(),
               cancelButtonTitle: AppStrings.cancel.tr(),
-              aspectRatioPresets: [
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.square,
-                CropAspectRatioPreset.ratio3x2,
-                CropAspectRatioPreset.ratio4x3,
-                CropAspectRatioPreset.ratio16x9,
-              ],
+              cropStyle: squareOnly ? CropStyle.circle : CropStyle.rectangle,
+              aspectRatioLockEnabled: squareOnly,
+              resetAspectRatioEnabled: !squareOnly,
+              aspectRatioPresets: squareOnly
+                  ? const [CropAspectRatioPreset.square]
+                  : const [
+                      CropAspectRatioPreset.original,
+                      CropAspectRatioPreset.square,
+                      CropAspectRatioPreset.ratio3x2,
+                      CropAspectRatioPreset.ratio4x3,
+                      CropAspectRatioPreset.ratio16x9,
+                    ],
             ),
           ],
         );

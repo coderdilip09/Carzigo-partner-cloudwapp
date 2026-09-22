@@ -42,4 +42,7 @@ class RequestKeys {
   static const String tab = 'tab';
   static const String page = 'page';
   static const String limit = 'limit';
+  static const String q = 'q';
+  static const String audience = 'audience';
+  static const String partnerAudience = 'partner';
 }

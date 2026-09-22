@@ -404,6 +404,63 @@ class Api {
     return getLegalPage(ApiUrls.legalPrivacySlug);
   }
 
+  static Map<String, String> get _helpAudienceQuery => {
+    RequestKeys.audience: RequestKeys.partnerAudience,
+  };
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> getHelp() async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.helpUrl(),
+      query: _helpAudienceQuery,
+    );
+    return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
+  }
+
+  static Future<ResponseWrapperModel<List<Map<String, dynamic>>>>
+  getHelpTopics() async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.helpTopicsUrl(),
+      query: _helpAudienceQuery,
+    );
+    return ResponseWrapperModel.fromJson(json, (data) {
+      if (data is List) {
+        return data
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      }
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> getHelpTopic({
+    required String key,
+  }) async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.helpTopicUrl(key),
+      query: _helpAudienceQuery,
+    );
+    return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
+  }
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> searchHelp({
+    required String query,
+  }) async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.helpSearchUrl(),
+      query: {RequestKeys.q: query, ..._helpAudienceQuery},
+    );
+    return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
+  }
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>>
+  getHelpContact() async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.helpContactUrl(),
+    );
+    return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
+  }
+
   static Map<String, dynamic> _otpBody({
     required String countryCode,
     required String mobile,
