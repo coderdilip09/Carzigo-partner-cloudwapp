@@ -18,6 +18,8 @@ import 'package:carzigo_partner/models/user_data_model.dart';
 import 'package:carzigo_partner/services/api_service/api_client_methods.dart';
 import 'package:carzigo_partner/services/api_service/api_urls.dart';
 import 'package:carzigo_partner/services/api_service/request_keys.dart';
+import 'package:carzigo_partner/services/device_service/device_service.dart';
+import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 
 class Api {
   Api._();
@@ -37,10 +39,17 @@ class Api {
     required String countryCode,
     required String mobile,
     required String otp,
-  }) {
+  }) async {
+    final fcm = await PrefsService().getFcmToken();
+    final device = await DeviceService().getInfo();
     return _postParsed(
       ApiUrls.verifyOtpUrl(),
-      _otpBody(countryCode: countryCode, mobile: mobile, otp: otp),
+      {
+        ..._otpBody(countryCode: countryCode, mobile: mobile, otp: otp),
+        if (fcm != null && fcm.isNotEmpty) RequestKeys.fcmToken: fcm,
+        RequestKeys.deviceType: device.type,
+        RequestKeys.deviceId: device.id,
+      },
       (data) => AuthDataModel.fromJson(asMap(data) ?? {}),
     );
   }
@@ -357,6 +366,21 @@ class Api {
         data,
         NotificationDataModel.fromJson,
       ).list,
+    );
+  }
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> registerDeviceToken(
+    String fcmToken,
+  ) async {
+    final device = await DeviceService().getInfo();
+    return _putParsed(
+      ApiUrls.notificationsDeviceTokenUrl(),
+      {
+        RequestKeys.fcmToken: fcmToken,
+        RequestKeys.deviceType: device.type,
+        RequestKeys.deviceId: device.id,
+      },
+      (data) => asMap(data),
     );
   }
 

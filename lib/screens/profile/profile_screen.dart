@@ -77,206 +77,214 @@ class ProfileScreen extends StatelessWidget {
               onRefresh: provider.loadProfile,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(16, 16, 16, showBottomNav ? 80 : 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppStrings.profile.tr(),
-                    style: AppTextStyles.style(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    AppStrings.manageAccount.tr(),
-                    style: AppTextStyles.style(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.peach, AppColors.peachCard],
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  showBottomNav ? 80 : 16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.profile.tr(),
+                      style: AppTextStyles.style(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
                       ),
-                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
-                      children: [
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              width: 64,
-                              height: 64,
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.white,
-                                  width: 2,
+                    Text(
+                      AppStrings.manageAccount.tr(),
+                      style: AppTextStyles.style(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.peach, AppColors.peachCard],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: AppUserAvatar(
+                                  url: provider.user?.photoUrl,
+                                  size: 60,
                                 ),
                               ),
-                              child: AppUserAvatar(
-                                url: provider.user?.photoUrl,
-                                size: 60,
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: provider.tapOnMyProfile,
-                                behavior: HitTestBehavior.opaque,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: provider.tapOnMyProfile,
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppColors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: AppIcon(
+                                      AppAssets.camera,
+                                      size: 12,
                                       color: AppColors.white,
-                                      width: 1.5,
                                     ),
                                   ),
-                                  child: AppIcon(
-                                    AppAssets.camera,
-                                    size: 12,
-                                    color: AppColors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                provider.user?.displayName ?? '',
-                                style: AppTextStyles.style(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              Text(
-                                provider.user?.email ?? '',
-                                style: AppTextStyles.style(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              Text(
-                                provider.user?.displayPhone ?? '',
-                                style: AppTextStyles.style(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        SizedBox(
-                          height: 26,
-                          child: ElevatedButton(
-                            onPressed: provider.tapOnMyProfile,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.white,
-                              elevation: 0,
-                              shadowColor: Colors.transparent,
-                              minimumSize: const Size(0, 26),
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              visualDensity: VisualDensity.compact,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                AppIcon(
-                                  AppAssets.edit,
-                                  size: 10,
-                                  color: AppColors.white,
-                                ),
-                                const SizedBox(width: 3),
                                 Text(
-                                  AppStrings.edit.tr(),
+                                  provider.user?.displayName ?? '',
+                                  style: AppTextStyles.style(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  provider.user?.email ?? '',
                                   style: AppTextStyles.style(
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.white,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                Text(
+                                  provider.user?.displayPhone ?? '',
+                                  style: AppTextStyles.style(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
+                          SizedBox(
+                            height: 26,
+                            child: ElevatedButton(
+                              onPressed: provider.tapOnMyProfile,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.white,
+                                elevation: 0,
+                                shadowColor: Colors.transparent,
+                                minimumSize: const Size(0, 26),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  AppIcon(
+                                    AppAssets.edit,
+                                    size: 10,
+                                    color: AppColors.white,
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    AppStrings.edit.tr(),
+                                    style: AppTextStyles.style(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _MenuTile(
-                    iconAsset: AppAssets.person,
-                    title: AppStrings.myProfile.tr(),
-                    subtitle: AppStrings.myProfileSubtitle.tr(),
-                    onTap: provider.tapOnMyProfile,
-                  ),
-                  _MenuTile(
-                    iconAsset: AppAssets.headset,
-                    title: AppStrings.helpSupport.tr(),
-                    subtitle: AppStrings.helpSupportSubtitle.tr(),
-                    onTap: provider.tapOnHelp,
-                  ),
-                  // Language (temporarily disabled)
-                  // _MenuTile(
-                  //   leadingIcon: Icons.translate,
-                  //   title: AppStrings.selectLanguage.tr(),
-                  //   subtitle: AppStrings.languageSubtitle.tr(),
-                  //   onTap: provider.tapOnLanguage,
-                  // ),
-                  _MenuTile(
-                    iconAsset: AppAssets.termsCondition,
-                    title: AppStrings.termsConditions.tr(),
-                    subtitle: AppStrings.termsSubtitle.tr(),
-                    onTap: provider.tapOnTerms,
-                  ),
-                  _MenuTile(
-                    iconAsset: AppAssets.iconPrivacy,
-                    title: AppStrings.privacyPolicy.tr(),
-                    subtitle: AppStrings.privacySubtitle.tr(),
-                    onTap: provider.tapOnPrivacy,
-                  ),
-                  _MenuTile(
-                    iconAsset: AppAssets.folder,
-                    title: AppStrings.documents.tr(),
-                    subtitle: AppStrings.documentsSubtitle.tr(),
-                    onTap: provider.tapOnDocuments,
-                  ),
-                  const SizedBox(height: 8),
-                  _MenuTile(
-                    iconAsset: AppAssets.logout,
-                    title: AppStrings.logout.tr(),
-                    subtitle: AppStrings.logoutSubtitle.tr(),
-                    isDestructive: true,
-                    onTap: () => showLogoutDialog(context),
-                  ),
-                  _MenuTile(
-                    iconAsset: AppAssets.delete,
-                    title: AppStrings.deleteAccount.tr(),
-                    subtitle: AppStrings.deleteSubtitle.tr(),
-                    isDestructive: true,
-                    onTap: () => showDeleteAccountDialog(context),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    _MenuTile(
+                      iconAsset: AppAssets.person,
+                      title: AppStrings.myProfile.tr(),
+                      subtitle: AppStrings.myProfileSubtitle.tr(),
+                      onTap: provider.tapOnMyProfile,
+                    ),
+                    _MenuTile(
+                      iconAsset: AppAssets.headset,
+                      title: AppStrings.helpSupport.tr(),
+                      subtitle: AppStrings.helpSupportSubtitle.tr(),
+                      onTap: provider.tapOnHelp,
+                    ),
+                    // Language (temporarily disabled)
+                    // _MenuTile(
+                    //   leadingIcon: Icons.translate,
+                    //   title: AppStrings.selectLanguage.tr(),
+                    //   subtitle: AppStrings.languageSubtitle.tr(),
+                    //   onTap: provider.tapOnLanguage,
+                    // ),
+                    _MenuTile(
+                      iconAsset: AppAssets.termsCondition,
+                      title: AppStrings.termsConditions.tr(),
+                      subtitle: AppStrings.termsSubtitle.tr(),
+                      onTap: provider.tapOnTerms,
+                    ),
+                    _MenuTile(
+                      iconAsset: AppAssets.iconPrivacy,
+                      title: AppStrings.privacyPolicy.tr(),
+                      subtitle: AppStrings.privacySubtitle.tr(),
+                      onTap: provider.tapOnPrivacy,
+                    ),
+                    _MenuTile(
+                      iconAsset: AppAssets.folder,
+                      title: AppStrings.documents.tr(),
+                      subtitle: AppStrings.documentsSubtitle.tr(),
+                      onTap: provider.tapOnDocuments,
+                    ),
+                    const SizedBox(height: 8),
+                    _MenuTile(
+                      iconAsset: AppAssets.logout,
+                      title: AppStrings.logout.tr(),
+                      subtitle: AppStrings.logoutSubtitle.tr(),
+                      isDestructive: true,
+                      onTap: () => showLogoutDialog(context),
+                    ),
+                    _MenuTile(
+                      iconAsset: AppAssets.delete,
+                      title: AppStrings.deleteAccount.tr(),
+                      subtitle: AppStrings.deleteSubtitle.tr(),
+                      isDestructive: true,
+                      onTap: () =>
+                          false ? showDeleteAccountDialog(context) : null,
+                    ),
+                  ],
+                ),
               ),
-            ),
             ),
           );
         },
@@ -304,10 +312,12 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor =
-        isDestructive ? AppColors.destructive : AppColors.menuIcon;
-    final titleColor =
-        isDestructive ? AppColors.destructive : AppColors.textPrimary;
+    final iconColor = isDestructive
+        ? AppColors.destructive
+        : AppColors.menuIcon;
+    final titleColor = isDestructive
+        ? AppColors.destructive
+        : AppColors.textPrimary;
     final subtitleColor = isDestructive
         ? AppColors.destructive.withValues(alpha: 0.7)
         : AppColors.pureBlack;

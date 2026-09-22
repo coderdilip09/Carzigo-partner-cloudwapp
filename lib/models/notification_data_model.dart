@@ -21,7 +21,12 @@ class NotificationDataModel {
       title: asString(json['title']),
       body: asString(json['body'] ?? json['message'] ?? json['description']),
       time: asString(
-        json['time'] ?? json['createdAt'] ?? json['created_at'] ?? json['ago'],
+        json['time'] ??
+            json['relative_time'] ??
+            json['relativeTime'] ??
+            json['createdAt'] ??
+            json['created_at'] ??
+            json['ago'],
       ),
       isRead: asBool(json['isRead'] ?? json['is_read'] ?? json['read']),
     );

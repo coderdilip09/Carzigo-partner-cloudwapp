@@ -77,8 +77,11 @@ class AppStrings {
   static const String kycRejectedBody = 'kyc_rejected_body';
   static const String kycSectionLocked = 'kyc_section_locked';
   static const String rejected = 'rejected';
+  static const String readMore = 'read_more';
+  static const String showLess = 'show_less';
   static const String resubmitForReview = 'resubmit_for_review';
   static const String fixRejectedSections = 'fix_rejected_sections';
+  static const String updateRejectedItems = 'update_rejected_items';
   static const String planBenefits = 'plan_benefits';
   static const String identityProof = 'identity_proof';
   static const String addressProof = 'address_proof';
@@ -88,6 +91,8 @@ class AppStrings {
   static const String digilockerVerified = 'digilocker_verified';
   static const String digilockerContinue = 'digilocker_continue';
   static const String digilockerFailed = 'digilocker_failed';
+  static const String digilockerCancelled = 'digilocker_cancelled';
+  static const String digilockerSessionIncomplete = 'digilocker_session_incomplete';
   static const String localAddress = 'local_address';
   static const String enterLocalAddress = 'enter_local_address';
   static const String localAddressHint = 'local_address_hint';
@@ -221,6 +226,7 @@ class AppStrings {
   static const String ifscInvalid = 'ifsc_invalid';
   static const String ifscNotVerified = 'ifsc_not_verified';
   static const String ifscLookingUp = 'ifsc_looking_up';
+  static const String ifscMockHint = 'ifsc_mock_hint';
   static const String chequeImageRequired = 'cheque_image_required';
   static const String identityDocsHint = 'identity_docs_hint';
   static const String addressDocsHint = 'address_docs_hint';

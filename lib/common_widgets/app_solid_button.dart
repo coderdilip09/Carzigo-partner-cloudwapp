@@ -1,6 +1,6 @@
 import 'package:carzigo_partner/theme/app_colors.dart';
-import 'package:flutter/material.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
+import 'package:flutter/material.dart';
 
 class AppSolidButton extends StatelessWidget {
   const AppSolidButton({
@@ -29,6 +29,7 @@ class AppSolidButton extends StatelessWidget {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
@@ -43,17 +44,21 @@ class AppSolidButton extends StatelessWidget {
                 ),
               )
             : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (leading != null) ...[
                     leading!,
                     const SizedBox(width: 8),
                   ],
-                  Text(
-                    label,
-                    style: AppTextStyles.style(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.style(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   if (trailing != null) ...[

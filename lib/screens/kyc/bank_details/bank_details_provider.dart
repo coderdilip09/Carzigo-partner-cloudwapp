@@ -37,6 +37,7 @@ class BankDetailsProvider extends BaseProvider {
   String? chequeUrl;
   String? resolvedBankName;
   String? resolvedBranch;
+  bool ifscFromMock = false;
   String _savedHolder = '';
   String _savedBankName = '';
   String _savedBranch = '';
@@ -66,13 +67,16 @@ class BankDetailsProvider extends BaseProvider {
 
     try {
       final res = await Api.getKycReview();
-      final bank = res.data?.bank;
-      if (!res.isSuccess || bank == null || !bank.isDone) {
-        if (!res.isSuccess) {
-          AppToast.error(res.message ?? AppStrings.requestFailed.tr());
-        }
+      if (!res.isSuccess) {
+        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
         return;
       }
+
+      // Admin rejection: force a fresh fill — do not prefill old bank details.
+      if (res.data?.isBankRejected == true) return;
+
+      final bank = res.data?.bank;
+      if (bank == null || !bank.isDone) return;
 
       holderNameController.text = bank.holderName ?? '';
       ifscController.text = bank.ifsc ?? '';
@@ -122,6 +126,7 @@ class BankDetailsProvider extends BaseProvider {
         resolvedBankName!.isEmpty) {
       resolvedBankName = null;
       resolvedBranch = null;
+      ifscFromMock = false;
     }
     safeNotifyListeners();
 
@@ -165,6 +170,7 @@ class BankDetailsProvider extends BaseProvider {
       if (!res.isSuccess || res.data == null) {
         resolvedBankName = null;
         resolvedBranch = null;
+        ifscFromMock = false;
         ifscError = res.message ?? AppStrings.ifscInvalid.tr();
         return;
       }
@@ -181,17 +187,20 @@ class BankDetailsProvider extends BaseProvider {
       if (bank.isEmpty) {
         resolvedBankName = null;
         resolvedBranch = null;
+        ifscFromMock = false;
         ifscError = AppStrings.ifscInvalid.tr();
         return;
       }
       resolvedBankName = bank;
       resolvedBranch = branch.isEmpty ? null : branch;
+      ifscFromMock = res.data!['mock'] == true;
       ifscError = null;
     } catch (e, st) {
       debugPrint('IFSC lookup failed: $e\n$st');
       if (token != _ifscLookupToken) return;
       resolvedBankName = null;
       resolvedBranch = null;
+      ifscFromMock = false;
       ifscError = AppStrings.requestFailed.tr();
     } finally {
       if (token == _ifscLookupToken) {

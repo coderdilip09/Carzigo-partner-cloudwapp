@@ -240,6 +240,17 @@ class BankDetailsScreen extends StatelessWidget {
                                           color: const Color(0xFF111111),
                                         ),
                                       ),
+                                      if (provider.ifscFromMock) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          AppStrings.ifscMockHint.tr(),
+                                          style: AppTextStyles.style(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
                                       if (provider.resolvedBranch != null &&
                                           provider
                                               .resolvedBranch!

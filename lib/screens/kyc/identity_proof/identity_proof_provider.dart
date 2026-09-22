@@ -67,29 +67,53 @@ class IdentityProofProvider extends BaseProvider {
 
       final session = start.data!;
       final clientId = session.clientId?.trim() ?? '';
-      if (clientId.isEmpty &&
-          (session.url == null || session.url!.isEmpty) &&
-          (session.token == null || session.token!.isEmpty)) {
-        AppToast.error(AppStrings.digilockerFailed.tr());
+      final url = session.url?.trim() ?? '';
+      final token = session.token?.trim() ?? '';
+      final hasLink = url.isNotEmpty || token.isNotEmpty;
+
+      if (clientId.isEmpty && !hasLink) {
+        AppToast.error(AppStrings.digilockerSessionIncomplete.tr());
         return;
       }
 
-      if (!context.mounted) return;
-      final completedClientId = await Navigator.of(context).push<String>(
-        MaterialPageRoute(
-          builder: (_) => DigilockerWebViewScreen(
-            clientId: clientId.isNotEmpty ? clientId : 'pending',
-            url: session.url,
-            token: session.token,
-            gateway: session.gateway ?? 'sandbox',
-          ),
-        ),
-      );
+      // Mock Digilocker: never open empty WebView — complete immediately.
+      final isMockSession =
+          session.isMock || clientId.startsWith('mock_digilocker_');
+      String id;
 
-      // Back / cancel — do not call complete with start client_id (causes Surepass 404).
-      final id = completedClientId?.trim() ?? '';
-      if (id.isEmpty || id == 'pending') {
+      if (isMockSession) {
+        if (clientId.isEmpty) {
+          AppToast.error(AppStrings.digilockerSessionIncomplete.tr());
+          return;
+        }
+        debugPrint(
+          'Digilocker mock path — skipping WebView, client_id=$clientId',
+        );
+        id = clientId;
+      } else if (!hasLink) {
+        AppToast.error(AppStrings.digilockerSessionIncomplete.tr());
         return;
+      } else {
+        if (!context.mounted) {
+          AppToast.error(AppStrings.digilockerFailed.tr());
+          return;
+        }
+        final completedClientId = await Navigator.of(context).push<String>(
+          MaterialPageRoute(
+            builder: (_) => DigilockerWebViewScreen(
+              clientId: clientId.isNotEmpty ? clientId : 'pending',
+              url: url.isNotEmpty ? url : null,
+              token: token.isNotEmpty ? token : null,
+              gateway: session.gateway ?? 'sandbox',
+            ),
+          ),
+        );
+
+        id = completedClientId?.trim() ?? '';
+        if (id.isEmpty || id == 'pending') {
+          AppToast.error(AppStrings.digilockerCancelled.tr());
+          return;
+        }
       }
 
       final complete = await Api.completeDigilocker(clientId: id);
@@ -98,15 +122,19 @@ class IdentityProofProvider extends BaseProvider {
         return;
       }
 
+      final identity = complete.data?.identity;
       isVerified = true;
-      verifiedName = complete.data?.identity?.fullName;
-      maskedAadhaar = complete.data?.identity?.maskedNumber;
+      final name = identity?.fullName?.trim();
+      final masked = identity?.maskedNumber?.trim();
+      if (name != null && name.isNotEmpty) verifiedName = name;
+      if (masked != null && masked.isNotEmpty) maskedAadhaar = masked;
       localAddressDone = complete.data?.localAddress?.isDone == true;
       KycStatus.markIdentityDone();
       KycStatus.markAddressDone();
       AppToast.success(
         complete.message ?? AppStrings.digilockerVerified.tr(),
       );
+      safeNotifyListeners();
 
       if (editOnly) {
         AppNavigation.back();
@@ -123,7 +151,10 @@ class IdentityProofProvider extends BaseProvider {
   }
 
   void tapOnContinue() {
-    if (!isVerified) return;
+    if (!isVerified) {
+      AppToast.error(AppStrings.completeIdentityFirst.tr());
+      return;
+    }
     if (editOnly) {
       AppNavigation.back();
       return;

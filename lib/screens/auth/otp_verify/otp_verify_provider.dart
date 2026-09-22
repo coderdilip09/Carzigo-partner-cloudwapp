@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/auth_route_service/auth_route_service.dart';
+import 'package:carzigo_partner/services/firebase_service/firebase_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -128,6 +129,7 @@ class OtpVerifyProvider extends BaseProvider {
     }
 
     await PrefsService().saveAuth(res.data!);
+    unawaited(FirebaseService().syncFcmTokenToServer());
     AppToast.success(res.message ?? AppStrings.otpVerified.tr());
     final next = await AuthRouteService.resolveLoggedIn(auth: res.data);
     isLoading = false;

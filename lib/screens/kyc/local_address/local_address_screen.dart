@@ -1,14 +1,11 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
-import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
-import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_kyc_stepper.dart';
 import 'package:carzigo_partner/common_widgets/app_option_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_text_field.dart';
 import 'package:carzigo_partner/common_widgets/app_upload_box.dart';
-import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
 import 'package:carzigo_partner/screens/kyc/local_address/local_address_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
@@ -20,11 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-
-const _addressDocIcons = [
-  AppAssets.aadhaar,
-  AppAssets.drivingLicense,
-];
 
 class LocalAddressScreen extends StatelessWidget {
   const LocalAddressScreen({super.key, this.editOnly = false});
@@ -225,80 +217,6 @@ class LocalAddressScreen extends StatelessWidget {
                                     fontSize: 12,
                                     color: AppColors.textSecondary,
                                   ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  AppStrings.selectDocumentType.tr(),
-                                  style: AppTextStyles.style(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                ...List.generate(provider.docs.length, (i) {
-                                  final selected =
-                                      provider.selectedDocUiIndex == i;
-                                  return GestureDetector(
-                                    onTap: () => provider.selectDoc(i),
-                                    child: Container(
-                                      margin: const EdgeInsets.only(bottom: 8),
-                                      padding: const EdgeInsets.all(14),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: selected
-                                              ? AppColors.primary
-                                              : AppColors.peachCard,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          AppImageView(
-                                            _addressDocIcons[i],
-                                            width: 42,
-                                            height: 30,
-                                            fit: BoxFit.contain,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              provider.docs[i].tr(),
-                                              style: AppTextStyles.style(
-                                                fontWeight: FontWeight.w500,
-                                                color: AppColors.textPrimary,
-                                              ),
-                                            ),
-                                          ),
-                                          selected
-                                              ? Container(
-                                                  width: 24,
-                                                  height: 24,
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: AppColors.primary,
-                                                  ),
-                                                  alignment: Alignment.center,
-                                                  child: AppIcon(
-                                                    AppAssets.check,
-                                                    size: 14,
-                                                    color: AppColors.white,
-                                                  ),
-                                                )
-                                              : AppIcon(
-                                                  AppAssets.circle,
-                                                  color: AppColors.textPrimary,
-                                                ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }),
-                                const SizedBox(height: 16),
-                                KycDocumentNumberSection(
-                                  selectedDoc: provider.selectedDoc,
-                                  controller: provider.numberController,
-                                  validator: provider.validateDocumentNumber,
                                 ),
                                 const SizedBox(height: 16),
                                 AppTextField(

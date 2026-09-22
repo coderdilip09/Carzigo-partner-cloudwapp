@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:carzigo_partner/models/kyc_status_model.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
-import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/api_service/request_keys.dart';
 import 'package:carzigo_partner/services/image_pick_service/image_pick_service.dart';
@@ -31,16 +30,12 @@ class LocalAddressProvider extends BaseProvider {
   final cityController = TextEditingController();
   final stateController = TextEditingController();
   final pincodeController = TextEditingController();
-  final numberController = TextEditingController();
 
   String? selectedState;
   String? selectedCity;
 
   /// Yes = same as document address (default). No = enter different address.
   bool sameAsDocument = true;
-
-  /// Address proof type when address differs (Aadhaar / Driving License).
-  int selectedDoc = KycDocNumber.aadhaar;
 
   File? documentImage;
   String? documentUrl;
@@ -49,7 +44,6 @@ class LocalAddressProvider extends BaseProvider {
 
   /// Previously saved separate upload (same_as_document = false).
   bool separateUploadSaved = false;
-  String _docNumber = '';
 
   /// Address already on KYC (e.g. Digilocker) — used when Yes is selected.
   String? _docLine;
@@ -63,12 +57,6 @@ class LocalAddressProvider extends BaseProvider {
   bool isFetching = false;
   bool isVerifyingPincode = false;
   String? pincodeStateError;
-
-  final docs = [AppStrings.aadhaarCard, AppStrings.drivingLicense];
-
-  /// UI list index for [docs] (0 = Aadhaar, 1 = Driving License).
-  int get selectedDocUiIndex =>
-      selectedDoc == KycDocNumber.drivingLicense ? 1 : 0;
 
   List<String> get states => IndiaLocations.states;
 
@@ -122,22 +110,31 @@ class LocalAddressProvider extends BaseProvider {
       if (res.isSuccess && res.data != null) {
         final data = res.data!;
         final address = data.address;
-        final identityNumber = data.identity?.maskedNumber?.trim() ?? '';
-        if (identityNumber.isNotEmpty) {
-          _docNumber = identityNumber;
+        final local = data.localAddress;
+
+        // Admin rejection: force a fresh fill — do not prefill old address/doc.
+        if (data.isAddressRejected) {
+          await PrefsService().clearLocalAddress();
+          final digilockerAddress =
+              data.identity?.verifiedVia == 'digilocker' &&
+              data.addressSameAsDocument != false &&
+              local != null &&
+              (local.addressLine?.trim().isNotEmpty ?? false) &&
+              (local.city?.trim().isNotEmpty ?? false) &&
+              (local.state?.trim().isNotEmpty ?? false) &&
+              (local.pincode?.trim().isNotEmpty ?? false);
+          if (digilockerAddress) {
+            _docLine = local.addressLine?.trim();
+            _docLandmark = local.landmark?.trim();
+            _docCity = local.city?.trim();
+            _docState = local.state?.trim();
+            _docPincode = local.pincode?.trim();
+          }
+          sameAsDocument = false;
+          return;
         }
 
         if (address != null) {
-          selectedDoc = KycDocNumber.indexFromApi(address.docType);
-          if (selectedDoc == KycDocNumber.pan) {
-            selectedDoc = KycDocNumber.aadhaar;
-          }
-          final number = address.maskedNumber?.trim() ?? '';
-          if (number.isNotEmpty) {
-            _docNumber = number;
-            numberController.text = number;
-          }
-
           final isSeparate =
               data.addressSameAsDocument == false &&
               (address.documentUrl?.isNotEmpty ?? false) &&
@@ -153,11 +150,6 @@ class LocalAddressProvider extends BaseProvider {
           }
         }
 
-        if (_docNumber.isNotEmpty && numberController.text.isEmpty) {
-          numberController.text = _docNumber;
-        }
-
-        final local = data.localAddress;
         if (local != null) {
           _docLine = local.addressLine?.trim();
           _docLandmark = local.landmark?.trim();
@@ -227,28 +219,6 @@ class LocalAddressProvider extends BaseProvider {
       documentIsPdf = false;
     }
     safeNotifyListeners();
-  }
-
-  void selectDoc(int uiIndex) {
-    final next =
-        uiIndex == 1 ? KycDocNumber.drivingLicense : KycDocNumber.aadhaar;
-    if (selectedDoc == next) return;
-    selectedDoc = next;
-    numberController.clear();
-    // Restore masked Digilocker Aadhaar only when Aadhaar is selected again.
-    if (next == KycDocNumber.aadhaar &&
-        KycDocNumber.isMasked(_docNumber)) {
-      numberController.text = _docNumber;
-    }
-    safeNotifyListeners();
-  }
-
-  String? validateDocumentNumber(String? value) {
-    if (selectedDoc == KycDocNumber.aadhaar &&
-        (KycDocNumber.isMasked(value) || KycDocNumber.isMasked(_docNumber))) {
-      return null;
-    }
-    return KycDocNumber.validate(selectedDoc, value);
   }
 
   Future<void> pickDocument(ImageSource source) async {
@@ -427,12 +397,6 @@ class LocalAddressProvider extends BaseProvider {
       final fieldsOk = formKey.currentState?.validate() ?? false;
       if (!fieldsOk) return;
 
-      final numberError = validateDocumentNumber(numberController.text);
-      if (numberError != null) {
-        AppToast.error(numberError);
-        return;
-      }
-
       pin = pincodeController.text.trim();
       final pinOk = await verifyPincodeAgainstState(pin);
       if (!pinOk) {
@@ -474,11 +438,6 @@ class LocalAddressProvider extends BaseProvider {
         }
       }
 
-      final typedNumber = numberController.text.trim();
-      final docNumber = KycDocNumber.isMasked(typedNumber)
-          ? (KycDocNumber.isMasked(_docNumber) ? null : _docNumber)
-          : (typedNumber.isEmpty ? null : typedNumber);
-
       final res = await Api.saveAddressProof(
         sameAsDocument: sameAsDocument,
         addressLine: sameAsDocument ? null : line,
@@ -488,8 +447,9 @@ class LocalAddressProvider extends BaseProvider {
         city: sameAsDocument ? null : city,
         state: sameAsDocument ? null : state,
         pincode: sameAsDocument ? null : pin,
-        docType: sameAsDocument ? null : KycDocNumber.apiType(selectedDoc),
-        docNumber: sameAsDocument ? null : docNumber,
+        // Doc type/number UI is hidden; API still requires a type when address differs.
+        docType: sameAsDocument ? null : KycDocType.aadhaar,
+        docNumber: null,
         docUrl: sameAsDocument ? null : nextDocUrl,
       );
       if (!res.isSuccess) {
@@ -529,7 +489,6 @@ class LocalAddressProvider extends BaseProvider {
     cityController.dispose();
     stateController.dispose();
     pincodeController.dispose();
-    numberController.dispose();
     super.dispose();
   }
 }

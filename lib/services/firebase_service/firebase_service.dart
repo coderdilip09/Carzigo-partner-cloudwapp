@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:carzigo_partner/firebase_options.dart';
 import 'package:carzigo_partner/screens/notifications/notifications_screen.dart';
+import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -139,12 +140,27 @@ class FirebaseService {
     debugPrint('FCM token: $fcmToken');
     if (fcmToken != null && fcmToken!.isNotEmpty) {
       await PrefsService().saveFcmToken(fcmToken!);
+      unawaited(syncFcmTokenToServer(fcmToken!));
     }
 
     messaging.onTokenRefresh.listen((token) {
       fcmToken = token;
       unawaited(PrefsService().saveFcmToken(token));
+      unawaited(syncFcmTokenToServer(token));
     });
+  }
+
+  /// Upload FCM token when the partner is logged in.
+  Future<void> syncFcmTokenToServer([String? token]) async {
+    final value = (token ?? fcmToken ?? await PrefsService().getFcmToken())
+        ?.trim();
+    if (value == null || value.isEmpty) return;
+    if (!await PrefsService().isLoggedIn) return;
+    try {
+      await Api.registerDeviceToken(value);
+    } catch (e, st) {
+      debugPrint('FCM token sync failed: $e\n$st');
+    }
   }
 
   void _listenToMessages() {

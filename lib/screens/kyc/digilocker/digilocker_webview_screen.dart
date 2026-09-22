@@ -58,7 +58,8 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
           onNavigationRequest: (request) {
             final uri = Uri.tryParse(request.url);
             if (uri != null && _isSuccessRedirect(uri)) {
-              final id = _clientIdFromUri(uri) ??
+              final id =
+                  _clientIdFromUri(uri) ??
                   (_hasClientId ? widget.clientId : null);
               _finishSuccess(id);
               return NavigationDecision.prevent;
@@ -70,7 +71,8 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
             if (url == null) return;
             final uri = Uri.tryParse(url);
             if (uri != null && _isSuccessRedirect(uri)) {
-              final id = _clientIdFromUri(uri) ??
+              final id =
+                  _clientIdFromUri(uri) ??
                   (_hasClientId ? widget.clientId : null);
               _finishSuccess(id);
             }
@@ -95,9 +97,9 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
               final id = (decoded['client_id'] ?? decoded['clientId'] ?? '')
                   .toString()
                   .trim();
-              _finishSuccess(id.isNotEmpty
-                  ? id
-                  : (_hasClientId ? widget.clientId : null));
+              _finishSuccess(
+                id.isNotEmpty ? id : (_hasClientId ? widget.clientId : null),
+              );
             }
           } catch (_) {
             // Ignore non-JSON channel noise.
@@ -113,8 +115,10 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
     } else if (link != null && link.isNotEmpty) {
       _controller.loadRequest(Uri.parse(link));
     } else {
+      // No Digilocker URL/token — close so caller can show an error (do not hang).
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.pop(context);
+        if (!mounted) return;
+        Navigator.pop(context);
       });
       return;
     }
@@ -235,11 +239,12 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
         (uri.host == 'digilocker' || uri.path.contains('digilocker'))) {
       return true;
     }
-    final status = (uri.queryParameters['status'] ??
-            uri.queryParameters['state'] ??
-            uri.queryParameters['result'] ??
-            '')
-        .toLowerCase();
+    final status =
+        (uri.queryParameters['status'] ??
+                uri.queryParameters['state'] ??
+                uri.queryParameters['result'] ??
+                '')
+            .toLowerCase();
     if (status == 'success' ||
         status == 'completed' ||
         status == 'complete' ||
@@ -247,7 +252,8 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
       return true;
     }
     final hasClientId = _clientIdFromUri(uri) != null;
-    final failed = status == 'failure' ||
+    final failed =
+        status == 'failure' ||
         status == 'failed' ||
         status == 'cancel' ||
         status == 'cancelled' ||
@@ -263,7 +269,8 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
   }
 
   String? _clientIdFromUri(Uri uri) {
-    final id = uri.queryParameters['client_id'] ??
+    final id =
+        uri.queryParameters['client_id'] ??
         uri.queryParameters['clientId'] ??
         uri.queryParameters['client-id'];
     if (id == null || id.trim().isEmpty) return null;
@@ -374,7 +381,7 @@ class _DigilockerWebViewScreenState extends State<DigilockerWebViewScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          if (_hasClientId)
+          if (_hasClientId && false)
             TextButton(
               onPressed: () => _finishSuccess(widget.clientId),
               child: Text(

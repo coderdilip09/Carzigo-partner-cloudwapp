@@ -35,6 +35,9 @@ class RequestKeys {
   static const String bankName = 'bank_name';
   static const String bankBranch = 'bank_branch';
   static const String chequeUrl = 'cheque_url';
+  static const String fcmToken = 'fcm-token';
+  static const String deviceType = 'device_type';
+  static const String deviceId = 'device_id';
   static const String status = 'status';
   static const String tab = 'tab';
   static const String page = 'page';

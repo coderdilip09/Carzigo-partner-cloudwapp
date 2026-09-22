@@ -93,7 +93,7 @@ class KycOverviewProvider extends BaseProvider {
       return;
     }
     await AppNavigation.to(
-      BankDetailsScreen(loadSaved: isBankDone || isBankRejected),
+      BankDetailsScreen(loadSaved: isBankDone && !isBankRejected),
     );
     await load();
   }
@@ -126,7 +126,7 @@ class KycOverviewProvider extends BaseProvider {
         return;
       }
       if (isBankRejected) {
-        await AppNavigation.to(const BankDetailsScreen(loadSaved: true));
+        await AppNavigation.to(const BankDetailsScreen(loadSaved: false));
         return;
       }
     }

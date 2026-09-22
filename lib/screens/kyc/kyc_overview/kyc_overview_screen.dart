@@ -66,96 +66,7 @@ class KycOverviewScreen extends StatelessWidget {
                                         ),
                                       ),
                                       const SizedBox(height: 20),
-                                      Container(
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: provider.isRejected
-                                              ? AppColors.destructiveLight
-                                              : AppColors.peach,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: provider.isRejected
-                                              ? Border.all(
-                                                  color: AppColors
-                                                      .destructiveBorder,
-                                                )
-                                              : null,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            AppIcon(
-                                              AppAssets.kycPending,
-                                              size: 32,
-                                              color: provider.isRejected
-                                                  ? AppColors.destructive
-                                                  : null,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    provider.isRejected
-                                                        ? AppStrings
-                                                              .kycRejected
-                                                              .tr()
-                                                        : AppStrings.kycPending
-                                                              .tr(),
-                                                    style: AppTextStyles.style(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    provider.bannerMessage ??
-                                                        (provider.isRejected
-                                                            ? AppStrings
-                                                                  .kycRejectedBody
-                                                                  .tr()
-                                                            : AppStrings
-                                                                  .kycPendingBody
-                                                                  .tr()),
-                                                    style: AppTextStyles.style(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                    ),
-                                                  ),
-                                                  if (provider
-                                                      .isAddressRejected) ...[
-                                                    const SizedBox(height: 6),
-                                                    Text(
-                                                      '${AppStrings.addressProof.tr()}: ${provider.addressRejectReason ?? AppStrings.rejected.tr()}',
-                                                      style: AppTextStyles.style(
-                                                        fontSize: 11,
-                                                        color: AppColors
-                                                            .destructive,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                  if (provider
-                                                      .isBankRejected) ...[
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      '${AppStrings.bankDetails.tr()}: ${provider.bankRejectReason ?? AppStrings.rejected.tr()}',
-                                                      style: AppTextStyles.style(
-                                                        fontSize: 11,
-                                                        color: AppColors
-                                                            .destructive,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      _KycStatusBanner(provider: provider),
                                       const SizedBox(height: 20),
                                       Text(
                                         provider.hasPartialRejection
@@ -182,9 +93,7 @@ class KycOverviewScreen extends StatelessWidget {
                                         title: AppStrings.addressProof.tr(),
                                         subtitle: provider.isAddressRejected
                                             ? (provider.addressRejectReason ??
-                                                  AppStrings
-                                                      .localAddressDocsHint
-                                                      .tr())
+                                                  AppStrings.rejected.tr())
                                             : AppStrings.localAddressDocsHint
                                                   .tr(),
                                         isDone: provider.isAddressProofDone,
@@ -199,7 +108,7 @@ class KycOverviewScreen extends StatelessWidget {
                                         title: AppStrings.bankDetails.tr(),
                                         subtitle: provider.isBankRejected
                                             ? (provider.bankRejectReason ??
-                                                  AppStrings.bankDocsHint.tr())
+                                                  AppStrings.rejected.tr())
                                             : AppStrings.bankDocsHint.tr(),
                                         isDone: provider.isBankDone,
                                         isPending:
@@ -222,20 +131,7 @@ class KycOverviewScreen extends StatelessWidget {
                                       ),
                                       const Spacer(),
                                       AppSolidButton(
-                                        label: provider.canSubmit
-                                            ? (provider.isRejected
-                                                  ? AppStrings
-                                                        .resubmitForReview
-                                                        .tr()
-                                                  : AppStrings.reviewAndSubmit
-                                                        .tr())
-                                            : (provider.hasPartialRejection
-                                                  ? AppStrings
-                                                        .fixRejectedSections
-                                                        .tr()
-                                                  : AppStrings
-                                                        .startKycVerification
-                                                        .tr()),
+                                        label: _ctaLabel(provider),
                                         onTap: provider.tapOnStartKyc,
                                         isLoading: provider.isLoading,
                                         trailing: Container(
@@ -275,6 +171,79 @@ class KycOverviewScreen extends StatelessWidget {
       ),
     );
   }
+
+  String _ctaLabel(KycOverviewProvider provider) {
+    if (provider.canSubmit) {
+      return provider.isRejected
+          ? AppStrings.resubmitForReview.tr()
+          : AppStrings.reviewAndSubmit.tr();
+    }
+    if (provider.hasPartialRejection) {
+      return AppStrings.updateRejectedItems.tr();
+    }
+    return AppStrings.startKycVerification.tr();
+  }
+}
+
+class _KycStatusBanner extends StatelessWidget {
+  const _KycStatusBanner({required this.provider});
+
+  final KycOverviewProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    final rejected = provider.isRejected;
+    // Avoid repeating the same rejection text: banner stays short;
+    // per-section reasons live only on the cards below.
+    final body = rejected
+        ? AppStrings.kycRejectedBody.tr()
+        : (provider.bannerMessage ?? AppStrings.kycPendingBody.tr());
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: rejected ? AppColors.destructiveLight : AppColors.peach,
+        borderRadius: BorderRadius.circular(12),
+        border: rejected
+            ? Border.all(color: AppColors.destructiveBorder)
+            : null,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppIcon(
+            AppAssets.kycPending,
+            size: 32,
+            color: rejected ? AppColors.destructive : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  rejected
+                      ? AppStrings.kycRejected.tr()
+                      : AppStrings.kycPending.tr(),
+                  style: AppTextStyles.style(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  body,
+                  style: AppTextStyles.style(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _KycItem extends StatelessWidget {
@@ -296,104 +265,183 @@ class _KycItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isRejected
-              ? AppColors.destructiveLight
-              : isDone
-                  ? AppColors.peachLight
-                  : AppColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
             color: isRejected
-                ? AppColors.destructiveBorder
+                ? AppColors.destructiveLight
                 : isDone
-                    ? AppColors.completedCardBorder
-                    : AppColors.border,
+                    ? AppColors.peachLight
+                    : AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isRejected
+                  ? AppColors.destructiveBorder
+                  : isDone
+                      ? AppColors.completedCardBorder
+                      : AppColors.border,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.style(fontWeight: FontWeight.w600),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.style(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    if (isRejected)
+                      _ExpandableRejectReason(text: subtitle)
+                    else
+                      Text(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.style(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (isRejected)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
+                  decoration: BoxDecoration(
+                    color: AppColors.destructive,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    AppStrings.rejected.tr(),
                     style: AppTextStyles.style(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: isRejected
-                          ? AppColors.destructive
-                          : AppColors.textSecondary,
+                      color: AppColors.white,
                     ),
                   ),
-                ],
-              ),
-            ),
-            if (isRejected)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.destructive,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  AppStrings.rejected.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                )
+              else if (isDone)
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: AppColors.black,
+                    shape: BoxShape.circle,
+                  ),
+                  child: AppIcon(
+                    AppAssets.check,
+                    size: 16,
                     color: AppColors.white,
                   ),
-                ),
-              )
-            else if (isDone)
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: AppColors.black,
-                  shape: BoxShape.circle,
-                ),
-                child: AppIcon(
-                  AppAssets.check,
-                  size: 16,
-                  color: AppColors.white,
-                ),
-              )
-            else if (isPending)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.pendingBadge,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  AppStrings.pending.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF000000),
+                )
+              else if (isPending)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.pendingBadge,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    AppStrings.pending.tr(),
+                    style: AppTextStyles.style(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF000000),
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// Collapses long admin reject reasons; tap Read more / Show less to expand.
+class _ExpandableRejectReason extends StatefulWidget {
+  const _ExpandableRejectReason({required this.text});
+
+  final String text;
+
+  @override
+  State<_ExpandableRejectReason> createState() =>
+      _ExpandableRejectReasonState();
+}
+
+class _ExpandableRejectReasonState extends State<_ExpandableRejectReason> {
+  static const int _collapsedLines = 2;
+  /// Rough threshold: longer admin notes get Read more.
+  static const int _expandCharThreshold = 90;
+  bool _expanded = false;
+
+  bool get _canExpand => widget.text.trim().length > _expandCharThreshold;
+
+  @override
+  void didUpdateWidget(covariant _ExpandableRejectReason oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      _expanded = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppTextStyles.style(
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+      color: AppColors.destructive,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.text,
+          maxLines: _expanded || !_canExpand ? null : _collapsedLines,
+          overflow:
+              _expanded || !_canExpand ? TextOverflow.visible : TextOverflow.ellipsis,
+          style: style,
+        ),
+        if (_canExpand) ...[
+          const SizedBox(height: 4),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Text(
+                _expanded
+                    ? AppStrings.showLess.tr()
+                    : AppStrings.readMore.tr(),
+                style: AppTextStyles.style(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -15,6 +15,7 @@ class PrefsService {
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
   static const String _fcmTokenKey = 'fcm_token';
+  static const String _deviceIdKey = 'device_id';
   static const String _localAddressKey = 'kyc_local_address';
 
   SharedPreferences? _prefs;
@@ -128,9 +129,29 @@ class PrefsService {
     return sp.getString(_fcmTokenKey);
   }
 
+  /// Stable install id (created once per app install).
+  Future<String> getOrCreateDeviceId(String Function() create) async {
+    final sp = await _sp();
+    final existing = sp.getString(_deviceIdKey)?.trim();
+    if (existing != null && existing.isNotEmpty) return existing;
+    final created = create().trim();
+    await sp.setString(_deviceIdKey, created);
+    return created;
+  }
+
+  Future<String?> getDeviceId() async {
+    final sp = await _sp();
+    return sp.getString(_deviceIdKey);
+  }
+
   Future<void> saveLocalAddress(LocalAddressData address) async {
     final sp = await _sp();
     await sp.setString(_localAddressKey, jsonEncode(address.toJson()));
+  }
+
+  Future<void> clearLocalAddress() async {
+    final sp = await _sp();
+    await sp.remove(_localAddressKey);
   }
 
   Future<LocalAddressData?> getLocalAddress() async {

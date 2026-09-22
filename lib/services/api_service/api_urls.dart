@@ -37,6 +37,7 @@ class ApiUrls {
   static const String referrals = 'partner/referrals';
 
   static const String notifications = 'partner/notifications';
+  static const String notificationsDeviceToken = 'partner/notifications/device-token';
 
   static const String legal = 'legal';
   static const String legalTermsSlug = 'terms';
@@ -75,6 +76,8 @@ class ApiUrls {
   static String referralsUrl() => _join(referrals);
 
   static String notificationsUrl() => _join(notifications);
+  static String notificationsDeviceTokenUrl() =>
+      _join(notificationsDeviceToken);
 
   static String legalUrl(String slug) => _join('$legal/$slug');
   static String cmsTermsUrl() => legalUrl(legalTermsSlug);
