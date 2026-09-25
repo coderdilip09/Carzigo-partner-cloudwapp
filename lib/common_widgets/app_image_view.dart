@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class AppImageView extends StatelessWidget {
   const AppImageView(
@@ -20,6 +21,13 @@ class AppImageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Skeletonizer.maybeOf(context)?.enabled == true) {
+      return Bone(
+        width: width,
+        height: height,
+        borderRadius: borderRadius ?? BorderRadius.circular(10),
+      );
+    }
     final image = Image.asset(
       asset,
       width: width,

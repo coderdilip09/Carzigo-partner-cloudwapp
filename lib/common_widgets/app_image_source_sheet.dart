@@ -1,3 +1,4 @@
+import 'package:carzigo_partner/common_widgets/app_bottom_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
@@ -16,17 +17,13 @@ Future<AppImageSourceChoice?> pickImageSourceChoice(
   BuildContext context, {
   bool useRootNavigator = true,
 }) {
-  return showModalBottomSheet<AppImageSourceChoice>(
+  return showAppBottomSheet<AppImageSourceChoice>(
     context: context,
     useRootNavigator: useRootNavigator,
     isScrollControlled: false,
     enableDrag: false,
-    isDismissible: true,
-    backgroundColor: AppColors.white,
     barrierColor: Colors.black54,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
+    topRadius: 16,
     builder: (_) => const _ImageSourceSheetBody(),
   );
 }
@@ -60,17 +57,13 @@ Future<AppDocumentSourceChoice?> pickDocumentSourceChoice(
   BuildContext context, {
   bool useRootNavigator = true,
 }) {
-  return showModalBottomSheet<AppDocumentSourceChoice>(
+  return showAppBottomSheet<AppDocumentSourceChoice>(
     context: context,
     useRootNavigator: useRootNavigator,
     isScrollControlled: false,
     enableDrag: false,
-    isDismissible: true,
-    backgroundColor: AppColors.white,
     barrierColor: Colors.black54,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
+    topRadius: 16,
     builder: (_) => const _DocumentSourceSheetBody(),
   );
 }
@@ -128,52 +121,51 @@ class _ImageSourceSheetBodyState extends State<_ImageSourceSheetBody> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return AppBottomSheetBody(
+      scrollable: false,
+      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
       child: AbsorbPointer(
         absorbing: !_ready,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.textHint,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.textHint,
+                borderRadius: BorderRadius.circular(2),
               ),
-              ListTile(
-                leading: AppIcon(AppAssets.folder, color: AppColors.primary),
-                title: Text(
-                  AppStrings.chooseFromGallery.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                ),
-                onTap: () => _select(AppImageSourceChoice.gallery),
+            ),
+            ListTile(
+              leading: AppIcon(AppAssets.folder, color: AppColors.primary),
+              title: Text(
+                AppStrings.chooseFromGallery.tr(),
+                style: AppTextStyles.style(fontWeight: FontWeight.w600),
               ),
-              ListTile(
-                leading: AppIcon(AppAssets.camera, color: AppColors.primary),
-                title: Text(
-                  AppStrings.takePhoto.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                ),
-                onTap: () => _select(AppImageSourceChoice.camera),
+              onTap: () => _select(AppImageSourceChoice.gallery),
+            ),
+            ListTile(
+              leading: AppIcon(AppAssets.camera, color: AppColors.primary),
+              title: Text(
+                AppStrings.takePhoto.tr(),
+                style: AppTextStyles.style(fontWeight: FontWeight.w600),
               ),
-              ListTile(
-                title: Text(
-                  AppStrings.cancel.tr(),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.style(color: AppColors.textSecondary),
-                ),
-                onTap: () {
-                  if (!_ready) return;
-                  Navigator.of(context).pop();
-                },
+              onTap: () => _select(AppImageSourceChoice.camera),
+            ),
+            ListTile(
+              title: Text(
+                AppStrings.cancel.tr(),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.style(color: AppColors.textSecondary),
               ),
-            ],
-          ),
+              onTap: () {
+                if (!_ready) return;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -206,77 +198,76 @@ class _DocumentSourceSheetBodyState extends State<_DocumentSourceSheetBody> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return AppBottomSheetBody(
+      scrollable: false,
+      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
       child: AbsorbPointer(
         absorbing: !_ready,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.textHint,
-                  borderRadius: BorderRadius.circular(2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.textHint,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: AppIcon(AppAssets.folder, color: AppColors.primary),
+              title: Text(
+                AppStrings.chooseFromGallery.tr(),
+                style: AppTextStyles.style(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                AppStrings.imageFormatsHint.tr(),
+                style: AppTextStyles.style(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              ListTile(
-                leading: AppIcon(AppAssets.folder, color: AppColors.primary),
-                title: Text(
-                  AppStrings.chooseFromGallery.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  AppStrings.imageFormatsHint.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                onTap: () => _select(AppDocumentSourceChoice.gallery),
+              onTap: () => _select(AppDocumentSourceChoice.gallery),
+            ),
+            ListTile(
+              leading: AppIcon(AppAssets.camera, color: AppColors.primary),
+              title: Text(
+                AppStrings.takePhoto.tr(),
+                style: AppTextStyles.style(fontWeight: FontWeight.w600),
               ),
-              ListTile(
-                leading: AppIcon(AppAssets.camera, color: AppColors.primary),
-                title: Text(
-                  AppStrings.takePhoto.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                ),
-                onTap: () => _select(AppDocumentSourceChoice.camera),
+              onTap: () => _select(AppDocumentSourceChoice.camera),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.picture_as_pdf_outlined,
+                color: AppColors.primary,
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.picture_as_pdf_outlined,
-                  color: AppColors.primary,
-                ),
-                title: Text(
-                  AppStrings.choosePdfOrFile.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  AppStrings.documentFormatsHint.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                onTap: () => _select(AppDocumentSourceChoice.file),
+              title: Text(
+                AppStrings.choosePdfOrFile.tr(),
+                style: AppTextStyles.style(fontWeight: FontWeight.w600),
               ),
-              ListTile(
-                title: Text(
-                  AppStrings.cancel.tr(),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.style(color: AppColors.textSecondary),
+              subtitle: Text(
+                AppStrings.documentFormatsHint.tr(),
+                style: AppTextStyles.style(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
                 ),
-                onTap: () {
-                  if (!_ready) return;
-                  Navigator.of(context).pop();
-                },
               ),
-            ],
-          ),
+              onTap: () => _select(AppDocumentSourceChoice.file),
+            ),
+            ListTile(
+              title: Text(
+                AppStrings.cancel.tr(),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.style(color: AppColors.textSecondary),
+              ),
+              onTap: () {
+                if (!_ready) return;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
         ),
       ),
     );

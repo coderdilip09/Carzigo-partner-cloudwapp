@@ -31,6 +31,14 @@ bool? asBool(dynamic value) {
   return null;
 }
 
+DateTime? asDateTime(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  final text = value.toString().trim();
+  if (text.isEmpty) return null;
+  return DateTime.tryParse(text.contains('T') ? text : text.replaceFirst(' ', 'T'));
+}
+
 Map<String, dynamic>? asMap(dynamic value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);

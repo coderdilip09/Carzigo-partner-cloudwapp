@@ -57,6 +57,6 @@ class AppColors {
   static const Color verified = Color(0xFF4CAF50);
   static const Color gradientStart = Color(0xFFFF5722);
   static const Color gradientEnd = Color(0xFF1A0500);
-  static const Color shimmerBase = Color(0xFFE8E0DC);
-  static const Color shimmerHighlight = Color(0xFFFCF8F5);
+  static const Color shimmerBase = Color(0xFFE6D8D0);
+  static const Color shimmerHighlight = Color(0xFFFFF7F2);
 }

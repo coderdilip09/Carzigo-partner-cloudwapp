@@ -1,8 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:carzigo_partner/firebase_options.dart';
+import 'package:carzigo_partner/models/notification_data_model.dart';
+import 'package:carzigo_partner/screens/kyc/kyc_overview/kyc_overview_screen.dart';
 import 'package:carzigo_partner/screens/notifications/notifications_screen.dart';
+import 'package:carzigo_partner/screens/profile/documents/documents_screen.dart';
+import 'package:carzigo_partner/screens/refer_earn/refer_earn_screen.dart';
+import 'package:carzigo_partner/screens/schedule/service_details/service_details_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
@@ -36,6 +42,7 @@ class FirebaseService {
 
   String? fcmToken;
   bool _pendingNotificationOpen = false;
+  Map<String, dynamic> _pendingData = const {};
 
   Future<void> init() async {
     try {
@@ -99,7 +106,9 @@ class FirebaseService {
     );
     await _localNotifications.initialize(
       settings: const InitializationSettings(android: android, iOS: ios),
-      onDidReceiveNotificationResponse: (_) => _markPendingOpen(),
+      onDidReceiveNotificationResponse: (response) {
+        _queueOpen(_decodePayload(response.payload));
+      },
     );
 
     final androidPlugin = _localNotifications
@@ -165,12 +174,16 @@ class FirebaseService {
 
   void _listenToMessages() {
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
-    FirebaseMessaging.onMessageOpenedApp.listen((_) => _markPendingOpen());
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _queueOpen(Map<String, dynamic>.from(message.data));
+    });
   }
 
   Future<void> _checkInitialMessage() async {
     final initial = await FirebaseMessaging.instance.getInitialMessage();
-    if (initial != null) _markPendingOpen();
+    if (initial != null) {
+      _queueOpen(Map<String, dynamic>.from(initial.data));
+    }
   }
 
   Future<void> _showForegroundNotification(RemoteMessage message) async {
@@ -182,6 +195,7 @@ class FirebaseService {
       id: notification.hashCode,
       title: notification.title,
       body: notification.body,
+      payload: jsonEncode(message.data),
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           androidChannelId,
@@ -195,7 +209,8 @@ class FirebaseService {
     );
   }
 
-  void _markPendingOpen() {
+  void _queueOpen(Map<String, dynamic>? data) {
+    _pendingData = data ?? const {};
     _pendingNotificationOpen = true;
     unawaited(openPendingNotification());
   }
@@ -206,6 +221,67 @@ class FirebaseService {
     if (!await PrefsService().isLoggedIn) return;
 
     _pendingNotificationOpen = false;
+    final data = _pendingData;
+    _pendingData = const {};
+    await openFromPayload(data);
+  }
+
+  static Future<void> openFromNotification(NotificationDataModel item) {
+    return openFromPayload({
+      'type': item.type ?? '',
+      'service_id': item.serviceId ?? '',
+      'screen': item.screen ?? '',
+    });
+  }
+
+  static Future<void> openFromPayload(Map<String, dynamic> data) async {
+    if (!AppNavigation.isReady) return;
+
+    final screen = (data['screen'] ?? '').toString().toLowerCase().trim();
+    final type = (data['type'] ?? data['notification_type'] ?? '')
+        .toString()
+        .toLowerCase()
+        .trim();
+    final serviceId = (data['service_id'] ??
+            data['schedule_id'] ??
+            data['job_id'] ??
+            '')
+        .toString()
+        .trim();
+
+    final opensJob = screen == 'job_detail' ||
+        type == 'job_assigned' ||
+        type == 'day_before_reminder' ||
+        type == 'wash_day_reminder' ||
+        type == 'booking_rescheduled' ||
+        type == 'schedule_cancelled';
+
+    if (opensJob && serviceId.isNotEmpty) {
+      await AppNavigation.to(ServiceDetailsScreen(jobId: serviceId));
+      return;
+    }
+    if (screen == 'refer_earn' || type.startsWith('referral')) {
+      await AppNavigation.to(const ReferEarnScreen(showBottomNav: false));
+      return;
+    }
+    if (screen == 'documents' || type.contains('doc_change')) {
+      await AppNavigation.to(const DocumentsScreen());
+      return;
+    }
+    if (screen == 'kyc_overview' || type.contains('kyc')) {
+      await AppNavigation.to(const KycOverviewScreen());
+      return;
+    }
     await AppNavigation.to(const NotificationsScreen());
+  }
+
+  static Map<String, dynamic>? _decodePayload(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) return decoded;
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+    } catch (_) {}
+    return null;
   }
 }

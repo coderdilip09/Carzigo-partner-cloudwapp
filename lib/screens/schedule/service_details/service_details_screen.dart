@@ -1,8 +1,10 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
+import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
+import 'package:carzigo_partner/common_widgets/app_vehicle_image.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/screens/schedule/service_details/service_details_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
@@ -28,28 +30,30 @@ class ServiceDetailsScreen extends StatelessWidget {
       ),
       child: Consumer<ServiceDetailsProvider>(
         builder: (context, provider, _) {
-          final isPageLoading = provider.isLoading && provider.job == null;
+          final isPageLoading = provider.isLoading;
 
           return Scaffold(
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
-                child: AppShimmer(
-                  enabled: isPageLoading,
-                  child: Column(
-                    children: [
-                      Expanded(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      child: AppBackHeader(
+                        title: AppStrings.serviceDetails.tr(),
+                        showBackText: false,
+                        titleInline: true,
+                      ),
+                    ),
+                    Expanded(
+                      child: AppShimmer(
+                        enabled: isPageLoading,
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              AppBackHeader(
-                                title: AppStrings.serviceDetails.tr(),
-                                showBackText: false,
-                                titleInline: true,
-                              ),
-                              const SizedBox(height: 16),
                               const _ScheduleCard(),
                               const SizedBox(height: 16),
                               const _CustomerDetailsCard(),
@@ -66,7 +70,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              ..._buildSteps(provider),
+                              ..._buildSteps(context, provider),
                               const SizedBox(height: 16),
                               IntrinsicHeight(
                                 child: Row(
@@ -104,8 +108,11 @@ class ServiceDetailsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(20),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: AppShimmer(
+                        enabled: isPageLoading,
                         child: AppSolidButton(
                           label: AppStrings.addToCalendar.tr(),
                           onTap: isPageLoading
@@ -119,8 +126,8 @@ class ServiceDetailsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -130,13 +137,18 @@ class ServiceDetailsScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildSteps(ServiceDetailsProvider provider) {
+  List<Widget> _buildSteps(
+    BuildContext context,
+    ServiceDetailsProvider provider,
+  ) {
     final steps = [
       (
         AppStrings.statusAssigned.tr(),
         AppStrings.statusAssignedDesc.tr(),
         AppAssets.calendar,
-        provider.displayAssignedAt,
+        provider.isLoading
+            ? '00 Sep 0000, 09:00 AM'
+            : provider.displayAssignedAt,
       ),
       (
         AppStrings.statusOnTheWay.tr(),
@@ -202,6 +214,15 @@ class ServiceDetailsScreen extends StatelessWidget {
                             size: 14,
                             color: AppColors.white,
                           )
+                        : isNext && provider.isUpdating
+                        ? const SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.6,
+                              color: AppColors.primary,
+                            ),
+                          )
                         : Text(
                             '$stepNum',
                             style: AppTextStyles.style(
@@ -232,7 +253,16 @@ class ServiceDetailsScreen extends StatelessWidget {
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    onTap: isNext ? () => provider.markStep(stepNum) : null,
+                    onTap: isNext &&
+                            !provider.isUpdating &&
+                            !provider.isLoading
+                        ? () => _confirmAndMarkStep(
+                            context,
+                            provider,
+                            stepNum,
+                            title,
+                          )
+                        : null,
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       padding: const EdgeInsets.all(12),
@@ -308,6 +338,33 @@ class ServiceDetailsScreen extends StatelessWidget {
       );
     });
   }
+
+  Future<void> _confirmAndMarkStep(
+    BuildContext context,
+    ServiceDetailsProvider provider,
+    int stepNum,
+    String statusTitle,
+  ) async {
+    if (provider.isUpdating || provider.isLoading) return;
+    final isOnTheWayNotToday =
+        stepNum == 2 && provider.needsOnTheWayNotTodayConfirm;
+    final confirmed = await showAppConfirmDialog(
+      context: context,
+      title: isOnTheWayNotToday
+          ? AppStrings.onTheWayNotTodayTitle.tr()
+          : AppStrings.updateStatusConfirmTitle.tr(),
+      body: isOnTheWayNotToday
+          ? AppStrings.onTheWayNotTodayBody.tr(
+              args: [
+                provider.displayDate.isEmpty ? '—' : provider.displayDate,
+              ],
+            )
+          : AppStrings.updateStatusConfirmBody.tr(args: [statusTitle]),
+      confirmLabel: AppStrings.markAs.tr(args: [statusTitle]),
+    );
+    if (!confirmed || !context.mounted) return;
+    await provider.markStep(stepNum);
+  }
 }
 
 class _ScheduleCard extends StatelessWidget {
@@ -316,6 +373,7 @@ class _ScheduleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ServiceDetailsProvider>();
+    final loading = provider.isLoading;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -354,7 +412,9 @@ class _ScheduleCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    provider.displayScheduleId.isEmpty
+                    loading
+                        ? 'CZG-000000'
+                        : provider.displayScheduleId.isEmpty
                         ? '-'
                         : provider.displayScheduleId,
                     style: AppTextStyles.style(
@@ -394,14 +454,20 @@ class _ScheduleCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      provider.displayDate.isEmpty ? '-' : provider.displayDate,
+                      loading
+                          ? '00 Sep 0000'
+                          : provider.displayDate.isEmpty
+                          ? '-'
+                          : provider.displayDate,
                       style: AppTextStyles.style(
                         color: AppColors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      provider.displayTimeRange.isEmpty
+                      loading
+                          ? '09:00 AM - 10:00 AM'
+                          : provider.displayTimeRange.isEmpty
                           ? '-'
                           : provider.displayTimeRange,
                       style: AppTextStyles.style(
@@ -422,7 +488,7 @@ class _ScheduleCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  provider.displayStatus,
+                  loading ? 'Upcoming' : provider.displayStatus,
                   style: AppTextStyles.style(
                     color: AppColors.white,
                     fontSize: 11,
@@ -444,6 +510,7 @@ class _CustomerDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ServiceDetailsProvider>();
+    final loading = provider.isLoading;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -471,7 +538,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                 CircleAvatar(
                   backgroundColor: AppColors.white,
                   child: Text(
-                    provider.displayCustomerInitials.isEmpty
+                    loading
+                        ? 'CN'
+                        : provider.displayCustomerInitials.isEmpty
                         ? '?'
                         : provider.displayCustomerInitials,
                     style: AppTextStyles.style(
@@ -486,7 +555,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        provider.displayCustomerName.isEmpty
+                        loading
+                            ? 'Customer Name'
+                            : provider.displayCustomerName.isEmpty
                             ? '-'
                             : provider.displayCustomerName,
                         style: AppTextStyles.style(
@@ -505,7 +576,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              provider.displayPhone.isEmpty
+                              loading
+                                  ? '+91 00000 00000'
+                                  : provider.displayPhone.isEmpty
                                   ? '-'
                                   : provider.displayPhone,
                               maxLines: 1,
@@ -529,7 +602,9 @@ class _CustomerDetailsCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              provider.displayEmail.isEmpty
+                              loading
+                                  ? 'name@email.com'
+                                  : provider.displayEmail.isEmpty
                                   ? '-'
                                   : provider.displayEmail,
                               maxLines: 1,
@@ -545,7 +620,7 @@ class _CustomerDetailsCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (provider.displayPhone.isNotEmpty) ...[
+                if (!loading && provider.displayPhone.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: provider.openPhone,
@@ -581,7 +656,7 @@ class _VehicleDetailsCard extends StatelessWidget {
     final model = provider.displayVehicleModel;
     final plate = provider.displayPlateNumber;
     final label = provider.displayCar;
-    final isLoading = provider.isLoading && provider.job == null;
+    final isLoading = provider.isLoading;
 
     return Container(
       width: double.infinity,
@@ -608,19 +683,10 @@ class _VehicleDetailsCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Container(
+                AppVehicleImage(
+                  image: provider.displayVehicleImage,
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  alignment: Alignment.center,
-                  child: AppIcon(
-                    AppAssets.logoCar,
-                    size: 22,
-                    color: AppColors.primary,
-                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -629,7 +695,7 @@ class _VehicleDetailsCard extends StatelessWidget {
                     children: [
                       Text(
                         isLoading
-                            ? '—'
+                            ? 'Vehicle model name'
                             : (model.isNotEmpty
                                   ? model
                                   : (label.isNotEmpty ? label : '-')),
@@ -638,10 +704,12 @@ class _VehicleDetailsCard extends StatelessWidget {
                           color: AppColors.navigateText,
                         ),
                       ),
-                      if (!isLoading && plate.isNotEmpty) ...[
+                      if (isLoading || plate.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
-                          '${AppStrings.plateNumber.tr()}: $plate',
+                          isLoading
+                              ? '${AppStrings.plateNumber.tr()}: XX00XX0000'
+                              : '${AppStrings.plateNumber.tr()}: $plate',
                           style: AppTextStyles.style(
                             fontSize: 12,
                             color: AppColors.phoneNumber,
@@ -677,8 +745,9 @@ class _ServiceAddressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ServiceDetailsProvider>();
+    final loading = provider.isLoading;
     final address = provider.displayAddress;
-    final canNavigate =
+    final canNavigate = loading ||
         address.isNotEmpty ||
         (provider.displayLat != null && provider.displayLng != null);
     return Container(
@@ -698,7 +767,11 @@ class _ServiceAddressCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            address.isEmpty ? '-' : address,
+            loading
+                ? 'Service address placeholder, City, PIN'
+                : address.isEmpty
+                ? '-'
+                : address,
             style: AppTextStyles.style(
               fontSize: 13,
               color: AppColors.phoneNumber,
@@ -709,7 +782,7 @@ class _ServiceAddressCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: TextButton.icon(
-                onPressed: provider.openMaps,
+                onPressed: loading ? null : provider.openMaps,
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.navigateText,
                   backgroundColor: AppColors.customerCard,

@@ -1,3 +1,4 @@
+import 'package:carzigo_partner/common_widgets/app_bottom_sheet.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
@@ -11,14 +12,9 @@ Future<String?> showAppOptionSheet({
   String? selected,
   String? searchHint,
 }) {
-  return showModalBottomSheet<String>(
+  return showAppBottomSheet<String>(
     context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    backgroundColor: AppColors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
+    topRadius: 16,
     builder: (sheetContext) {
       return _AppOptionSheetBody(
         title: title,
@@ -80,14 +76,13 @@ class _AppOptionSheetBodyState extends State<_AppOptionSheetBody> {
   @override
   Widget build(BuildContext context) {
     final maxHeight = MediaQuery.sizeOf(context).height * 0.7;
-    final bottom = MediaQuery.viewInsetsOf(context).bottom;
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(bottom: bottom),
-        child: SizedBox(
-          height: maxHeight,
-          child: Column(
+    return AppBottomSheetBody(
+      scrollable: false,
+      padding: const EdgeInsets.only(bottom: kAppSheetBottomGap),
+      child: SizedBox(
+        height: maxHeight,
+        child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
@@ -208,7 +203,6 @@ class _AppOptionSheetBodyState extends State<_AppOptionSheetBody> {
             ],
           ),
         ),
-      ),
     );
   }
 }

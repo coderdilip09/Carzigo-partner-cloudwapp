@@ -174,6 +174,12 @@ class AppStrings {
   static const String savedAddresses = 'saved_addresses';
   static const String savedAddressesSubtitle = 'saved_addresses_subtitle';
   static const String helpSupportSubtitle = 'help_support_subtitle';
+  static const String rateApp = 'rate_app';
+  static const String rateAppSubtitle = 'rate_app_subtitle';
+  static const String shareApp = 'share_app';
+  static const String shareAppSubtitle = 'share_app_subtitle';
+  static const String shareAppText = 'share_app_text';
+  static const String shareAppSubject = 'share_app_subject';
   static const String termsSubtitle = 'terms_subtitle';
   static const String privacySubtitle = 'privacy_subtitle';
   static const String documentsSubtitle = 'documents_subtitle';
@@ -190,6 +196,8 @@ class AppStrings {
   static const String docChangeDocsRejected = 'doc_change_docs_rejected';
   static const String docChangePermissionRejected =
       'doc_change_permission_rejected';
+  static const String docChangeUploaded = 'doc_change_uploaded';
+  static const String docChangeUploadedNote = 'doc_change_uploaded_note';
   static const String update = 'update';
   static const String proofType = 'proof_type';
   static const String documentNumber = 'document_number';
@@ -289,6 +297,10 @@ class AppStrings {
   static const String vehicleDetails = 'vehicle_details';
   static const String plateNumber = 'plate_number';
   static const String updateStatus = 'update_status';
+  static const String updateStatusConfirmTitle = 'update_status_confirm_title';
+  static const String updateStatusConfirmBody = 'update_status_confirm_body';
+  static const String onTheWayNotTodayTitle = 'on_the_way_not_today_title';
+  static const String onTheWayNotTodayBody = 'on_the_way_not_today_body';
   static const String serviceNotes = 'service_notes';
   static const String customerInstructions = 'customer_instructions';
   static const String addToCalendar = 'add_to_calendar';
@@ -323,6 +335,12 @@ class AppStrings {
   static const String yourReferralLink = 'your_referral_link';
   static const String shareNow = 'share_now';
   static const String referredCustomer = 'referred_customer';
+  static const String referralFilterTotal = 'referral_filter_total';
+  static const String referralFilterOnboard = 'referral_filter_onboard';
+  static const String referralFilterComplete = 'referral_filter_complete';
+  static const String referralRewardPending = 'referral_reward_pending';
+  static const String referralRewardToPay = 'referral_reward_to_pay';
+  static const String referralRewardPaid = 'referral_reward_paid';
   static const String referralCodeCopied = 'referral_code_copied';
   static const String referralLinkCopied = 'referral_link_copied';
   static const String helpHere = 'help_here';

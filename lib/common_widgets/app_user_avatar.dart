@@ -1,6 +1,7 @@
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class AppUserAvatar extends StatelessWidget {
   const AppUserAvatar({super.key, this.url, this.size = 44});
@@ -10,6 +11,9 @@ class AppUserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Skeletonizer.maybeOf(context)?.enabled == true) {
+      return Bone.circle(size: size);
+    }
     final photo = url?.trim() ?? '';
     final fallback = AppImageView(
       AppAssets.dummyProfile,

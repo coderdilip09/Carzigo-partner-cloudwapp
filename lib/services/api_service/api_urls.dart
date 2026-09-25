@@ -89,6 +89,7 @@ class ApiUrls {
   static String jobStatusUrl(String id) => _join('$services/$id/status');
 
   static String referralsUrl() => _join(referrals);
+  static String referralCustomersUrl() => _join('$referrals/customers');
 
   static String notificationsUrl() => _join(notifications);
   static String notificationsDeviceTokenUrl() =>

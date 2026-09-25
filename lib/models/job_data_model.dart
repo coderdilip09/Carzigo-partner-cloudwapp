@@ -53,8 +53,10 @@ class JobDataModel {
     this.car,
     this.vehicleModel,
     this.plateNumber,
+    this.vehicleImage,
     this.price,
     this.date,
+    this.scheduledDate,
     this.timeRange,
     this.slotMinutes,
     this.address,
@@ -81,8 +83,11 @@ class JobDataModel {
   final String? car;
   final String? vehicleModel;
   final String? plateNumber;
+  final String? vehicleImage;
   final String? price;
   final String? date;
+  /// Calendar date as `yyyy-MM-dd` for comparisons (IST schedule date).
+  final String? scheduledDate;
   final String? timeRange;
   final int? slotMinutes;
   final String? address;
@@ -182,9 +187,29 @@ class JobDataModel {
       car: carLabel.isNotEmpty ? carLabel : null,
       vehicleModel: vehicleModel,
       plateNumber: plateNumber,
+      vehicleImage: asString(
+        json['vehicle_image'] ??
+            json['vehicleImage'] ??
+            json['car_image'] ??
+            json['carImage'],
+      ),
       price: asString(json['price'] ?? json['amount'] ?? json['earnings']),
       date: _formatDisplayDate(
-        asString(json['date'] ?? json['serviceDate'] ?? json['service_date']),
+        asString(
+          json['date'] ??
+              json['scheduled_date'] ??
+              json['serviceDate'] ??
+              json['service_date'],
+        ),
+      ),
+      scheduledDate: _toIsoDate(
+        asString(
+          json['scheduled_date'] ??
+              json['scheduledDate'] ??
+              json['date'] ??
+              json['serviceDate'] ??
+              json['service_date'],
+        ),
       ),
       timeRange: _formatDisplayTimeRange(
         asString(
@@ -219,13 +244,88 @@ class JobDataModel {
     );
   }
 
+  static String? _toIsoDate(String? raw) {
+    final parsed = _parseCalendarDate(raw);
+    if (parsed == null) return null;
+    final y = parsed.year.toString().padLeft(4, '0');
+    final m = parsed.month.toString().padLeft(2, '0');
+    final d = parsed.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
+  static DateTime? _parseCalendarDate(String? raw) {
+    final value = raw?.trim();
+    if (value == null || value.isEmpty) return null;
+
+    final iso = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(value);
+    if (iso != null) {
+      return DateTime(
+        int.parse(iso.group(1)!),
+        int.parse(iso.group(2)!),
+        int.parse(iso.group(3)!),
+      );
+    }
+
+    final slash = RegExp(r'^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$');
+    final m = slash.firstMatch(value);
+    if (m != null) {
+      final d = int.parse(m.group(1)!);
+      final month = int.parse(m.group(2)!);
+      var y = int.parse(m.group(3)!);
+      if (y < 100) y += 2000;
+      return DateTime(y, month, d);
+    }
+
+    const months = {
+      'jan': 1,
+      'feb': 2,
+      'mar': 3,
+      'apr': 4,
+      'may': 5,
+      'jun': 6,
+      'jul': 7,
+      'aug': 8,
+      'sep': 9,
+      'sept': 9,
+      'oct': 10,
+      'nov': 11,
+      'dec': 12,
+    };
+    final named = RegExp(
+      r'^(\d{1,2})\s+([A-Za-z]{3,9}),?\s+(\d{4})$',
+    ).firstMatch(value);
+    if (named != null) {
+      final month = months[named.group(2)!.toLowerCase().substring(0, 3)];
+      if (month != null) {
+        return DateTime(
+          int.parse(named.group(3)!),
+          month,
+          int.parse(named.group(1)!),
+        );
+      }
+    }
+    final namedUs = RegExp(
+      r'^([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})$',
+    ).firstMatch(value);
+    if (namedUs != null) {
+      final month = months[namedUs.group(1)!.toLowerCase().substring(0, 3)];
+      if (month != null) {
+        return DateTime(
+          int.parse(namedUs.group(3)!),
+          month,
+          int.parse(namedUs.group(2)!),
+        );
+      }
+    }
+    return null;
+  }
+
   static String? _formatDisplayDate(String? raw) {
     final value = raw?.trim();
     if (value == null || value.isEmpty) return null;
-    final iso = DateTime.tryParse(value);
-    if (iso != null) {
-      final d = DateTime(iso.year, iso.month, iso.day);
-      const months = [
+    final d = _parseCalendarDate(value);
+    if (d != null) {
+      const monthNames = [
         'Jan',
         'Feb',
         'Mar',
@@ -239,7 +339,7 @@ class JobDataModel {
         'Nov',
         'Dec',
       ];
-      return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
+      return '${d.day.toString().padLeft(2, '0')} ${monthNames[d.month - 1]} ${d.year}';
     }
     return value;
   }

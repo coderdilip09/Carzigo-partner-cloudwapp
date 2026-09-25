@@ -1,5 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
-import 'package:carzigo_partner/common_widgets/app_image_view.dart';
+import 'package:carzigo_partner/common_widgets/app_vehicle_image.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -17,6 +17,7 @@ class AppJobCard extends StatelessWidget {
     this.serviceName,
     this.customerName,
     this.carName,
+    this.vehicleImage,
     this.price,
     this.compact = true,
     this.embedded = false,
@@ -30,6 +31,7 @@ class AppJobCard extends StatelessWidget {
   final String? serviceName;
   final String? customerName;
   final String? carName;
+  final String? vehicleImage;
   final String? price;
   final bool compact;
   final bool embedded;
@@ -204,14 +206,10 @@ class AppJobCard extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: const AppImageView(
-            AppAssets.dummyCar,
-            width: 72,
-            height: 72,
-            fit: BoxFit.contain,
-          ),
+        AppVehicleImage(
+          image: vehicleImage,
+          width: 72,
+          height: 72,
         ),
         const SizedBox(width: 12),
         Expanded(

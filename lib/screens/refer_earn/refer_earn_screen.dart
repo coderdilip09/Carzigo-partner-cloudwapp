@@ -1,3 +1,4 @@
+import 'package:carzigo_partner/common_widgets/app_bottom_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
@@ -14,6 +15,209 @@ import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+Future<void> _showHowItWorks(
+  BuildContext context,
+  ReferEarnProvider provider,
+) async {
+  final steps = _howItWorksSteps(provider);
+  await showAppBottomSheet<void>(
+    context: context,
+    topRadius: 16,
+    builder: (ctx) {
+      return AppBottomSheetBody(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.textHint,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    AppStrings.howItWorks.tr(),
+                    style: AppTextStyles.style(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.sectionTitle,
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () => Navigator.pop(ctx),
+                  borderRadius: BorderRadius.circular(16),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.close,
+                      size: 22,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              AppStrings.referRewardBody.tr(),
+              style: AppTextStyles.style(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 18),
+            ...List.generate(steps.length, (i) {
+              return _HowItWorksStepTile(
+                step: i + 1,
+                title: steps[i].$1,
+                description: steps[i].$2,
+                isLast: i == steps.length - 1,
+              );
+            }),
+            const SizedBox(height: 8),
+            AppSolidButton(
+              label: AppStrings.done.tr(),
+              onTap: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+List<(String, String)> _howItWorksSteps(ReferEarnProvider provider) {
+  if (provider.howItWorks.isNotEmpty) {
+    return [
+      for (var i = 0; i < provider.howItWorks.length; i++)
+        (
+          _cleanHowItWorksTitle(
+            provider.howItWorks[i].title ?? '',
+            provider.howItWorks[i].step ?? i + 1,
+          ),
+          (provider.howItWorks[i].description ?? '').trim(),
+        ),
+    ];
+  }
+  return [
+    (AppStrings.stepReferCustomer.tr(), AppStrings.stepShareCode.tr()),
+    (AppStrings.stepCustomerOnboards.tr(), AppStrings.stepTheySignup.tr()),
+    (AppStrings.stepFirstWashTitle.tr(), AppStrings.stepFirstWash.tr()),
+    (AppStrings.stepYouEarnTitle.tr(), AppStrings.stepYouEarn.tr()),
+  ].map((e) => (_cleanHowItWorksTitle(e.$1, 0), e.$2)).toList();
+}
+
+String _cleanHowItWorksTitle(String title, int step) {
+  final cleaned = title.replaceFirst(RegExp(r'^\s*\d+[\.\)]\s*'), '').trim();
+  return cleaned.isEmpty ? (step > 0 ? '$step' : title.trim()) : cleaned;
+}
+
+class _HowItWorksStepTile extends StatelessWidget {
+  const _HowItWorksStepTile({
+    required this.step,
+    required this.title,
+    required this.description,
+    required this.isLast,
+  });
+
+  final int step;
+  final String title;
+  final String description;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 28,
+            child: Column(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '$step',
+                    style: AppTextStyles.style(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      color: AppColors.peachCard,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 4 : 12),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.peachCard),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.style(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppColors.sectionTitle,
+                      ),
+                    ),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          height: 1.35,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class ReferEarnScreen extends StatelessWidget {
   const ReferEarnScreen({super.key, this.showBottomNav = true});
@@ -61,7 +265,7 @@ class ReferEarnScreen extends StatelessWidget {
                         ),
                       ),
                       OutlinedButton.icon(
-                        onPressed: () {},
+                        onPressed: () => _showHowItWorks(context, provider),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.howItWorksText,
                           side: const BorderSide(color: AppColors.howItWorksText),
@@ -139,63 +343,19 @@ class ReferEarnScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      Text(
-                        AppStrings.yourReferralSummary.tr(),
-                        style: AppTextStyles.style(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.sectionTitle,
+                      Expanded(
+                        child: Text(
+                          AppStrings.yourReferralSummary.tr(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.style(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.sectionTitle,
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      PopupMenuButton<ReferralSummaryPeriod>(
-                        padding: EdgeInsets.zero,
-                        offset: const Offset(0, 28),
-                        color: AppColors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        onSelected: provider.setSummaryPeriod,
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: ReferralSummaryPeriod.month,
-                            child: Text(AppStrings.thisMonth.tr()),
-                          ),
-                          PopupMenuItem(
-                            value: ReferralSummaryPeriod.week,
-                            child: Text(AppStrings.thisWeek.tr()),
-                          ),
-                        ],
-                        child: Row(
-                          children: [
-                            Text(
-                              provider.summaryPeriodLabel.tr(),
-                              style: AppTextStyles.style(
-                                color: AppColors.accentOrange,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.accentOrange,
-                                  width: 1,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: AppIcon(
-                                AppAssets.chevronDown,
-                                size: 10,
-                                color: AppColors.accentOrange,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      const SizedBox(width: 8),
+                      _PeriodToggle(provider: provider),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -204,18 +364,27 @@ class ReferEarnScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         AppStatCard(
+                          key: ValueKey(
+                            'ref-total-${provider.summaryPeriod.name}-${provider.totalReferred}',
+                          ),
                           iconAsset: AppAssets.calendar,
                           value: provider.totalReferred,
                           label: AppStrings.totalReferred.tr(),
                         ),
                         const SizedBox(width: 8),
                         AppStatCard(
+                          key: ValueKey(
+                            'ref-onboard-${provider.summaryPeriod.name}-${provider.onboarded}',
+                          ),
                           iconAsset: AppAssets.logoCar,
                           value: provider.onboarded,
                           label: AppStrings.onboarded.tr(),
                         ),
                         const SizedBox(width: 8),
                         AppStatCard(
+                          key: ValueKey(
+                            'ref-complete-${provider.summaryPeriod.name}-${provider.completedFirstWash}',
+                          ),
                           iconAsset: AppAssets.clock,
                           value: provider.completedFirstWash,
                           label: AppStrings.completedFirstWash.tr(),
@@ -305,26 +474,11 @@ class ReferEarnScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppStrings.yourReferralLink.tr(),
-                                style: AppTextStyles.style(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                  color: AppColors.navigateText,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Expanded(
-                                child: _CopyField(
-                                  value: provider.link,
-                                  valueColor: AppColors.primary,
-                                  onCopy: () => provider.copyLink(),
-                                ),
-                              ),
-                            ],
+                          child: _CopyField(
+                            label: AppStrings.yourReferralLink.tr(),
+                            value: provider.link,
+                            valueColor: AppColors.primary,
+                            onCopy: () => provider.copyLink(),
                           ),
                         ),
                       ],
@@ -333,7 +487,7 @@ class ReferEarnScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   AppSolidButton(
                     label: AppStrings.shareNow.tr(),
-                    onTap: () {},
+                    onTap: provider.shareNow,
                     leading: AppIcon(
                       AppAssets.share,
                       size: 18,
@@ -404,7 +558,7 @@ class ReferEarnScreen extends StatelessWidget {
                         amount: '₹100',
                       ),
                     )
-                  else if (provider.customers.isEmpty)
+                  else if (provider.periodCustomers.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Center(
@@ -424,6 +578,7 @@ class ReferEarnScreen extends StatelessWidget {
                         name: c.displayName,
                         phone: c.displayPhone,
                         status: c.displayStatus,
+                        statusKey: c.statusKey,
                         amount: c.amount ?? provider.rewardLabel,
                       ),
                     ),
@@ -434,6 +589,57 @@ class ReferEarnScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _PeriodToggle extends StatelessWidget {
+  const _PeriodToggle({required this.provider});
+
+  final ReferEarnProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.peach,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _chip(ReferralSummaryPeriod.month, AppStrings.thisMonth.tr()),
+          _chip(ReferralSummaryPeriod.week, AppStrings.thisWeek.tr()),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(ReferralSummaryPeriod period, String label) {
+    final selected = provider.summaryPeriod == period;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => provider.setSummaryPeriod(period),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.style(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: selected ? AppColors.white : AppColors.accentOrange,
+            ),
+          ),
+        ),
       ),
     );
   }

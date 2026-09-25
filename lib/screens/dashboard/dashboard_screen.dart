@@ -182,10 +182,13 @@ class _DashboardHome extends StatelessWidget {
     final previewJobs = jobs.take(3).toList();
     final serviceArea = provider.serviceArea;
 
+    final loading = provider.isLoading && dashboard == null;
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () => provider.loadDashboard(),
-        child: SingleChildScrollView(
+        child: AppShimmer(
+          enabled: loading,
+          child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
           child: Column(
@@ -487,6 +490,7 @@ class _DashboardHome extends StatelessWidget {
               const SizedBox(height: 80),
             ],
           ),
+        ),
         ),
       ),
     );

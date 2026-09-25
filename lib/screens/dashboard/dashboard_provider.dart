@@ -19,7 +19,7 @@ class DashboardProvider extends BaseProvider {
 
   UserDataModel? user;
   DashboardDataModel? dashboard;
-  bool isLoading = false;
+  bool isLoading = true;
   int currentIndex = 0;
   ScheduleTab scheduleTab = ScheduleTab.upcoming;
   PerformancePeriod performancePeriod = PerformancePeriod.month;

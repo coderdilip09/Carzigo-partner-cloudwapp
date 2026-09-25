@@ -45,7 +45,9 @@ class ReferredCustomerDataModel {
     this.name,
     this.phone,
     this.status,
+    this.statusKey,
     this.amount,
+    this.appliedAt,
   });
 
   final String? id;
@@ -53,7 +55,23 @@ class ReferredCustomerDataModel {
   final String? name;
   final String? phone;
   final String? status;
+  final String? statusKey;
   final String? amount;
+  final DateTime? appliedAt;
+
+  bool get isOnboard {
+    final key = (statusKey ?? status ?? '').toLowerCase();
+    return key == 'applied' || key == 'onboarded';
+  }
+
+  bool get isComplete {
+    final key = (statusKey ?? status ?? '').toLowerCase();
+    return key == 'pending_payout' ||
+        key == 'paid' ||
+        key.contains('payout') ||
+        key.contains('paid') ||
+        key.contains('complete');
+  }
 
   String get displayName => name ?? '';
 
@@ -84,9 +102,53 @@ class ReferredCustomerDataModel {
       name: asString(json['name'] ?? json['full_name'] ?? json['fullName']),
       phone: asString(json['phone'] ?? json['mobile']),
       status: asString(json['status'] ?? json['label']),
+      statusKey: asString(json['status_key'] ?? json['statusKey']),
       amount: asString(
         json['amount'] ?? json['reward'] ?? json['reward_amount'] ?? json['rewardAmount'],
       ),
+      appliedAt: asDateTime(
+        json['applied_at'] ??
+            json['appliedAt'] ??
+            json['created_at'] ??
+            json['createdAt'],
+      ),
+    );
+  }
+}
+
+class ReferralCustomersPage {
+  ReferralCustomersPage({
+    this.items = const [],
+    this.page = 1,
+    this.limit = 15,
+    this.total = 0,
+    this.hasMore = false,
+    this.counts = const {},
+  });
+
+  final List<ReferredCustomerDataModel> items;
+  final int page;
+  final int limit;
+  final int total;
+  final bool hasMore;
+  final Map<String, int> counts;
+
+  factory ReferralCustomersPage.fromJson(Map<String, dynamic> json) {
+    final countsRaw = asMap(json['counts']) ?? const {};
+    return ReferralCustomersPage(
+      items: asModelList(
+        json['items'] ?? json['list'] ?? json['referred_customers'],
+        ReferredCustomerDataModel.fromJson,
+      ),
+      page: asInt(json['page']) ?? 1,
+      limit: asInt(json['limit']) ?? 15,
+      total: asInt(json['total']) ?? 0,
+      hasMore: json['has_more'] == true || json['hasMore'] == true,
+      counts: {
+        'total': asInt(countsRaw['total']) ?? 0,
+        'onboard': asInt(countsRaw['onboard']) ?? 0,
+        'complete': asInt(countsRaw['complete']) ?? 0,
+      },
     );
   }
 }

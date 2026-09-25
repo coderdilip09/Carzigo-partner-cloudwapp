@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class AppIcon extends StatelessWidget {
   const AppIcon(
@@ -15,6 +16,10 @@ class AppIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final skeletonOn = Skeletonizer.maybeOf(context)?.enabled == true;
+    if (skeletonOn) {
+      return Bone.square(size: size, borderRadius: BorderRadius.circular(4));
+    }
     if (asset.toLowerCase().endsWith('.svg')) {
       return SvgPicture.asset(
         asset,

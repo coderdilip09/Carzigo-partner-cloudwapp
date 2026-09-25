@@ -3,6 +3,7 @@ import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/screens/notifications/notifications_provider.dart';
+import 'package:carzigo_partner/services/firebase_service/firebase_service.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -103,6 +104,11 @@ class _NotificationsBody extends StatelessWidget {
                 : (provider.notifications[i].time ?? '');
 
             return ListTile(
+              onTap: isLoading
+                  ? null
+                  : () => FirebaseService.openFromNotification(
+                      provider.notifications[i],
+                    ),
               leading: Container(
                 width: 44,
                 height: 44,

@@ -232,6 +232,7 @@ class ScheduleScreen extends StatelessWidget {
                               ),
                             )
                           : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 for (final group in provider.groupedJobs) ...[
                                   if (group.$1.isNotEmpty) ...[
@@ -247,6 +248,7 @@ class ScheduleScreen extends StatelessWidget {
                                       serviceName: job.serviceName,
                                       customerName: job.customerName,
                                       carName: job.car,
+                                      vehicleImage: job.vehicleImage,
                                       price: job.price,
                                       onTap: () => AppNavigation.to(
                                         ServiceDetailsScreen(job: job),
@@ -274,18 +276,22 @@ class _DateChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.dateChipBg,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.style(
-          fontSize: 11,
-          color: AppColors.viewAll,
-          fontWeight: FontWeight.w500,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.dateChipBg,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.left,
+          style: AppTextStyles.style(
+            fontSize: 11,
+            color: AppColors.viewAll,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

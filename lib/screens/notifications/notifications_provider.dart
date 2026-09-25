@@ -12,7 +12,7 @@ class NotificationsProvider extends BaseProvider {
   }
 
   List<NotificationDataModel> notifications = [];
-  bool isLoading = false;
+  bool isLoading = true;
 
   Future<void> load() async {
     isLoading = true;

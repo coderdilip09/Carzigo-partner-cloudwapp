@@ -9,8 +9,10 @@ import 'package:carzigo_partner/screens/profile/help_support/help_support_screen
 import 'package:carzigo_partner/screens/profile/privacy/privacy_screen.dart';
 import 'package:carzigo_partner/screens/profile/terms/terms_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
+import 'package:carzigo_partner/services/app_rating_service/app_rating_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
+import 'package:carzigo_partner/services/share_service/share_service.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -54,6 +56,8 @@ class ProfileProvider extends BaseProvider {
 
   void tapOnDocuments() => AppNavigation.to(const DocumentsScreen());
   void tapOnHelp() => AppNavigation.to(const HelpSupportScreen());
+  Future<void> tapOnRateApp() => AppRatingService.instance.rateFromMenu();
+  Future<void> tapOnShareApp() => ShareService.instance.shareApp();
   // void tapOnLanguage() => AppNavigation.to(const LanguageScreen());
   void tapOnTerms() => AppNavigation.to(const TermsScreen());
   void tapOnPrivacy() => AppNavigation.to(const PrivacyScreen());
@@ -240,6 +244,18 @@ class ProfileScreen extends StatelessWidget {
                       title: AppStrings.helpSupport.tr(),
                       subtitle: AppStrings.helpSupportSubtitle.tr(),
                       onTap: provider.tapOnHelp,
+                    ),
+                    _MenuTile(
+                      iconAsset: AppAssets.star,
+                      title: AppStrings.rateApp.tr(),
+                      subtitle: AppStrings.rateAppSubtitle.tr(),
+                      onTap: provider.tapOnRateApp,
+                    ),
+                    _MenuTile(
+                      iconAsset: AppAssets.share,
+                      title: AppStrings.shareApp.tr(),
+                      subtitle: AppStrings.shareAppSubtitle.tr(),
+                      onTap: provider.tapOnShareApp,
                     ),
                     // Language (temporarily disabled)
                     // _MenuTile(

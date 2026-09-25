@@ -41,6 +41,7 @@ class AppStatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
+              key: ValueKey(value),
               style: AppTextStyles.style(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,

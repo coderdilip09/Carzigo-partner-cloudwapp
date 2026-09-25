@@ -406,6 +406,26 @@ class Api {
     );
   }
 
+  static Future<ResponseWrapperModel<ReferralCustomersPage>>
+  getReferralCustomers({
+    String filter = 'total',
+    int page = 1,
+    int limit = 15,
+  }) async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.referralCustomersUrl(),
+      query: {
+        RequestKeys.filter: filter,
+        RequestKeys.page: '$page',
+        RequestKeys.limit: '$limit',
+      },
+    );
+    return ResponseWrapperModel.fromJson(
+      json,
+      (data) => ReferralCustomersPage.fromJson(asMap(data) ?? {}),
+    );
+  }
+
   static Future<ResponseWrapperModel<List<NotificationDataModel>>>
   getNotifications({int? page}) async {
     final query = <String, String>{if (page != null) RequestKeys.page: '$page'};

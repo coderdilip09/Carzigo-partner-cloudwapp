@@ -1,5 +1,6 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
+import 'package:carzigo_partner/common_widgets/app_bottom_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
@@ -86,21 +87,10 @@ Future<void> _showRequestChangeSheet(
   var address = false;
   var bank = false;
 
-  final submitted = await showModalBottomSheet<bool>(
+  final submitted = await showAppBottomSheet<bool>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: AppColors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
     builder: (ctx) {
-      return Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-        ),
+      return AppBottomSheetBody(
         child: StatefulBuilder(
           builder: (context, setModalState) {
             return Column(
@@ -191,8 +181,14 @@ class DocumentsScreen extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: AppBg(
               child: SafeArea(
+                bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    20,
+                    20,
+                    20 + appSystemBottomInset(context),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -268,6 +264,10 @@ class DocumentsScreen extends StatelessWidget {
                                               'identity',
                                               provider.hasIdentity,
                                             ),
+                                            isUploaded:
+                                                provider.isSectionUploaded(
+                                              'identity',
+                                            ),
                                             statusLabel:
                                                 provider.statusLabelFor(
                                               'identity',
@@ -298,6 +298,10 @@ class DocumentsScreen extends StatelessWidget {
                                               'address',
                                               provider.hasAddress,
                                             ),
+                                            isUploaded:
+                                                provider.isSectionUploaded(
+                                              'address',
+                                            ),
                                             statusLabel:
                                                 provider.statusLabelFor(
                                               'address',
@@ -326,6 +330,10 @@ class DocumentsScreen extends StatelessWidget {
                                                 provider.isSectionVerified(
                                               'bank',
                                               provider.hasBank,
+                                            ),
+                                            isUploaded:
+                                                provider.isSectionUploaded(
+                                              'bank',
                                             ),
                                             statusLabel:
                                                 provider.statusLabelFor(
@@ -416,6 +424,7 @@ class _DocInfoCard extends StatelessWidget {
     required this.isVerified,
     required this.statusLabel,
     required this.documentUrls,
+    this.isUploaded = false,
     this.showUpdate = false,
     this.onUpdate,
     this.rejectReason,
@@ -425,6 +434,7 @@ class _DocInfoCard extends StatelessWidget {
   final String line1;
   final String line2;
   final bool isVerified;
+  final bool isUploaded;
   final String statusLabel;
   final List<String> documentUrls;
   final bool showUpdate;
@@ -435,7 +445,14 @@ class _DocInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusColor = isVerified
         ? AppColors.verified
+        : isUploaded
+        ? AppColors.verified
         : AppColors.accentOrange;
+    final statusIcon = isVerified
+        ? Icons.check_circle_rounded
+        : isUploaded
+        ? Icons.cloud_done_rounded
+        : Icons.schedule_rounded;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -443,6 +460,9 @@ class _DocInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.peachCard,
         borderRadius: BorderRadius.circular(14),
+        border: isUploaded
+            ? Border.all(color: AppColors.verified.withValues(alpha: 0.35))
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,16 +483,16 @@ class _DocInfoCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: isUploaded
+                      ? AppColors.performanceCard
+                      : AppColors.white,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isVerified
-                          ? Icons.check_circle_rounded
-                          : Icons.schedule_rounded,
+                      statusIcon,
                       size: 13,
                       color: statusColor,
                     ),
@@ -490,7 +510,17 @@ class _DocInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          if ((rejectReason ?? '').trim().isNotEmpty) ...[
+          if (isUploaded && !isVerified && showUpdate) ...[
+            const SizedBox(height: 8),
+            Text(
+              AppStrings.docChangeUploadedNote.tr(),
+              style: AppTextStyles.style(
+                fontSize: 12,
+                color: AppColors.verified,
+              ),
+            ),
+          ],
+          if (!isUploaded && (rejectReason ?? '').trim().isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               rejectReason!.trim(),

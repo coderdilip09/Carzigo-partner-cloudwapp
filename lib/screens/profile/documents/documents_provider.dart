@@ -20,7 +20,7 @@ class DocumentsProvider extends BaseProvider {
 
   KycStatusModel? review;
   DocumentChangeRequestModel? changeRequest;
-  bool isLoading = false;
+  bool isLoading = true;
   bool isSubmitting = false;
   bool isRequestingChange = false;
   bool isSubmittingChange = false;
@@ -43,10 +43,18 @@ class DocumentsProvider extends BaseProvider {
   bool get canSubmitDocumentChanges =>
       changeRequest?.canSubmitChanges == true;
 
-  String get identityDocLabel =>
-      KycDocNumber.cardLabel(review?.identity?.docType);
+  DocumentChangeDraftModel? _draftOf(String section) =>
+      sectionStatus(section)?.draft;
+
+  String get identityDocLabel {
+    final draftType = _draftOf('identity')?.docType;
+    if (draftType != null) return KycDocNumber.cardLabel(draftType);
+    return KycDocNumber.cardLabel(review?.identity?.docType);
+  }
 
   String get identityMasked {
+    final draftNumber = _draftOf('identity')?.docNumber;
+    if (draftNumber != null) return draftNumber;
     final value = review?.identity?.maskedNumber?.trim();
     if (value != null && value.isNotEmpty) return value;
     return AppStrings.noData.tr();
@@ -56,6 +64,8 @@ class DocumentsProvider extends BaseProvider {
       review?.identity?.frontUrl ?? review?.identity?.documentUrl;
 
   List<String> get identityDocumentUrls {
+    final draftUrls = _draftOf('identity')?.documentUrls ?? const [];
+    if (draftUrls.isNotEmpty) return draftUrls;
     final urls = <String>[];
     void add(String? value) {
       final trimmed = value?.trim() ?? '';
@@ -69,10 +79,17 @@ class DocumentsProvider extends BaseProvider {
     return urls;
   }
 
-  String get addressDocLabel =>
-      KycDocNumber.cardLabel(review?.address?.docType);
+  String get addressDocLabel {
+    final draft = _draftOf('address');
+    if (draft?.docType != null) return KycDocNumber.cardLabel(draft!.docType);
+    if ((draft?.addressLine ?? '').isNotEmpty) return draft!.addressLine!;
+    return KycDocNumber.cardLabel(review?.address?.docType);
+  }
 
   String get addressMasked {
+    final draft = _draftOf('address');
+    if ((draft?.docNumber ?? '').isNotEmpty) return draft!.docNumber!;
+    if ((draft?.addressLine ?? '').isNotEmpty) return draft!.addressLine!;
     final value = review?.address?.maskedNumber?.trim();
     if (value != null && value.isNotEmpty) return value;
     return AppStrings.noData.tr();
@@ -82,6 +99,8 @@ class DocumentsProvider extends BaseProvider {
       review?.address?.documentUrl ?? review?.address?.frontUrl;
 
   List<String> get addressDocumentUrls {
+    final draftUrls = _draftOf('address')?.documentUrls ?? const [];
+    if (draftUrls.isNotEmpty) return draftUrls;
     final urls = <String>[];
     void add(String? value) {
       final trimmed = value?.trim() ?? '';
@@ -96,6 +115,8 @@ class DocumentsProvider extends BaseProvider {
   }
 
   String get bankName {
+    final draftName = _draftOf('bank')?.bankName;
+    if (draftName != null) return draftName;
     final name = review?.bank?.bankName?.trim();
     if (name != null && name.isNotEmpty) return name;
     final holder = review?.bank?.holderName?.trim();
@@ -104,11 +125,16 @@ class DocumentsProvider extends BaseProvider {
   }
 
   String get bankMasked {
+    final draftAccount = _draftOf('bank')?.accountNumber;
+    if (draftAccount != null) return _maskAccount(draftAccount);
     final raw = (review?.bank?.accountNumberMasked ??
             review?.bank?.accountNumber)
         ?.trim();
     if (raw == null || raw.isEmpty) return AppStrings.noData.tr();
+    return _maskAccount(raw);
+  }
 
+  String _maskAccount(String raw) {
     final digits = raw.replaceAll(RegExp(r'\D'), '');
     if (digits.length >= 4) {
       final last4 = digits.substring(digits.length - 4);
@@ -123,6 +149,8 @@ class DocumentsProvider extends BaseProvider {
   String? get bankPreviewUrl => review?.bank?.chequeUrl;
 
   List<String> get bankDocumentUrls {
+    final draftUrls = _draftOf('bank')?.documentUrls ?? const [];
+    if (draftUrls.isNotEmpty) return draftUrls;
     final url = bankPreviewUrl?.trim() ?? '';
     if (url.isEmpty) return const [];
     return [url];
@@ -131,16 +159,27 @@ class DocumentsProvider extends BaseProvider {
   DocumentChangeSectionModel? sectionStatus(String section) =>
       changeRequest?.sectionOf(section);
 
+  bool isSectionUploaded(String section) {
+    final change = sectionStatus(section);
+    if (change == null) return false;
+    if (change.isPendingReview) return true;
+    return change.canUpdate && (change.draftReady || change.hasDraft);
+  }
+
   String statusLabelFor(String section, bool isDone) {
     final change = sectionStatus(section);
     if (change != null) {
+      if (change.isPendingReview) {
+        return AppStrings.docChangeUnderReview.tr();
+      }
+      if (change.canUpdate && (change.draftReady || change.hasDraft)) {
+        return AppStrings.docChangeUploaded.tr();
+      }
       switch (change.status) {
         case 'requested':
           return AppStrings.docChangeAwaitingApproval.tr();
         case 'unlocked':
           return AppStrings.docChangeUpdateAllowed.tr();
-        case 'pending_review':
-          return AppStrings.docChangeUnderReview.tr();
         case 'rejected_docs':
           return AppStrings.docChangeDocsRejected.tr();
         case 'rejected_permission':

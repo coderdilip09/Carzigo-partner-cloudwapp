@@ -1,6 +1,7 @@
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
+import 'package:carzigo_partner/services/app_rating_service/app_rating_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
@@ -10,7 +11,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ServiceDetailsProvider extends BaseProvider {
   ServiceDetailsProvider({this.jobId, JobDataModel? initialJob})
-    : job = initialJob {
+    : job = initialJob,
+      isLoading = true {
     if (initialJob != null) {
       currentStep = initialJob.step;
     }
@@ -19,8 +21,9 @@ class ServiceDetailsProvider extends BaseProvider {
 
   final String? jobId;
   JobDataModel? job;
-  bool isLoading = false;
+  bool isLoading;
   bool isAddingToCalendar = false;
+  bool isUpdating = false;
   int currentStep = 1;
 
   String get displayScheduleId =>
@@ -29,6 +32,33 @@ class ServiceDetailsProvider extends BaseProvider {
       : (job?.id ?? '');
 
   String get displayDate => job?.date?.trim() ?? '';
+
+  bool get isScheduledToday {
+    final scheduled = job?.scheduledDate?.trim();
+    if (scheduled != null && scheduled.isNotEmpty) {
+      return scheduled == _todayIsoInIst();
+    }
+    final date = parseJobDate(displayDate) ?? parseJobDate(job?.date ?? '');
+    if (date == null) return false;
+    final today = _nowInIst();
+    return date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day;
+  }
+
+  bool get needsOnTheWayNotTodayConfirm => !isScheduledToday;
+
+  static DateTime _nowInIst() {
+    return DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+  }
+
+  static String _todayIsoInIst() {
+    final now = _nowInIst();
+    final y = now.year.toString().padLeft(4, '0');
+    final m = now.month.toString().padLeft(2, '0');
+    final d = now.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
   String get displayTimeRange => job?.timeRange?.trim() ?? '';
   String get displayCustomerName => job?.customerName?.trim() ?? '';
   String get displayCustomerInitials {
@@ -51,6 +81,7 @@ class ServiceDetailsProvider extends BaseProvider {
   String get displayServiceName => job?.serviceName?.trim() ?? '';
   String get displayVehicleModel => job?.vehicleModel?.trim() ?? '';
   String get displayPlateNumber => job?.plateNumber?.trim() ?? '';
+  String get displayVehicleImage => job?.vehicleImage?.trim() ?? '';
   String get displayCar {
     final label = job?.car?.trim();
     if (label != null && label.isNotEmpty) return label;
@@ -77,17 +108,16 @@ class ServiceDetailsProvider extends BaseProvider {
   Future<void> load() async {
     final id = jobId ?? job?.id;
     if (id == null || id.isEmpty) {
+      isLoading = false;
       if (job == null) {
         AppToast.error(AppStrings.requestFailed.tr());
       }
+      safeNotifyListeners();
       return;
     }
 
-    // Keep showing passed job while refreshing details.
-    if (job == null) {
-      isLoading = true;
-      safeNotifyListeners();
-    }
+    isLoading = true;
+    safeNotifyListeners();
 
     try {
       final res = await Api.getJobDetails(id);
@@ -158,6 +188,7 @@ class ServiceDetailsProvider extends BaseProvider {
   }
 
   Future<void> markStep(int step) async {
+    if (isUpdating) return;
     if (step != currentStep + 1) return;
     if (job?.canUpdate == false ||
         (job?.displayTag ?? '').toLowerCase() == 'not_complete') {
@@ -179,21 +210,31 @@ class ServiceDetailsProvider extends BaseProvider {
       _ => JobWorkflowStatus.assigned,
     };
 
-    final res = await Api.updateJobStatus(
-      id: id,
-      status: JobWorkflowStatus.toApiStatus(status),
-    );
-    if (!res.isSuccess) {
-      AppToast.error(res.message ?? AppStrings.requestFailed.tr());
-      return;
-    }
-    if (res.data != null) {
-      job = res.data;
-      currentStep = res.data!.step;
-    } else {
-      currentStep = step;
-    }
+    isUpdating = true;
     safeNotifyListeners();
+
+    try {
+      final res = await Api.updateJobStatus(
+        id: id,
+        status: JobWorkflowStatus.toApiStatus(status),
+      );
+      if (!res.isSuccess) {
+        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+        return;
+      }
+      if (res.data != null) {
+        job = res.data;
+        currentStep = res.data!.step;
+      } else {
+        currentStep = step;
+      }
+      if (status == JobWorkflowStatus.completed) {
+        AppRatingService.instance.maybePrompt();
+      }
+    } finally {
+      isUpdating = false;
+      safeNotifyListeners();
+    }
   }
 
   Future<void> tapOnAddToCalendar() async {
@@ -247,7 +288,7 @@ class ServiceDetailsProvider extends BaseProvider {
 
   /// Parses [date] + [timeRange] into start/end. Returns null if unusable.
   (DateTime, DateTime)? _resolveEventRange() {
-    final date = _parseDate(displayDate) ?? _parseDate(job?.date ?? '');
+    final date = parseJobDate(displayDate) ?? parseJobDate(job?.date ?? '');
     if (date == null) return null;
 
     final slot = job?.slotMinutes != null && job!.slotMinutes! > 0
@@ -292,12 +333,18 @@ class ServiceDetailsProvider extends BaseProvider {
     return (start, start.add(Duration(minutes: slot)));
   }
 
-  DateTime? _parseDate(String raw) {
+  DateTime? parseJobDate(String raw) {
     final value = raw.trim();
     if (value.isEmpty) return null;
 
-    final iso = DateTime.tryParse(value);
-    if (iso != null) return DateTime(iso.year, iso.month, iso.day);
+    final iso = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(value);
+    if (iso != null) {
+      return DateTime(
+        int.parse(iso.group(1)!),
+        int.parse(iso.group(2)!),
+        int.parse(iso.group(3)!),
+      );
+    }
 
     // dd/MM/yyyy or dd-MM-yyyy
     final slash = RegExp(r'^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$');
@@ -310,18 +357,19 @@ class ServiceDetailsProvider extends BaseProvider {
       return DateTime(y, month, d);
     }
 
-    // e.g. 11 Sep 2024 / Sep 11, 2024 / 22 Sep 2026
+    // English month names only — avoid current locale (e.g. hi) failing on "24 Sep 2026"
+    const locale = 'en';
     try {
-      return DateFormat('d MMM yyyy').parseLoose(value);
+      return DateFormat('d MMM yyyy', locale).parseLoose(value);
     } catch (_) {}
     try {
-      return DateFormat('dd MMM yyyy').parseLoose(value);
+      return DateFormat('dd MMM yyyy', locale).parseLoose(value);
     } catch (_) {}
     try {
-      return DateFormat('MMM d, yyyy').parseLoose(value);
+      return DateFormat('MMM d, yyyy', locale).parseLoose(value);
     } catch (_) {}
     try {
-      return DateFormat('dd MMMM yyyy').parseLoose(value);
+      return DateFormat('dd MMMM yyyy', locale).parseLoose(value);
     } catch (_) {}
 
     return null;

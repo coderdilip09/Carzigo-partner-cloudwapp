@@ -44,12 +44,13 @@ class AppSolidButton extends StatelessWidget {
                 ),
               )
             : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (leading != null) ...[
                     leading!,
                     const SizedBox(width: 8),
                   ],
-                  Expanded(
+                  Flexible(
                     child: Text(
                       label,
                       textAlign: TextAlign.center,

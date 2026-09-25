@@ -16,7 +16,7 @@ class ScheduleProvider extends BaseProvider {
 
   ScheduleTab currentTab;
   ScheduleListDataModel? data;
-  bool isLoading = false;
+  bool isLoading = true;
 
   List<JobDataModel> get jobs => data?.jobs ?? [];
   String get totalJobs => data?.totalJobsLabel ?? '00';

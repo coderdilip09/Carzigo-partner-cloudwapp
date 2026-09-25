@@ -1,5 +1,6 @@
 import 'package:carzigo_partner/models/referral_data_model.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
+import 'package:carzigo_partner/services/share_service/share_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
@@ -15,22 +16,42 @@ class ReferEarnProvider extends BaseProvider {
   }
 
   ReferralDataModel? data;
-  bool isLoading = false;
+  bool isLoading = true;
   ReferralSummaryPeriod summaryPeriod = ReferralSummaryPeriod.month;
 
   List<ReferredCustomerDataModel> get customers => data?.customers ?? [];
-  List<ReferredCustomerDataModel> get previewCustomers =>
-      customers.take(3).toList();
   List<ReferralHowItWorksStepModel> get howItWorks => data?.howItWorks ?? [];
 
   String get code => data?.code ?? '';
   String get link => data?.link ?? '';
   String get rewardLabel => data?.rewardLabel ?? '';
 
-  ReferralStatsModel? get _activeStats =>
-      summaryPeriod == ReferralSummaryPeriod.week
-      ? data?.weekStats
-      : data?.stats;
+  DateTime get _periodStart {
+    final now = DateTime.now();
+    if (summaryPeriod == ReferralSummaryPeriod.week) {
+      final mondayOffset = now.weekday - DateTime.monday;
+      return DateTime(now.year, now.month, now.day - mondayOffset);
+    }
+    return DateTime(now.year, now.month, 1);
+  }
+
+  List<ReferredCustomerDataModel> get periodCustomers {
+    final start = _periodStart;
+    return customers.where((c) {
+      final at = c.appliedAt?.toLocal();
+      if (at == null) return false;
+      return !at.isBefore(start);
+    }).toList();
+  }
+
+  ReferralStatsModel get _activeStats {
+    final scoped = periodCustomers;
+    return ReferralStatsModel(
+      totalReferred: scoped.length,
+      onboarded: scoped.where((c) => c.isOnboard).length,
+      completedFirstWash: scoped.where((c) => c.isComplete).length,
+    );
+  }
 
   String get summaryPeriodLabel =>
       summaryPeriod == ReferralSummaryPeriod.week
@@ -38,10 +59,13 @@ class ReferEarnProvider extends BaseProvider {
       : AppStrings.thisMonth;
 
   String get totalReferred =>
-      ReferralDataModel.pad(_activeStats?.totalReferred);
-  String get onboarded => ReferralDataModel.pad(_activeStats?.onboarded);
+      ReferralDataModel.pad(_activeStats.totalReferred);
+  String get onboarded => ReferralDataModel.pad(_activeStats.onboarded);
   String get completedFirstWash =>
-      ReferralDataModel.pad(_activeStats?.completedFirstWash);
+      ReferralDataModel.pad(_activeStats.completedFirstWash);
+
+  List<ReferredCustomerDataModel> get previewCustomers =>
+      periodCustomers.take(3).toList();
 
   void setSummaryPeriod(ReferralSummaryPeriod period) {
     if (summaryPeriod == period) return;
@@ -81,5 +105,27 @@ class ReferEarnProvider extends BaseProvider {
     if (link.isEmpty) return;
     Clipboard.setData(ClipboardData(text: link));
     AppToast.success(AppStrings.referralLinkCopied.tr());
+  }
+
+  String get shareText {
+    final reward = rewardLabel.isEmpty ? '₹300' : rewardLabel;
+    final parts = <String>[
+      'Join Carzigo with my referral code $code and complete your first wash.',
+      'I earn $reward after your first wash.',
+    ];
+    if (link.isNotEmpty) parts.add(link);
+    return parts.join(' ');
+  }
+
+  Future<void> shareNow() async {
+    if (code.isEmpty && link.isEmpty) return;
+    final shared = await ShareService.instance.shareText(
+      shareText,
+      subject: AppStrings.shareAppSubject.tr(),
+    );
+    if (!shared) {
+      await Clipboard.setData(ClipboardData(text: shareText));
+      AppToast.success(AppStrings.referralLinkCopied.tr());
+    }
   }
 }
