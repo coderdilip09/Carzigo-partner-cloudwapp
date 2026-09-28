@@ -17,6 +17,8 @@ class PrefsService {
   static const String _fcmTokenKey = 'fcm_token';
   static const String _deviceIdKey = 'device_id';
   static const String _localAddressKey = 'kyc_local_address';
+  /// SharedPreferences is wiped on uninstall; Keychain is not. Used to detect reinstall.
+  static const String _hasLaunchedKey = 'has_launched';
 
   SharedPreferences? _prefs;
   final FlutterSecureStorage _secure = const FlutterSecureStorage(
@@ -24,6 +26,7 @@ class PrefsService {
   );
 
   bool _tokenMigrated = false;
+  bool _checkedReinstall = false;
 
   Future<SharedPreferences> _sp() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -32,13 +35,38 @@ class PrefsService {
 
   Future<void> init() async {
     await _sp();
+    await _wipeAuthIfReinstalled();
     await _migrateTokenIfNeeded();
+  }
+
+  /// iOS Keychain (and Android backup) can keep the auth token after uninstall.
+  /// SharedPreferences is cleared on uninstall, so a missing launch marker
+  /// with no local prefs means this is a fresh install — drop leftover session.
+  Future<void> _wipeAuthIfReinstalled() async {
+    if (_checkedReinstall) return;
+    _checkedReinstall = true;
+
+    final sp = await _sp();
+    if (sp.getBool(_hasLaunchedKey) == true) return;
+
+    final hadLocalState =
+        sp.containsKey(_userKey) ||
+        sp.containsKey(_fcmTokenKey) ||
+        sp.containsKey(_deviceIdKey) ||
+        sp.containsKey(_localAddressKey) ||
+        sp.containsKey(_tokenKey);
+
+    if (!hadLocalState) {
+      await _secure.delete(key: _tokenKey);
+    }
+    await sp.setBool(_hasLaunchedKey, true);
   }
 
   /// Moves legacy SharedPreferences token into secure storage once.
   Future<void> _migrateTokenIfNeeded() async {
     if (_tokenMigrated) return;
     _tokenMigrated = true;
+    await _wipeAuthIfReinstalled();
 
     try {
       final existing = await _secure.read(key: _tokenKey);

@@ -5,6 +5,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 class AppToast {
   AppToast._();
 
+  /// When true, [error] is ignored unless [force] is set.
+  static bool suppressErrors = false;
+
   static void show(
     String message, {
     ToastGravity gravity = ToastGravity.BOTTOM,
@@ -29,7 +32,8 @@ class AppToast {
     show(message, backgroundColor: AppColors.verified);
   }
 
-  static void error(String message) {
+  static void error(String message, {bool force = false}) {
+    if (suppressErrors && !force) return;
     show(
       message,
       backgroundColor: AppColors.destructive,

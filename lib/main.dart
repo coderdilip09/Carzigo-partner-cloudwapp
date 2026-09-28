@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:carzigo_partner/screens/splash/splash_screen.dart';
 import 'package:carzigo_partner/services/firebase_service/firebase_service.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
+import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 import 'package:carzigo_partner/theme/app_theme.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:country_picker/country_picker.dart';
@@ -15,6 +16,7 @@ void main() {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
       await EasyLocalization.ensureInitialized();
+      await PrefsService().init();
       await FirebaseService().init();
       runApp(
         EasyLocalization(

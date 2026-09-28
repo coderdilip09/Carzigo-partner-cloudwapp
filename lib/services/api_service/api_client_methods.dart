@@ -245,6 +245,7 @@ class ApiClientMethods {
     required bool hadAuth,
   }) async {
     if (hadAuth && response.statusCode == 401) {
+      AppToast.suppressErrors = true;
       unawaited(_handleUnauthorized());
     }
 
@@ -296,7 +297,7 @@ class ApiClientMethods {
     try {
       KycStatus.resetForNewNumber();
       await PrefsService().clear();
-      AppToast.error(AppStrings.sessionExpired.tr());
+      AppToast.error(AppStrings.sessionExpired.tr(), force: true);
       if (AppNavigation.isReady) {
         await AppNavigation.offAll(const LoginScreen());
       }
@@ -308,6 +309,7 @@ class ApiClientMethods {
       // Ignore late 401s from requests that were already in flight.
       Future<void>.delayed(const Duration(seconds: 2), () {
         _handlingUnauthorized = false;
+        AppToast.suppressErrors = false;
       });
     }
   }
