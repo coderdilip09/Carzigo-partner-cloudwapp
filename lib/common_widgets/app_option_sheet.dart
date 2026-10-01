@@ -79,7 +79,8 @@ class _AppOptionSheetBodyState extends State<_AppOptionSheetBody> {
 
     return AppBottomSheetBody(
       scrollable: false,
-      padding: const EdgeInsets.only(bottom: kAppSheetBottomGap),
+      // Android nav gap is added inside AppBottomSheetBody; keep content pad only.
+      padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
         height: maxHeight,
         child: Column(

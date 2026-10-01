@@ -1,8 +1,12 @@
 import 'package:carzigo_partner/theme/app_colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Extra space so the last action sits above the Android 3-button / gesture bar.
 const double kAppSheetBottomGap = 28;
+
+bool get _isAndroidSheetInset =>
+    !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
 /// Raw system nav / home-indicator inset. Reads from the window, not the
 /// (often zeroed) MediaQuery inside a modal sheet or ScreenUtil.
@@ -10,12 +14,16 @@ double appSystemBottomInset(BuildContext context) {
   return MediaQueryData.fromView(View.of(context)).viewPadding.bottom;
 }
 
-/// Keyboard + system nav inset for bottom sheets.
+/// Keyboard + Android system-nav inset for bottom sheets.
+///
+/// On iOS this returns only the keyboard inset — home-indicator clearance is
+/// left to [SafeArea] so we do not stack padding.
 double appSheetBottomInset(
   BuildContext context, {
   double extra = kAppSheetBottomGap,
 }) {
   final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+  if (!_isAndroidSheetInset) return keyboard;
   return keyboard + appSystemBottomInset(context) + extra;
 }
 
@@ -35,10 +43,16 @@ class AppBottomSheetBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottom = appSheetBottomInset(context, extra: padding.bottom);
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    // Android: system nav + content bottom. iOS: content bottom only (SafeArea
+    // covers the home indicator — do not add viewPadding again).
+    final bottom = _isAndroidSheetInset
+        ? keyboard + appSystemBottomInset(context) + padding.bottom
+        : keyboard + padding.bottom;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.9;
     final content = SafeArea(
       top: false,
+      bottom: !_isAndroidSheetInset,
       child: Padding(
         padding: padding.copyWith(bottom: bottom),
         child: child,

@@ -26,230 +26,115 @@ class LoginScreen extends StatelessWidget {
       create: (_) => LoginProvider(),
       child: Consumer<LoginProvider>(
         builder: (context, provider, _) {
-          return Scaffold(
-            backgroundColor: AppColors.background,
-            body: Stack(
+          return ColoredBox(
+            color: AppColors.background,
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                const Positioned.fill(child: AppImageView(AppAssets.bg, fit: BoxFit.cover)),
-                SafeArea(
-                  right: false,
-                  child: Column(
-                    children: [
-                      // Language toggle (temporarily disabled)
-                      // Align(
-                      //   alignment: Alignment.centerRight,
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.only(right: 16, top: 4),
-                      //     child: Material(
-                      //       color: Colors.transparent,
-                      //       child: InkWell(
-                      //         onTap: () {
-                      //           final next = context.locale.languageCode == 'en'
-                      //               ? const Locale('hi')
-                      //               : const Locale('en');
-                      //           context.setLocale(next);
-                      //         },
-                      //         borderRadius: BorderRadius.circular(20),
-                      //         child: Container(
-                      //           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      //           decoration: BoxDecoration(
-                      //             color: AppColors.white,
-                      //             borderRadius: BorderRadius.circular(20),
-                      //             border: Border.all(color: AppColors.border),
-                      //           ),
-                      //           child: Row(
-                      //             mainAxisSize: MainAxisSize.min,
-                      //             children: [
-                      //               const Icon(Icons.translate, size: 16, color: AppColors.primary),
-                      //               const SizedBox(width: 4),
-                      //               Text(
-                      //                 context.locale.languageCode == 'en'
-                      //                     ? AppStrings.languageEn.tr()
-                      //                     : AppStrings.languageHi.tr(),
-                      //                 style: AppTextStyles.style(
-                      //                   color: AppColors.primary,
-                      //                   fontWeight: FontWeight.w600,
-                      //                   fontSize: 12,
-                      //                 ),
-                      //               ),
-                      //             ],
-                      //           ),
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      const SizedBox(height: 25),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                const AppImageView(
+                  AppAssets.bg,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+                Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: SafeArea(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              // Header: logo + welcome left, car 116x155 flush right (Figma)
-                              SizedBox(
-                                width: double.infinity,
-                                height: 155,
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    const Positioned(
-                                      right: 0,
-                                      top: 0,
-                                      child: AppImageView(
-                                        AppAssets.homeSideCar,
-                                        width: 140,
-                                        height: 155,
-                                        fit: BoxFit.cover,
-                                        alignment: Alignment.centerRight,
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 24),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const AppImageView(
+                                        AppAssets.logo,
+                                        width: 250,
+                                        fit: BoxFit.contain,
+                                        alignment: Alignment.centerLeft,
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 20, right: 148),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const AppImageView(
-                                            AppAssets.logo,
-                                            height: 52,
-                                            fit: BoxFit.contain,
-                                          ),
-                                          const SizedBox(height: 12),
-                                          Text(
-                                            AppStrings.heyWelcomeBack.tr(),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: AppTextStyles.style(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textPrimary,
-                                              height: 1.2,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            AppStrings.signInToContinue.tr(),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: AppTextStyles.style(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w400,
-                                              color: AppColors.textSecondary,
-                                              height: 1.3,
-                                            ),
-                                          ),
-                                        ],
+                                      const SizedBox(height: 18),
+                                      Text(
+                                        AppStrings.heyWelcomeBack.tr(),
+                                        style: AppTextStyles.style(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AppPhoneField(
-                                      onChanged: provider.setPhone,
-                                      onCountryChanged: provider.setCountry,
-                                      initialCountryCode: provider.country.countryCode,
-                                      borderColor: provider.phoneError != null
-                                          ? AppColors.destructive
-                                          : null,
-                                    ),
-                                    if (provider.phoneError != null) ...[
                                       const SizedBox(height: 6),
                                       Text(
-                                        provider.phoneError!,
+                                        AppStrings.signInToContinue.tr(),
                                         style: AppTextStyles.style(
-                                          fontSize: 12,
-                                          color: AppColors.destructive,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                          color: AppColors.textSecondary,
                                         ),
                                       ),
                                     ],
-                                    const SizedBox(height: 24),
-                                    _FeatureRow(),
-                                    const SizedBox(height: 20),
-                                    _BenefitsCard(),
-                                    const SizedBox(height: 24),
-                                    AppSolidButton(
-                                      label: AppStrings.submit.tr(),
-                                      onTap: provider.isPhoneValid
-                                          ? provider.tapOnSubmit
-                                          : null,
-                                      isLoading: provider.isLoading,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Center(
-                                      child: Builder(
-                                        builder: (context) {
-                                          final legal = AppStrings.termsAndPrivacy.tr();
-                                          final split = RegExp(
-                                            r'\s*&\s*|\s+और\s+',
-                                          ).firstMatch(legal);
-                                          final termsLabel = split == null
-                                              ? legal
-                                              : legal.substring(0, split.start).trim();
-                                          final privacyLabel = split == null
-                                              ? AppStrings.privacyPolicy.tr()
-                                              : legal.substring(split.end).trim();
-                                          final joiner =
-                                              split?.group(0) ?? ' ${AppStrings.and.tr()} ';
-                                          return RichText(
-                                            textAlign: TextAlign.center,
-                                            text: TextSpan(
-                                              style: AppTextStyles.style(
-                                                fontSize: 12,
-                                                color: AppColors.textSecondary,
-                                              ),
-                                              children: [
-                                                TextSpan(
-                                                  text: '${AppStrings.byContinuingAgree.tr()} ',
-                                                ),
-                                                TextSpan(
-                                                  text: termsLabel,
-                                                  style: AppTextStyles.style(
-                                                    color: AppColors.primary,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 12,
-                                                  ),
-                                                  recognizer: TapGestureRecognizer()
-                                                    ..onTap = () =>
-                                                        AppNavigation.to(const TermsScreen()),
-                                                ),
-                                                TextSpan(
-                                                  text: joiner,
-                                                  style: AppTextStyles.style(
-                                                    color: AppColors.primary,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                                TextSpan(
-                                                  text: privacyLabel,
-                                                  style: AppTextStyles.style(
-                                                    color: AppColors.primary,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 12,
-                                                  ),
-                                                  recognizer: TapGestureRecognizer()
-                                                    ..onTap = () =>
-                                                        AppNavigation.to(const PrivacyScreen()),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
+                              ),
+                              const AppImageView(
+                                AppAssets.homeSideCar,
+                                height: 250,
+                                fit: BoxFit.contain,
                               ),
                             ],
                           ),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppPhoneField(
+                                  onChanged: provider.setPhone,
+                                  onCountryChanged: provider.setCountry,
+                                  initialCountryCode:
+                                      provider.country.countryCode,
+                                  borderColor: provider.phoneError != null
+                                      ? AppColors.destructive
+                                      : null,
+                                ),
+                                if (provider.phoneError != null) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    provider.phoneError!,
+                                    style: AppTextStyles.style(
+                                      fontSize: 12,
+                                      color: AppColors.destructive,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 40),
+                                const _FeatureRow(),
+                                const SizedBox(height: 40),
+                                const _BenefitsCard(),
+                                const SizedBox(height: 40),
+                                AppSolidButton(
+                                  label: AppStrings.submit.tr(),
+                                  onTap: provider.isPhoneValid
+                                      ? provider.tapOnSubmit
+                                      : null,
+                                  isLoading: provider.isLoading,
+                                ),
+                                const SizedBox(height: 20),
+                                const SizedBox(
+                                  width: double.infinity,
+                                  child: _TermsPrivacyText(),
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -261,48 +146,177 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
+class _TermsPrivacyText extends StatefulWidget {
+  const _TermsPrivacyText();
+
+  @override
+  State<_TermsPrivacyText> createState() => _TermsPrivacyTextState();
+}
+
+class _TermsPrivacyTextState extends State<_TermsPrivacyText> {
+  late final TapGestureRecognizer _termsRecognizer;
+  late final TapGestureRecognizer _privacyRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsRecognizer = TapGestureRecognizer()
+      ..onTap = () => AppNavigation.to(const TermsScreen());
+    _privacyRecognizer = TapGestureRecognizer()
+      ..onTap = () => AppNavigation.to(const PrivacyScreen());
+  }
+
+  @override
+  void dispose() {
+    _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    context.locale;
+    final baseStyle = AppTextStyles.style(
+      color: AppColors.textSecondary,
+      fontSize: 12,
+    );
+    final linkStyle = AppTextStyles.style(
+      color: AppColors.primary,
+      fontWeight: FontWeight.w700,
+      fontSize: 12,
+    );
+
+    return Text.rich(
+      TextSpan(
+        text: '${AppStrings.byContinuingAgree.tr()} ',
+        style: baseStyle,
+        children: [
+          TextSpan(
+            text: AppStrings.termsConditions.tr(),
+            style: linkStyle,
+            recognizer: _termsRecognizer,
+          ),
+          TextSpan(text: ' & ', style: baseStyle),
+          TextSpan(
+            text: AppStrings.privacyPolicy.tr(),
+            style: linkStyle,
+            recognizer: _privacyRecognizer,
+          ),
+        ],
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+}
+
 class _FeatureRow extends StatelessWidget {
   const _FeatureRow();
 
   @override
   Widget build(BuildContext context) {
-    // Read locale so this widget rebuilds when language changes.
     context.locale;
-    final items = [
-      (AppAssets.lock, AppStrings.secureSafe.tr(), AppStrings.dataProtected.tr()),
-      (AppAssets.rocket, AppStrings.quickAccess.tr(), AppStrings.loginInSeconds.tr()),
-      (AppAssets.headset, AppStrings.support247.tr(), AppStrings.weAreHereToHelp.tr()),
-    ];
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            if (i > 0) const VerticalDivider(width: 16, thickness: 1, color: AppColors.border),
-            Expanded(
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(color: AppColors.peach, shape: BoxShape.circle),
-                    child: AppIcon(items[i].$1, size: 18, color: AppColors.primary),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    items[i].$2,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.style(fontSize: 10, fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    items[i].$3,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.style(fontSize: 8, color: AppColors.textSecondary),
-                  ),
-                ],
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FeatureItem(
+          icon: const AppIcon(AppAssets.lock, size: 20, color: AppColors.primary),
+          title: AppStrings.secureSafe.tr(),
+          subtitle: AppStrings.dataProtected.tr(),
+        ),
+        const _VerticalDivider(),
+        _FeatureItem(
+          icon: const AppIcon(
+            AppAssets.rocket,
+            size: 20,
+            color: AppColors.primary,
+          ),
+          title: AppStrings.quickAccess.tr(),
+          subtitle: AppStrings.loginInSeconds.tr(),
+        ),
+        const _VerticalDivider(),
+        _FeatureItem(
+          icon: const AppIcon(
+            AppAssets.headset,
+            size: 20,
+            color: AppColors.primary,
+          ),
+          title: AppStrings.support247.tr(),
+          subtitle: AppStrings.weAreHereToHelp.tr(),
+        ),
+      ],
+    );
+  }
+}
+
+class _VerticalDivider extends StatelessWidget {
+  const _VerticalDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 78,
+      width: 1,
+      margin: const EdgeInsets.only(top: 4),
+      color: AppColors.border,
+    );
+  }
+}
+
+class _FeatureItem extends StatelessWidget {
+  const _FeatureItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final Widget icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          children: [
+            Container(
+              height: 42,
+              width: 42,
+              decoration: const BoxDecoration(
+                color: AppColors.peach,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: icon,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.style(
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                color: AppColors.textPrimary,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.style(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+                height: 1.25,
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -315,31 +329,48 @@ class _BenefitsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     context.locale;
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(color: AppColors.peach, shape: BoxShape.circle),
+            height: 46,
+            width: 46,
+            decoration: const BoxDecoration(
+              color: AppColors.peach,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
             child: const AppIcon(AppAssets.privacy, color: AppColors.primary),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   AppStrings.oneAccountManyBenefits.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600, fontSize: 13),
+                  style: AppTextStyles.style(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                    height: 1.25,
+                  ),
                 ),
+                const SizedBox(height: 6),
                 Text(
                   AppStrings.manageVehicleBookings.tr(),
-                  style: AppTextStyles.style(fontSize: 11, color: AppColors.textSecondary),
+                  style: AppTextStyles.style(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),

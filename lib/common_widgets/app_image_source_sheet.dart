@@ -23,8 +23,7 @@ Future<AppImageSourceChoice?> pickImageSourceChoice(
     isScrollControlled: true,
     enableDrag: false,
     barrierColor: Colors.black54,
-    topRadius: 16,
-
+    topRadius: 24,
     builder: (_) => const _ImageSourceSheetBody(),
   );
 }
@@ -64,7 +63,7 @@ Future<AppDocumentSourceChoice?> pickDocumentSourceChoice(
     isScrollControlled: true,
     enableDrag: false,
     barrierColor: Colors.black54,
-    topRadius: 16,
+    topRadius: 24,
     builder: (_) => const _DocumentSourceSheetBody(),
   );
 }
@@ -97,6 +96,85 @@ Future<void> showDocumentSourceSheet(
   }
 }
 
+class _SheetHandle extends StatelessWidget {
+  const _SheetHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 40,
+        height: 4,
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: AppColors.border,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+}
+
+class _SourceOptionTile extends StatelessWidget {
+  const _SourceOptionTile({
+    required this.leading,
+    required this.label,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  final Widget leading;
+  final String label;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.peach,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            leading,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppTextStyles.style(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: AppTextStyles.style(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ImageSourceSheetBody extends StatefulWidget {
   const _ImageSourceSheetBody();
 
@@ -122,62 +200,52 @@ class _ImageSourceSheetBodyState extends State<_ImageSourceSheetBody> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: AppBottomSheetBody(
-        scrollable: false,
-        // Extra bottom padding so Cancel clears Android/iOS system nav / home bar.
-        padding: const EdgeInsets.fromLTRB(8, 12, 8, 32),
-        child: AbsorbPointer(
-          absorbing: !_ready,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.textHint,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+    return AppBottomSheetBody(
+      scrollable: false,
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+      child: AbsorbPointer(
+        absorbing: !_ready,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _SheetHandle(),
+            Text(
+              AppStrings.choosePhoto.tr(),
+              style: AppTextStyles.style(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
               ),
-              ListTile(
-                dense: true,
-                visualDensity: VisualDensity.compact,
-                leading: AppIcon(AppAssets.folder, color: AppColors.primary),
-                title: Text(
-                  AppStrings.chooseFromGallery.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                ),
-                onTap: () => _select(AppImageSourceChoice.gallery),
-              ),
-              ListTile(
-                dense: true,
-                visualDensity: VisualDensity.compact,
-                leading: AppIcon(AppAssets.camera, color: AppColors.primary),
-                title: Text(
-                  AppStrings.takePhoto.tr(),
-                  style: AppTextStyles.style(fontWeight: FontWeight.w600),
-                ),
-                onTap: () => _select(AppImageSourceChoice.camera),
-              ),
-              ListTile(
-                dense: true,
-                visualDensity: VisualDensity.compact,
-                title: Text(
-                  AppStrings.cancel.tr(),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.style(color: AppColors.textSecondary),
-                ),
-                onTap: () {
+            ),
+            const SizedBox(height: 16),
+            _SourceOptionTile(
+              leading: AppIcon(AppAssets.camera, color: AppColors.primary),
+              label: AppStrings.takePhoto.tr(),
+              onTap: () => _select(AppImageSourceChoice.camera),
+            ),
+            const SizedBox(height: 10),
+            _SourceOptionTile(
+              leading: AppIcon(AppAssets.folder, color: AppColors.primary),
+              label: AppStrings.chooseFromGallery.tr(),
+              onTap: () => _select(AppImageSourceChoice.gallery),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: () {
                   if (!_ready) return;
                   Navigator.of(context).pop();
                 },
+                child: Text(
+                  AppStrings.cancel.tr(),
+                  style: AppTextStyles.style(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -212,83 +280,60 @@ class _DocumentSourceSheetBodyState extends State<_DocumentSourceSheetBody> {
   Widget build(BuildContext context) {
     return AppBottomSheetBody(
       scrollable: false,
-      // Extra bottom padding so Cancel clears Android/iOS system nav / home bar.
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 32),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
       child: AbsorbPointer(
         absorbing: !_ready,
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: AppColors.textHint,
-                borderRadius: BorderRadius.circular(2),
+            const _SheetHandle(),
+            Text(
+              AppStrings.uploadDocument.tr(),
+              style: AppTextStyles.style(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            ListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              leading: AppIcon(AppAssets.folder, color: AppColors.primary),
-              title: Text(
-                AppStrings.chooseFromGallery.tr(),
-                style: AppTextStyles.style(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                AppStrings.imageFormatsHint.tr(),
-                style: AppTextStyles.style(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              onTap: () => _select(AppDocumentSourceChoice.gallery),
-            ),
-            ListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
+            const SizedBox(height: 16),
+            _SourceOptionTile(
               leading: AppIcon(AppAssets.camera, color: AppColors.primary),
-              title: Text(
-                AppStrings.takePhoto.tr(),
-                style: AppTextStyles.style(fontWeight: FontWeight.w600),
-              ),
+              label: AppStrings.takePhoto.tr(),
               onTap: () => _select(AppDocumentSourceChoice.camera),
             ),
-            ListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
+            const SizedBox(height: 10),
+            _SourceOptionTile(
+              leading: AppIcon(AppAssets.folder, color: AppColors.primary),
+              label: AppStrings.chooseFromGallery.tr(),
+              subtitle: AppStrings.imageFormatsHint.tr(),
+              onTap: () => _select(AppDocumentSourceChoice.gallery),
+            ),
+            const SizedBox(height: 10),
+            _SourceOptionTile(
               leading: const Icon(
                 Icons.picture_as_pdf_outlined,
                 color: AppColors.primary,
               ),
-              title: Text(
-                AppStrings.choosePdfOrFile.tr(),
-                style: AppTextStyles.style(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                AppStrings.documentFormatsHint.tr(),
-                style: AppTextStyles.style(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              label: AppStrings.choosePdfOrFile.tr(),
+              subtitle: AppStrings.documentFormatsHint.tr(),
               onTap: () => _select(AppDocumentSourceChoice.file),
             ),
-            ListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              title: Text(
-                AppStrings.cancel.tr(),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.style(color: AppColors.textSecondary),
-              ),
-              onTap: () {
-                if (!_ready) return;
-                Navigator.of(context).pop();
-              },
-            ),
             const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  if (!_ready) return;
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  AppStrings.cancel.tr(),
+                  style: AppTextStyles.style(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

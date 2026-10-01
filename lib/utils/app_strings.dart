@@ -376,6 +376,7 @@ class AppStrings {
   static const String createSecureHint = 'create_secure_hint';
   static const String createQuickHint = 'create_quick_hint';
   static const String createPersonalizedHint = 'create_personalized_hint';
+  static const String choosePhoto = 'choose_photo';
   static const String takePhoto = 'take_photo';
   static const String chooseFromGallery = 'choose_from_gallery';
   static const String cropImage = 'crop_image';
