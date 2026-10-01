@@ -51,13 +51,16 @@ class AppKycStepper extends StatelessWidget {
                             _dotSize / 2 -
                             _lineGap;
                         final width = (right - left).clamp(0.0, double.infinity);
+                        // Connector is primary only when the next step is reached
+                        // (i.e. the left step is completed).
+                        final isCompleted = i + 1 <= currentIndex;
                         return Positioned(
                           left: left,
                           width: width,
                           top: (_dotSize - 2) / 2,
                           child: Container(
                             height: 2,
-                            color: i + 1 <= currentIndex
+                            color: isCompleted
                                 ? AppColors.primary
                                 : AppColors.textHint,
                           ),
@@ -68,15 +71,9 @@ class AppKycStepper extends StatelessWidget {
                     Positioned(
                       left: segment * i + segment / 2 - _dotSize / 2,
                       top: 0,
-                      child: Container(
-                        width: _dotSize,
-                        height: _dotSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: i <= currentIndex
-                              ? AppColors.primary
-                              : AppColors.textHint,
-                        ),
+                      child: _StepDot(
+                        isCompleted: i < currentIndex,
+                        isCurrent: i == currentIndex,
                       ),
                     ),
                 ],
@@ -92,7 +89,9 @@ class AppKycStepper extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: AppTextStyles.style(
                       fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: i == currentIndex
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       color: isActive
                           ? AppColors.primary
                           : AppColors.textSecondary,
@@ -104,6 +103,47 @@ class AppKycStepper extends StatelessWidget {
           ],
         );
       },
+      ),
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  const _StepDot({required this.isCompleted, required this.isCurrent});
+
+  final bool isCompleted;
+  final bool isCurrent;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isCompleted) {
+      return Container(
+        width: AppKycStepper._dotSize,
+        height: AppKycStepper._dotSize,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.primary,
+        ),
+      );
+    }
+    if (isCurrent) {
+      // Ring style so current step is distinct from completed filled dots.
+      return Container(
+        width: AppKycStepper._dotSize,
+        height: AppKycStepper._dotSize,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.white,
+          border: Border.all(color: AppColors.primary, width: 2),
+        ),
+      );
+    }
+    return Container(
+      width: AppKycStepper._dotSize,
+      height: AppKycStepper._dotSize,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.textHint,
       ),
     );
   }

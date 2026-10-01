@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ImagePickService {
   ImagePickService._();
@@ -25,17 +26,38 @@ class ImagePickService {
     ImageSource source, {
     bool squareOnly = false,
   }) async {
+    File? stableCopy;
     try {
       final picked = await _picker.pickImage(
         source: source,
         imageQuality: 90,
         maxWidth: 2000,
+        requestFullMetadata: false,
       );
       if (picked == null) return null;
 
+      final original = File(picked.path);
+      if (!await original.exists() || await original.length() == 0) {
+        AppToast.error(AppStrings.imagePickFailed.tr());
+        return null;
+      }
+
+      // iOS: camera VC must finish dismissing before TOCropViewController
+      // can present. Opening immediately returns null / blank cropper.
+      if (Platform.isIOS) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
+
+      // Copy into app temp as .jpg so UIImage can load camera captures reliably.
+      stableCopy = await _stableJpegCopy(original);
+      if (stableCopy == null) {
+        AppToast.error(AppStrings.imagePickFailed.tr());
+        return null;
+      }
+
       try {
         final cropped = await ImageCropper().cropImage(
-          sourcePath: picked.path,
+          sourcePath: stableCopy.path,
           aspectRatio: squareOnly ? _squareRatio : null,
           compressFormat: ImageCompressFormat.jpg,
           compressQuality: 90,
@@ -67,6 +89,8 @@ class ImagePickService {
               cropStyle: squareOnly ? CropStyle.circle : CropStyle.rectangle,
               aspectRatioLockEnabled: squareOnly,
               resetAspectRatioEnabled: !squareOnly,
+              // Helps iOS present TOCropViewController after camera dismiss.
+              embedInNavigationController: true,
               aspectRatioPresets: squareOnly
                   ? const [CropAspectRatioPreset.square]
                   : const [
@@ -79,7 +103,11 @@ class ImagePickService {
             ),
           ],
         );
-        if (cropped == null) return null;
+        if (cropped == null) {
+          // User cancelled crop (or dismiss) — do not keep the image.
+          await _safeDelete(stableCopy);
+          return null;
+        }
         return File(cropped.path);
       } on MissingPluginException catch (e) {
         // Happens after adding the plugin without a full app reinstall.
@@ -87,17 +115,44 @@ class ImagePickService {
           'image_cropper plugin missing — using uncropped image. '
           'Stop the app and run a full rebuild (not hot restart). $e',
         );
-        return File(picked.path);
+        return stableCopy;
       }
     } on PlatformException catch (e) {
       debugPrint('Image pick/crop failed: ${e.code} ${e.message}');
+      await _safeDelete(stableCopy);
       AppToast.error(AppStrings.imagePickFailed.tr());
       return null;
     } catch (e, st) {
       debugPrint('Image pick/crop failed: $e\n$st');
+      await _safeDelete(stableCopy);
       AppToast.error(AppStrings.imagePickFailed.tr());
       return null;
     }
+  }
+
+  /// Writes a flushed JPEG copy under the app temp directory.
+  static Future<File?> _stableJpegCopy(File original) async {
+    try {
+      final bytes = await original.readAsBytes();
+      if (bytes.isEmpty) return null;
+      final dir = await getTemporaryDirectory();
+      final dest = File(
+        '${dir.path}/carzigo_pick_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+      await dest.writeAsBytes(bytes, flush: true);
+      if (!await dest.exists() || await dest.length() == 0) return null;
+      return dest;
+    } catch (e, st) {
+      debugPrint('stable jpeg copy failed: $e\n$st');
+      return null;
+    }
+  }
+
+  static Future<void> _safeDelete(File? file) async {
+    if (file == null) return;
+    try {
+      if (await file.exists()) await file.delete();
+    } catch (_) {}
   }
 
   /// Pick PDF or image file (png/jpeg/jpg/heif/heic/pdf).

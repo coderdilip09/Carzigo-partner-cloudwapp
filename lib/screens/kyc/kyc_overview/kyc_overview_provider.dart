@@ -88,6 +88,14 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnBank() async {
+    if (!isIdentityDone) {
+      AppToast.error(AppStrings.completeIdentityFirst.tr());
+      return;
+    }
+    if (!isAddressProofDone) {
+      AppToast.error(AppStrings.completeAddressFirst.tr());
+      return;
+    }
     if (hasPartialRejection && !isBankRejected && isBankDone) {
       AppToast.error(AppStrings.kycSectionLocked.tr());
       return;

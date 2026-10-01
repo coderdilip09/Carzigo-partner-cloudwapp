@@ -37,6 +37,12 @@ class ApplicationPendingProvider extends BaseProvider {
         return;
       }
 
+      // Not submitted yet (or wrongly landed here) → back to KYC checklist.
+      if (!res.data!.isSubmittedForReview) {
+        AppNavigation.offAll(const KycOverviewScreen());
+        return;
+      }
+
       AppToast.success(res.data!.message ?? res.message ?? '');
     } catch (e, st) {
       debugPrint('Get KYC account status failed: $e\n$st');

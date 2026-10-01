@@ -14,11 +14,12 @@ import 'package:flutter/material.dart';
 /// 1. No token → Login
 /// 2. Profile incomplete → Create Profile
 /// 3. Partner [approval] approved → Dashboard
-/// 4. KYC submitted / pending_review (or approval pending after submit) → Application Pending
+/// 4. KYC `pending_review` / `submitted` (real submit) → Application Pending
 /// 5. Else → KYC Overview
 ///
-/// After OTP: use verify response first (skip /kyc/status when clear).
-/// After splash / app kill: refresh via GET /kyc/status.
+/// Always prefer GET /kyc/status after profile is complete. OTP verify only
+/// returns [partners.kyc_status], which is `'pending'` for new partners and
+/// does not mean KYC was submitted.
 class AuthRouteService {
   AuthRouteService._();
 
@@ -37,33 +38,31 @@ class AuthRouteService {
       return const CreateProfileScreen();
     }
 
-    // OTP / fresh auth: decide from response fields when possible.
-    if (!forceStatusCheck && auth != null) {
-      final fromAuth = _routeFromFlags(
-        approval: auth.user?.approval,
-        kycStatus: auth.user?.kycStatus ?? auth.kyc?.overallStatus,
-      );
-      if (fromAuth != null) return fromAuth;
-    }
-
-    try {
-      final res = await Api.getKycAccountStatus();
-      if (res.isSuccess && res.data != null) {
-        if (res.data!.isApproved) return const DashboardScreen();
-        if (res.data!.isSubmittedForReview) {
-          return const ApplicationPendingScreen();
+    // Partner auth flags are ambiguous (`kyc_status: pending` on create).
+    // Always refresh via /kyc/status unless caller already forced it —
+    // still call the API for OTP so draft users are not sent to Pending.
+    final shouldHitStatus = forceStatusCheck || auth != null;
+    if (shouldHitStatus) {
+      try {
+        final res = await Api.getKycAccountStatus();
+        if (res.isSuccess && res.data != null) {
+          if (res.data!.isApproved) return const DashboardScreen();
+          if (res.data!.isSubmittedForReview) {
+            return const ApplicationPendingScreen();
+          }
+          return const KycOverviewScreen();
         }
-        return const KycOverviewScreen();
+      } catch (e, st) {
+        debugPrint('AuthRouteService KYC status failed: $e\n$st');
       }
-    } catch (e, st) {
-      debugPrint('AuthRouteService KYC status failed: $e\n$st');
     }
 
-    // Status failed: fall back to last known user flags (prefs / auth).
+    // Status failed: fall back to last known flags (prefs / auth).
+    // Never treat bare `pending` as submitted — that is the default for new partners.
     final fallback = _routeFromFlags(
       approval: auth?.user?.approval ?? stored?.approval,
-      kycStatus: auth?.user?.kycStatus ??
-          auth?.kyc?.overallStatus ??
+      kycStatus: auth?.kyc?.overallStatus ??
+          auth?.user?.kycStatus ??
           stored?.kycStatus,
     );
     return fallback ?? const KycOverviewScreen();
@@ -81,6 +80,7 @@ class AuthRouteService {
       return const DashboardScreen();
     }
 
+    // Only real KYC submit states → Application Pending.
     if (k == KycOverallStatus.pendingReview ||
         k == KycOverallStatus.submitted) {
       return const ApplicationPendingScreen();
@@ -90,22 +90,18 @@ class AuthRouteService {
       return const KycOverviewScreen();
     }
 
-    if (a == KycOverallStatus.pending &&
-        (k == KycOverallStatus.approved ||
-            k == KycOverallStatus.verified ||
-            k == KycOverallStatus.pending)) {
-      return const ApplicationPendingScreen();
-    }
-
+    // Incomplete / default partner flags → stay on KYC Overview.
+    // Note: partners.kyc_status is often `'pending'` before any submit.
     if (k == null ||
+        k.isEmpty ||
         k == KycOverallStatus.draft ||
         k == KycOverallStatus.notStarted ||
         k == KycOverallStatus.inProgress ||
-        k.isEmpty) {
+        k == KycOverallStatus.pending) {
       return const KycOverviewScreen();
     }
 
-    // Unclear combo (e.g. verified without approval) → caller may hit status API.
+    // KYC verified/approved but partner approval still pending → under review.
     if (k == KycOverallStatus.verified || k == KycOverallStatus.approved) {
       if (a == null || a.isEmpty) return null;
       if (a == KycOverallStatus.pending) {

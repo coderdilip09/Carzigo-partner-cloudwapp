@@ -72,7 +72,7 @@ class KycOverviewScreen extends StatelessWidget {
                                         provider.hasPartialRejection
                                             ? AppStrings.fixRejectedSections
                                                   .tr()
-                                            : AppStrings.planBenefits.tr(),
+                                            : AppStrings.requiredDocuments.tr(),
                                         style: AppTextStyles.style(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
@@ -81,14 +81,15 @@ class KycOverviewScreen extends StatelessWidget {
                                       const SizedBox(height: 12),
                                       _KycItem(
                                         title: AppStrings.identityProof.tr(),
-                                        subtitle:
-                                            AppStrings.identityDocsHint.tr(),
+                                        subtitle: AppStrings.identityDocsHint
+                                            .tr(),
                                         isDone: provider.isIdentityDone,
                                         isPending:
                                             !provider.isLoading &&
                                             !provider.isIdentityDone,
                                         onTap: provider.tapOnIdentity,
                                       ),
+                                      const SizedBox(height: 12),
                                       _KycItem(
                                         title: AppStrings.addressProof.tr(),
                                         subtitle: provider.isAddressRejected
@@ -104,6 +105,7 @@ class KycOverviewScreen extends StatelessWidget {
                                         isRejected: provider.isAddressRejected,
                                         onTap: provider.tapOnAddressProof,
                                       ),
+                                      const SizedBox(height: 12),
                                       _KycItem(
                                         title: AppStrings.bankDetails.tr(),
                                         subtitle: provider.isBankRejected
@@ -118,6 +120,7 @@ class KycOverviewScreen extends StatelessWidget {
                                         isRejected: provider.isBankRejected,
                                         onTap: provider.tapOnBank,
                                       ),
+                                      const SizedBox(height: 12),
                                       _KycItem(
                                         title: AppStrings.profilePhoto.tr(),
                                         subtitle: AppStrings
@@ -271,25 +274,24 @@ class _KycItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: isRejected
                 ? AppColors.destructiveLight
                 : isDone
-                    ? AppColors.peachLight
-                    : AppColors.white,
+                ? AppColors.peachLight
+                : AppColors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isRejected
                   ? AppColors.destructiveBorder
                   : isDone
-                      ? AppColors.completedCardBorder
-                      : AppColors.border,
+                  ? AppColors.completedCardBorder
+                  : AppColors.border,
             ),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
@@ -389,6 +391,7 @@ class _ExpandableRejectReason extends StatefulWidget {
 
 class _ExpandableRejectReasonState extends State<_ExpandableRejectReason> {
   static const int _collapsedLines = 2;
+
   /// Rough threshold: longer admin notes get Read more.
   static const int _expandCharThreshold = 90;
   bool _expanded = false;
@@ -417,8 +420,9 @@ class _ExpandableRejectReasonState extends State<_ExpandableRejectReason> {
         Text(
           widget.text,
           maxLines: _expanded || !_canExpand ? null : _collapsedLines,
-          overflow:
-              _expanded || !_canExpand ? TextOverflow.visible : TextOverflow.ellipsis,
+          overflow: _expanded || !_canExpand
+              ? TextOverflow.visible
+              : TextOverflow.ellipsis,
           style: style,
         ),
         if (_canExpand) ...[
@@ -429,9 +433,7 @@ class _ExpandableRejectReasonState extends State<_ExpandableRejectReason> {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Text(
-                _expanded
-                    ? AppStrings.showLess.tr()
-                    : AppStrings.readMore.tr(),
+                _expanded ? AppStrings.showLess.tr() : AppStrings.readMore.tr(),
                 style: AppTextStyles.style(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,

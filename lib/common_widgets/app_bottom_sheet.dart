@@ -2,7 +2,7 @@ import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// Extra space so the last action sits above the Android 3-button / gesture bar.
-const double kAppSheetBottomGap = 20;
+const double kAppSheetBottomGap = 28;
 
 /// Raw system nav / home-indicator inset. Reads from the window, not the
 /// (often zeroed) MediaQuery inside a modal sheet or ScreenUtil.
@@ -37,18 +37,19 @@ class AppBottomSheetBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottom = appSheetBottomInset(context, extra: padding.bottom);
     final maxHeight = MediaQuery.sizeOf(context).height * 0.9;
-    final content = Padding(
-      padding: padding.copyWith(bottom: bottom),
-      child: child,
+    final content = SafeArea(
+      top: false,
+      child: Padding(
+        padding: padding.copyWith(bottom: bottom),
+        child: child,
+      ),
     );
 
     if (!scrollable) return content;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
-      child: SingleChildScrollView(
-        child: content,
-      ),
+      child: SingleChildScrollView(child: content),
     );
   }
 }

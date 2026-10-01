@@ -1,5 +1,6 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
+import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
@@ -23,24 +24,31 @@ class CreateProfileScreen extends StatelessWidget {
       create: (_) => CreateProfileProvider(),
       child: Consumer<CreateProfileProvider>(
         builder: (context, provider, _) {
-          return Scaffold(
-            backgroundColor: AppColors.background,
-            body: AppBg(
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: provider.formKey,
-                    autovalidateMode: provider.submitted
-                        ? AutovalidateMode.onUserInteraction
-                        : AutovalidateMode.disabled,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppBackHeader(
-                          title: AppStrings.letsGetStarted.tr(),
-                          showBackText: false,
-                        ),
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) {
+              if (didPop) return;
+              showLogoutDialog(context);
+            },
+            child: Scaffold(
+              backgroundColor: AppColors.background,
+              body: AppBg(
+                child: SafeArea(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: provider.formKey,
+                      autovalidateMode: provider.submitted
+                          ? AutovalidateMode.onUserInteraction
+                          : AutovalidateMode.disabled,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppBackHeader(
+                            title: AppStrings.letsGetStarted.tr(),
+                            showBackText: false,
+                            onBack: () => showLogoutDialog(context),
+                          ),
                         Text(
                           AppStrings.createProfileSubtitle.tr(),
                           style: AppTextStyles.style(
@@ -192,6 +200,7 @@ class CreateProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
             ),
           );
         },

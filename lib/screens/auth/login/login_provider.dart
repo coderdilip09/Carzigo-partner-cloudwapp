@@ -35,6 +35,14 @@ class LoginProvider extends BaseProvider {
     safeNotifyListeners();
   }
 
+  /// True when phone is ready to submit (India: exactly 10 digits).
+  bool get isPhoneValid {
+    final digits = phone.trim();
+    if (digits.isEmpty) return false;
+    if (country.countryCode == 'IN') return digits.length == 10;
+    return digits.length >= 6;
+  }
+
   bool _validatePhone() {
     final digits = phone.trim();
     if (digits.isEmpty) {

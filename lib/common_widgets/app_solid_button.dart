@@ -20,6 +20,7 @@ class AppSolidButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final disabled = onTap == null && !isLoading;
     return SizedBox(
       width: double.infinity,
       height: 52,
@@ -28,6 +29,10 @@ class AppSolidButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
+          disabledBackgroundColor:
+              isLoading ? AppColors.primary : const Color(0xFFF2F2F2),
+          disabledForegroundColor:
+              disabled ? AppColors.textSecondary : AppColors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(
@@ -59,6 +64,9 @@ class AppSolidButton extends StatelessWidget {
                       style: AppTextStyles.style(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
+                        color: disabled
+                            ? AppColors.textSecondary
+                            : AppColors.white,
                       ),
                     ),
                   ),

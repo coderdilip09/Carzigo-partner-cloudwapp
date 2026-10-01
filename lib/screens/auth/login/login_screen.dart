@@ -174,7 +174,9 @@ class LoginScreen extends StatelessWidget {
                                     const SizedBox(height: 24),
                                     AppSolidButton(
                                       label: AppStrings.submit.tr(),
-                                      onTap: provider.tapOnSubmit,
+                                      onTap: provider.isPhoneValid
+                                          ? provider.tapOnSubmit
+                                          : null,
                                       isLoading: provider.isLoading,
                                     ),
                                     const SizedBox(height: 16),

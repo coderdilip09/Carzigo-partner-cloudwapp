@@ -83,6 +83,7 @@ class AppStrings {
   static const String fixRejectedSections = 'fix_rejected_sections';
   static const String updateRejectedItems = 'update_rejected_items';
   static const String planBenefits = 'plan_benefits';
+  static const String requiredDocuments = 'required_documents';
   static const String identityProof = 'identity_proof';
   static const String addressProof = 'address_proof';
   static const String identityAndAddressProof = 'identity_and_address_proof';

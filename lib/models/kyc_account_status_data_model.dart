@@ -39,25 +39,33 @@ class KycAccountStatusDataModel {
       partnerKycStatus?.toLowerCase() == KycOverallStatus.rejected;
 
   /// KYC has been submitted and is waiting on review / partner approval.
-  /// Draft / rejected / in-progress KYC must stay on KYC Overview.
+  /// Draft / rejected / in-progress / default partner `pending` stay on KYC Overview.
   bool get isSubmittedForReview {
     if (isApproved) return false;
     if (isRejected) return false;
 
     final kyc = _kycStatus;
+    // Real submit states from partner_kyc.status.
     if (kyc == KycOverallStatus.pendingReview ||
         kyc == KycOverallStatus.submitted) {
       return true;
     }
 
-    if (_approval == KycOverallStatus.pending ||
-        _partnerStatus == KycOverallStatus.pending) {
-      if (kyc == KycOverallStatus.approved ||
-          kyc == KycOverallStatus.verified ||
-          kyc == KycOverallStatus.pending ||
-          (submittedAt ?? '').trim().isNotEmpty) {
+    // KYC docs verified but partner account still awaiting admin approval.
+    if (kyc == KycOverallStatus.approved ||
+        kyc == KycOverallStatus.verified) {
+      if (_approval == KycOverallStatus.pending ||
+          _partnerStatus == KycOverallStatus.pending) {
         return true;
       }
+    }
+
+    // submitted_at only counts with a real review status — not alone with
+    // partners.kyc_status == 'pending' (default for new accounts).
+    if ((submittedAt ?? '').trim().isNotEmpty &&
+        (kyc == KycOverallStatus.pendingReview ||
+            kyc == KycOverallStatus.submitted)) {
+      return true;
     }
 
     return false;
