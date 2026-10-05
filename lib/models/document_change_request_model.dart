@@ -59,6 +59,7 @@ class DocumentChangeDraftModel {
     this.bankName,
     this.accountNumber,
     this.chequeUrl,
+    this.digilockerFullName,
   });
 
   final String? docType;
@@ -70,6 +71,7 @@ class DocumentChangeDraftModel {
   final String? bankName;
   final String? accountNumber;
   final String? chequeUrl;
+  final String? digilockerFullName;
 
   factory DocumentChangeDraftModel.fromJson(Map<String, dynamic> json) {
     return DocumentChangeDraftModel(
@@ -84,6 +86,9 @@ class DocumentChangeDraftModel {
         json['account_number'] ?? json['accountNumber'],
       ),
       chequeUrl: _asNonEmpty(json['cheque_url'] ?? json['chequeUrl']),
+      digilockerFullName: _asNonEmpty(
+        json['digilocker_full_name'] ?? json['digilockerFullName'],
+      ),
     );
   }
 

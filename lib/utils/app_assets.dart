@@ -7,12 +7,14 @@ class AppAssets {
   static const String bg = 'assets/images/webp/bg_img.webp';
   static const String homeSideCar = 'assets/images/webp/home_side_car_img.webp';
   static const String otpIllustration = 'assets/images/webp/otp_img.webp';
-  static const String dummyProfile = 'assets/images/webp/dummy_profile_img.webp';
+  static const String dummyProfile =
+      'assets/images/webp/dummy_profile_img.webp';
   static const String dummyCar = 'assets/images/webp/dummy_car_img.webp';
   static const String logoutImage = 'assets/images/webp/logout_img.webp';
-  static const String deleteAccountImage = 'assets/images/webp/delete_ac_img.webp';
+  static const String deleteAccountImage =
+      'assets/images/webp/delete_ac_img.webp';
   static const String handShake = 'assets/images/webp/hand_img.webp';
-  static const String headphone = 'assets/images/webp/ic_headphone_img.png';
+  static const String headphone = 'assets/images/webp/ic_headphone_img.webp';
   static const String imageUpload = 'assets/images/webp/image_upload_img.webp';
 
   // --- SVG chrome icons (replace with brand SVG/PNG when ready) ---
@@ -24,7 +26,8 @@ class AppAssets {
   static const String chevronDown = 'assets/images/icons/ic_chevron_down.svg';
   static const String search = 'assets/images/icons/ic_search.svg';
   static const String notification = 'assets/images/icons/ic_notification.svg';
-  static const String notificationFilled = 'assets/images/icons/ic_notification_filled.svg';
+  static const String notificationFilled =
+      'assets/images/icons/ic_notification_filled.svg';
   static const String home = 'assets/images/icons/ic_home.svg';
   static const String hand = 'assets/images/webp/ic_hand.png';
   static const String calendar = 'assets/images/icons/ic_calendar.svg';
@@ -49,7 +52,8 @@ class AppAssets {
   static const String help = 'assets/images/icons/ic_help.svg';
   static const String check = 'assets/images/icons/ic_check.svg';
   static const String doubleCheck = 'assets/images/icons/ic_double_check.svg';
-  static const String progressCheck = 'assets/images/icons/ic_progress-check.svg';
+  static const String progressCheck =
+      'assets/images/icons/ic_progress-check.svg';
   static const String progressDown = 'assets/images/icons/ic_progress-down.svg';
   static const String cancel = 'assets/images/icons/ic_cancel.svg';
   static const String circle = 'assets/images/icons/ic_circle.svg';
@@ -66,13 +70,15 @@ class AppAssets {
   static const String badge = 'assets/images/icons/ic_badge.svg';
   static const String aadhaar = 'assets/images/webp/ic_aadhaar_img.png';
   static const String pan = 'assets/images/webp/ic_pan_img.png';
-  static const String drivingLicense = 'assets/images/webp/ic_driving_license_img.png';
+  static const String drivingLicense =
+      'assets/images/webp/ic_driving_license_img.png';
   static const String bank = 'assets/images/icons/ic_bank.svg';
   static const String folder = 'assets/images/icons/ic_folder.svg';
   static const String docProof = 'assets/images/webp/ic_doc_proof_img.png';
   static const String privacy = 'assets/images/icons/ic_privacy.svg';
   static const String iconPrivacy = 'assets/images/icons/icon_privacy.svg';
-  static const String termsCondition = 'assets/images/icons/ic_terms_condition.svg';
+  static const String termsCondition =
+      'assets/images/icons/ic_terms_condition.svg';
   static const String flash = 'assets/images/icons/ic_flash.svg';
   static const String rocket = 'assets/images/icons/ic_rocket.svg';
   static const String verified = 'assets/images/icons/ic_verified.svg';

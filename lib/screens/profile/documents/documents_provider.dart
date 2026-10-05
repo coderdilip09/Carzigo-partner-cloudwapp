@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:carzigo_partner/models/document_change_request_model.dart';
 import 'package:carzigo_partner/models/kyc_status_model.dart';
 import 'package:carzigo_partner/screens/kyc/application_pending/application_pending_screen.dart';
@@ -12,6 +14,46 @@ import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+
+// #region agent log
+void _docsAgentLog(
+  String hypothesisId,
+  String location,
+  String message,
+  Map<String, Object?> data,
+) {
+  final payload = <String, Object?>{
+    'sessionId': 'b88589',
+    'runId': 'post-fix',
+    'hypothesisId': hypothesisId,
+    'location': location,
+    'message': message,
+    'data': data,
+    'timestamp': DateTime.now().millisecondsSinceEpoch,
+  };
+  debugPrint('AGENT_DEBUG ${jsonEncode(payload)}');
+  () async {
+    for (final host in ['127.0.0.1', '10.0.2.2']) {
+      try {
+        await http
+            .post(
+              Uri.parse(
+                'http://$host:7426/ingest/4d3f57d5-768b-4846-bc82-2ebe7b5d8f28',
+              ),
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Debug-Session-Id': 'b88589',
+              },
+              body: jsonEncode(payload),
+            )
+            .timeout(const Duration(milliseconds: 800));
+        break;
+      } catch (_) {}
+    }
+  }();
+}
+// #endregion
 
 class DocumentsProvider extends BaseProvider {
   DocumentsProvider() {
@@ -30,6 +72,11 @@ class DocumentsProvider extends BaseProvider {
   bool get hasAddress => review?.address?.isDone == true;
   bool get hasBank => review?.bank?.isDone == true;
   bool get hasAnyDocument => hasIdentity || hasAddress || hasBank;
+
+  /// Digilocker / same-as-document KYC couples identity proof with address.
+  bool get couplesIdentityWithAddress =>
+      review?.addressSameAsDocument == true ||
+      review?.identity?.verifiedVia == 'digilocker';
 
   bool get hasOpenChangeRequest => changeRequest?.isOpen == true;
   bool get canRequestChange =>
@@ -233,10 +280,34 @@ class DocumentsProvider extends BaseProvider {
   }
 
   Future<void> tapOnEditIdentity() async {
+    // #region agent log
+    _docsAgentLog('D', 'documents_provider.dart:tapOnEditIdentity:before', 'opening identity editor', {
+      'identityStatus': sectionStatus('identity')?.status,
+      'identityHasDraft': sectionStatus('identity')?.hasDraft,
+      'identityDraftReady': sectionStatus('identity')?.draftReady,
+      'canSubmitDocumentChanges': canSubmitDocumentChanges,
+    });
+    // #endregion
     await AppNavigation.to(
-      const IdentityProofScreen(loadSaved: true, editOnly: true),
+      const IdentityProofScreen(
+        loadSaved: true,
+        editOnly: true,
+        forDocumentChange: true,
+      ),
     );
     await load();
+    // #region agent log
+    _docsAgentLog('D', 'documents_provider.dart:tapOnEditIdentity:after', 'returned from identity editor', {
+      'identityStatus': sectionStatus('identity')?.status,
+      'identityHasDraft': sectionStatus('identity')?.hasDraft,
+      'identityDraftReady': sectionStatus('identity')?.draftReady,
+      'addressStatus': sectionStatus('address')?.status,
+      'addressHasDraft': sectionStatus('address')?.hasDraft,
+      'addressDraftReady': sectionStatus('address')?.draftReady,
+      'canSubmitDocumentChanges': canSubmitDocumentChanges,
+      'isSectionUploadedIdentity': isSectionUploaded('identity'),
+    });
+    // #endregion
   }
 
   Future<void> tapOnEditAddress() async {
@@ -266,7 +337,15 @@ class DocumentsProvider extends BaseProvider {
   }) async {
     if (isRequestingChange) return false;
     final trimmed = reason.trim();
-    if (sections.isEmpty) {
+    final sectionsToSend = <String>{
+      ...sections.map((s) => s.toLowerCase().trim()),
+    };
+    if (couplesIdentityWithAddress &&
+        sectionsToSend.contains('identity')) {
+      sectionsToSend.add('address');
+    }
+    final sectionList = sectionsToSend.toList();
+    if (sectionList.isEmpty) {
       AppToast.error(AppStrings.docChangeSelectSection.tr());
       return false;
     }
@@ -279,7 +358,7 @@ class DocumentsProvider extends BaseProvider {
     safeNotifyListeners();
     try {
       final res = await Api.createDocumentChangeRequest(
-        sections: sections,
+        sections: sectionList,
         reason: trimmed,
       );
       if (!res.isSuccess || res.data == null) {

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:carzigo_partner/firebase_options.dart';
 import 'package:carzigo_partner/models/notification_data_model.dart';
+import 'package:carzigo_partner/screens/dashboard/dashboard_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_overview/kyc_overview_screen.dart';
 import 'package:carzigo_partner/screens/notifications/notifications_screen.dart';
 import 'package:carzigo_partner/screens/profile/documents/documents_screen.dart';
@@ -268,7 +269,13 @@ class FirebaseService {
       await AppNavigation.to(const DocumentsScreen());
       return;
     }
-    if (screen == 'kyc_overview' || type.contains('kyc')) {
+    if (type == 'kyc_approved' ||
+        screen == 'home' ||
+        screen == 'dashboard') {
+      await AppNavigation.offAll(const DashboardScreen());
+      return;
+    }
+    if (type == 'kyc_rejected' || screen == 'kyc_overview') {
       await AppNavigation.to(const KycOverviewScreen());
       return;
     }

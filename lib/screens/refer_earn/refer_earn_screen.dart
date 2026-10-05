@@ -1,3 +1,5 @@
+import 'package:carzigo_partner/common_widgets/app_back_header.dart';
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_bottom_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
@@ -230,30 +232,30 @@ class ReferEarnScreen extends StatelessWidget {
       create: (_) => ReferEarnProvider(),
       child: Consumer<ReferEarnProvider>(
         builder: (context, provider, _) {
-          return SafeArea(
-            child: AppShimmer(
-              enabled: provider.isLoading && provider.data == null,
-              child: RefreshIndicator(
-              onRefresh: () => provider.load(silent: true),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(16, 16, 16, showBottomNav ? 80 : 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppStrings.referAndEarn.tr(),
-                              style: AppTextStyles.style(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                              ),
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: AppBg(
+              child: SafeArea(
+                child: AppShimmer(
+                  enabled: provider.isLoading && provider.data == null,
+                  child: RefreshIndicator(
+                    onRefresh: () => provider.load(silent: true),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        16,
+                        16,
+                        showBottomNav ? 80 : 16,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!showBottomNav) ...[
+                            AppBackHeader(
+                              title: AppStrings.referAndEarn.tr(),
                             ),
+                            const SizedBox(height: 6),
                             Text(
                               AppStrings.referEarnSubtitle.tr(),
                               style: AppTextStyles.style(
@@ -261,82 +263,147 @@ class ReferEarnScreen extends StatelessWidget {
                                 color: AppColors.textSecondary,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => _showHowItWorks(context, provider),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.howItWorksText,
-                          side: const BorderSide(color: AppColors.howItWorksText),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 10,
-                          ),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                          textStyle: AppTextStyles.style(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.howItWorksText,
-                          ),
-                        ),
-                        icon: AppIcon(
-                          AppAssets.help,
-                          size: 14,
-                          color: AppColors.howItWorksText,
-                        ),
-                        label: Text(AppStrings.howItWorks.tr()),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFE53935), Color(0xFF1A0500)],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppStrings.referMoreEarnMore.tr(),
-                                style: AppTextStyles.style(
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 18,
-                                  height: 1.25,
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: OutlinedButton.icon(
+                                onPressed: () =>
+                                    _showHowItWorks(context, provider),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.howItWorksText,
+                                  side: const BorderSide(
+                                    color: AppColors.howItWorksText,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 10,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                  textStyle: AppTextStyles.style(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.howItWorksText,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppStrings.referRewardBody.tr(),
-                                style: AppTextStyles.style(
-                                  color: AppColors.white.withValues(alpha: 0.9),
-                                  fontSize: 12,
+                                icon: AppIcon(
+                                  AppAssets.help,
+                                  size: 14,
+                                  color: AppColors.howItWorksText,
                                 ),
+                                label: Text(AppStrings.howItWorks.tr()),
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        AppImageView(
-                          AppAssets.handShake,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.contain,
-                        ),
+                            ),
+                          ] else
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppStrings.referAndEarn.tr(),
+                                        style: AppTextStyles.style(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      Text(
+                                        AppStrings.referEarnSubtitle.tr(),
+                                        style: AppTextStyles.style(
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                OutlinedButton.icon(
+                                  onPressed: () =>
+                                      _showHowItWorks(context, provider),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.howItWorksText,
+                                    side: const BorderSide(
+                                      color: AppColors.howItWorksText,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 10,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                    textStyle: AppTextStyles.style(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.howItWorksText,
+                                    ),
+                                  ),
+                                  icon: AppIcon(
+                                    AppAssets.help,
+                                    size: 14,
+                                    color: AppColors.howItWorksText,
+                                  ),
+                                  label: Text(AppStrings.howItWorks.tr()),
+                                ),
+                              ],
+                            ),
+                          const SizedBox(height: 16),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFE53935), Color(0xFF1A0500)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppStrings.referMoreEarnMore.tr(),
+                                        style: AppTextStyles.style(
+                                          color: AppColors.white,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 18,
+                                          height: 1.25,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        AppStrings.referRewardBody.tr(),
+                                        style: AppTextStyles.style(
+                                          color: AppColors.white.withValues(
+                                            alpha: 0.9,
+                                          ),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                AppImageView(
+                                  AppAssets.handShake,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.contain,
+                                ),
                       ],
                     ),
                   ),
@@ -584,8 +651,10 @@ class ReferEarnScreen extends StatelessWidget {
                     ),
                 ],
               ),
-            ),
-            ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           );
         },

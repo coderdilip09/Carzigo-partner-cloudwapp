@@ -86,7 +86,6 @@ class LoginProvider extends BaseProvider {
       return;
     }
 
-    AppToast.success(res.message ?? AppStrings.otpResent.tr());
     KycStatus.resetForNewNumber();
     AppNavigation.to(
       OtpVerifyScreen(

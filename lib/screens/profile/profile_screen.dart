@@ -1,3 +1,4 @@
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_user_avatar.dart';
@@ -76,20 +77,27 @@ class ProfileScreen extends StatelessWidget {
       create: (_) => ProfileProvider(),
       child: Consumer<ProfileProvider>(
         builder: (context, provider, _) {
-          return SafeArea(
-            child: RefreshIndicator(
-              onRefresh: provider.loadProfile,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  16,
-                  16,
-                  showBottomNav ? 80 : 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          final profileName = (provider.user?.displayName ?? '').trim();
+          final profileSubtitle = profileName.isNotEmpty
+              ? profileName
+              : AppStrings.myProfileSubtitle.tr();
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: AppBg(
+              child: SafeArea(
+                child: RefreshIndicator(
+                  onRefresh: provider.loadProfile,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      16,
+                      16,
+                      showBottomNav ? 80 : 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                     Text(
                       AppStrings.profile.tr(),
                       style: AppTextStyles.style(
@@ -236,7 +244,7 @@ class ProfileScreen extends StatelessWidget {
                     _MenuTile(
                       iconAsset: AppAssets.person,
                       title: AppStrings.myProfile.tr(),
-                      subtitle: AppStrings.myProfileSubtitle.tr(),
+                      subtitle: profileSubtitle,
                       onTap: provider.tapOnMyProfile,
                     ),
                     _MenuTile(
@@ -295,10 +303,11 @@ class ProfileScreen extends StatelessWidget {
                       title: AppStrings.deleteAccount.tr(),
                       subtitle: AppStrings.deleteSubtitle.tr(),
                       isDestructive: true,
-                      onTap: () =>
-                          false ? showDeleteAccountDialog(context) : null,
+                      onTap: () => showDeleteAccountDialog(context),
                     ),
                   ],
+                ),
+              ),
                 ),
               ),
             ),

@@ -50,12 +50,15 @@ class AppBottomSheetBody extends StatelessWidget {
         ? keyboard + appSystemBottomInset(context) + padding.bottom
         : keyboard + padding.bottom;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.9;
-    final content = SafeArea(
-      top: false,
-      bottom: !_isAndroidSheetInset,
-      child: Padding(
-        padding: padding.copyWith(bottom: bottom),
-        child: child,
+    final content = Material(
+      color: Colors.transparent,
+      child: SafeArea(
+        top: false,
+        bottom: !_isAndroidSheetInset,
+        child: Padding(
+          padding: padding.copyWith(bottom: bottom),
+          child: child,
+        ),
       ),
     );
 

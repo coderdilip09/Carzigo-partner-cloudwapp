@@ -17,8 +17,24 @@ class ScheduleProvider extends BaseProvider {
   ScheduleTab currentTab;
   ScheduleListDataModel? data;
   bool isLoading = true;
+  bool isSearchOpen = false;
+  String searchQuery = '';
 
-  List<JobDataModel> get jobs => data?.jobs ?? [];
+  List<JobDataModel> get jobs {
+    final all = data?.jobs ?? [];
+    final query = searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return all;
+    return all.where((job) {
+      bool matches(String? value) =>
+          (value ?? '').toLowerCase().contains(query);
+      return matches(job.customerName) ||
+          matches(job.serviceName) ||
+          matches(job.vehicleModel) ||
+          matches(job.car) ||
+          matches(job.plateNumber);
+    }).toList();
+  }
+
   String get totalJobs => data?.totalJobsLabel ?? '00';
   String get completed => data?.completedLabel ?? '00';
   String get inProgress => data?.inProgressLabel ?? '00';
@@ -40,12 +56,31 @@ class ScheduleProvider extends BaseProvider {
     ];
   }
 
+  void toggleSearch() {
+    isSearchOpen = !isSearchOpen;
+    if (!isSearchOpen) {
+      searchQuery = '';
+    }
+    safeNotifyListeners();
+  }
+
+  void onSearchChanged(String value) {
+    searchQuery = value;
+    safeNotifyListeners();
+  }
+
+  void clearSearch() {
+    searchQuery = '';
+    safeNotifyListeners();
+  }
+
   Future<void> setTab(ScheduleTab tab) async {
     if (currentTab == tab && data != null) return;
     currentTab = tab;
+    isLoading = true;
     data = null;
     safeNotifyListeners();
-    await load();
+    await load(silent: true);
   }
 
   Future<void> load({bool silent = false}) async {

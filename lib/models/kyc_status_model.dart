@@ -349,16 +349,23 @@ class KycStatusModel {
   );
 
   bool get isApproved =>
-      overallStatus == KycOverallStatus.approved ||
-      partnerKycStatus == KycOverallStatus.approved;
+      _matchesStatus(overallStatus, KycOverallStatus.approved) ||
+      _matchesStatus(overallStatus, KycOverallStatus.verified) ||
+      _matchesStatus(partnerKycStatus, KycOverallStatus.approved) ||
+      _matchesStatus(partnerKycStatus, KycOverallStatus.verified) ||
+      _matchesStatus(approval, 'approved');
+
   bool get isRejected =>
-      overallStatus == KycOverallStatus.rejected ||
-      partnerKycStatus == KycOverallStatus.rejected;
-  bool get isSubmitted => overallStatus == KycOverallStatus.submitted;
-  bool get isDraft => overallStatus == KycOverallStatus.draft;
-  bool get isInProgress => overallStatus == KycOverallStatus.inProgress;
-  bool get isNotStarted =>
-      overallStatus == null || overallStatus == KycOverallStatus.notStarted;
+      _matchesStatus(overallStatus, KycOverallStatus.rejected) ||
+      _matchesStatus(partnerKycStatus, KycOverallStatus.rejected);
+
+  bool get isPendingReview =>
+      _matchesStatus(overallStatus, KycOverallStatus.pendingReview) ||
+      _matchesStatus(overallStatus, KycOverallStatus.submitted) ||
+      _matchesStatus(partnerKycStatus, KycOverallStatus.pendingReview);
+
+  static bool _matchesStatus(String? value, String expected) =>
+      (value ?? '').trim().toLowerCase() == expected.toLowerCase();
 
   factory KycStatusModel.fromJson(Map<String, dynamic> json) {
     final identityMap = asMap(json['identity'] ?? json['identityProof']);

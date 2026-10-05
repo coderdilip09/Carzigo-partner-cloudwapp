@@ -7,6 +7,7 @@ import 'package:carzigo_partner/common_widgets/app_user_avatar.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/screens/dashboard/dashboard_provider.dart';
 import 'package:carzigo_partner/screens/notifications/notifications_screen.dart';
+import 'package:carzigo_partner/screens/profile/edit_profile/edit_profile_screen.dart';
 import 'package:carzigo_partner/screens/profile/profile_screen.dart';
 import 'package:carzigo_partner/screens/refer_earn/refer_earn_screen.dart';
 import 'package:carzigo_partner/screens/schedule/schedule_provider.dart';
@@ -35,6 +36,10 @@ class DashboardScreen extends StatelessWidget {
               provider: provider,
               onNotificationTap: () =>
                   AppNavigation.to(const NotificationsScreen()),
+              onProfileTap: () async {
+                await AppNavigation.to(const EditProfileScreen());
+                await provider.loadProfile();
+              },
             ),
             ScheduleScreen(
               showBottomNav: true,
@@ -68,10 +73,12 @@ class _DashboardHome extends StatelessWidget {
   const _DashboardHome({
     required this.provider,
     required this.onNotificationTap,
+    required this.onProfileTap,
   });
 
   final DashboardProvider provider;
   final VoidCallback onNotificationTap;
+  final VoidCallback onProfileTap;
 
   String _padCount(int value) => value.toString().padLeft(2, '0');
 
@@ -196,51 +203,68 @@ class _DashboardHome extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  AppUserAvatar(url: provider.user?.photoUrl, size: 44),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                AppStrings.helloName.tr(
-                                  args: [provider.helloName],
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.style(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const AppIcon(AppAssets.hand, size: 18),
-                          ],
-                        ),
-                        if (serviceArea != null)
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  serviceArea,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.style(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                              const AppIcon(AppAssets.chevronDown, size: 16),
-                            ],
+                    child: GestureDetector(
+                      onTap: onProfileTap,
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        children: [
+                          AppUserAvatar(
+                            url: provider.user?.photoUrl,
+                            size: 44,
                           ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        AppStrings.helloName.tr(
+                                          args: [provider.helloName],
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.style(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    const AppIcon(AppAssets.hand, size: 18),
+                                  ],
+                                ),
+                                if (serviceArea != null)
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          serviceArea,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTextStyles.style(
+                                            fontSize: 12,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                      const AppIcon(
+                                        AppAssets.chevronDown,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: onNotificationTap,
                     child: Container(

@@ -73,6 +73,12 @@ class AppStrings {
   static const String startKycVerification = 'start_kyc_verification';
   static const String kycPending = 'kyc_pending';
   static const String kycPendingBody = 'kyc_pending_body';
+  static const String kycApproved = 'kyc_approved';
+  static const String kycApprovedBody = 'kyc_approved_body';
+  static const String kycUnderReview = 'kyc_under_review';
+  static const String kycUnderReviewBody = 'kyc_under_review_body';
+  static const String kycReadyToSubmitSubtitle = 'kyc_ready_to_submit_subtitle';
+  static const String goToDashboard = 'go_to_dashboard';
   static const String kycRejected = 'kyc_rejected';
   static const String kycRejectedBody = 'kyc_rejected_body';
   static const String kycSectionLocked = 'kyc_section_locked';

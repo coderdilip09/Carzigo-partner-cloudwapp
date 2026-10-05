@@ -12,10 +12,13 @@ class ShareService {
     final payload = text.trim();
     if (payload.isEmpty) return false;
     try {
-      final result = await SharePlus.instance.share(
+      // `unavailable` means the platform could not report success/dismiss —
+      // the share sheet may still have opened. Treat any non-throwing call
+      // as success so callers do not fall back to clipboard copy.
+      await SharePlus.instance.share(
         ShareParams(text: payload, subject: subject),
       );
-      return result.status != ShareResultStatus.unavailable;
+      return true;
     } catch (e, st) {
       debugPrint('Share text failed: $e\n$st');
       return false;

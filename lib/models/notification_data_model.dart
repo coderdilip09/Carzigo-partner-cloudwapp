@@ -23,6 +23,7 @@ class NotificationDataModel {
   final bool? isRead;
 
   factory NotificationDataModel.fromJson(Map<String, dynamic> json) {
+    final data = asMap(json['data']);
     return NotificationDataModel(
       id: asString(json['id'] ?? json['_id']),
       title: asString(json['title']),
@@ -30,9 +31,16 @@ class NotificationDataModel {
       time: _formatLocalTime(json),
       type: asString(json['type'] ?? json['notification_type']),
       serviceId: asString(
-        json['service_id'] ?? json['serviceId'] ?? json['schedule_id'],
+        json['service_id'] ??
+            json['serviceId'] ??
+            json['schedule_id'] ??
+            data?['service_id'] ??
+            data?['schedule_id'] ??
+            data?['job_id'],
       ),
-      screen: asString(json['screen']),
+      screen: asString(
+        json['screen'] ?? data?['screen'],
+      ),
       isRead: asBool(json['isRead'] ?? json['is_read'] ?? json['read']),
     );
   }

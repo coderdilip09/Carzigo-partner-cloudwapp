@@ -157,7 +157,6 @@ class OtpVerifyProvider extends BaseProvider {
 
     await PrefsService().saveAuth(res.data!);
     unawaited(FirebaseService().syncFcmTokenToServer());
-    AppToast.success(res.message ?? AppStrings.otpVerified.tr());
     final next = await AuthRouteService.resolveLoggedIn(auth: res.data);
     isLoading = false;
     safeNotifyListeners();

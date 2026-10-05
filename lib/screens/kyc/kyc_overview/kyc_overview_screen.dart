@@ -15,6 +15,12 @@ import 'package:provider/provider.dart';
 class KycOverviewScreen extends StatelessWidget {
   const KycOverviewScreen({super.key});
 
+  void _onBack(BuildContext context, KycOverviewProvider provider) {
+    if (provider.handleBack(context)) {
+      showLogoutDialog(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -25,7 +31,7 @@ class KycOverviewScreen extends StatelessWidget {
             canPop: false,
             onPopInvokedWithResult: (didPop, _) {
               if (didPop) return;
-              showLogoutDialog(context);
+              _onBack(context, provider);
             },
             child: Scaffold(
               backgroundColor: AppColors.background,
@@ -53,12 +59,13 @@ class KycOverviewScreen extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       AppBackHeader(
-                                        title: AppStrings.completeKyc.tr(),
-                                        onBack: () => showLogoutDialog(context),
+                                        title: provider.pageTitle,
+                                        onBack: () =>
+                                            _onBack(context, provider),
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
-                                        AppStrings.kycSubtitle.tr(),
+                                        provider.pageSubtitle,
                                         style: AppTextStyles.style(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
@@ -133,29 +140,53 @@ class KycOverviewScreen extends StatelessWidget {
                                         onTap: provider.tapOnProfilePhoto,
                                       ),
                                       const Spacer(),
-                                      AppSolidButton(
-                                        label: _ctaLabel(provider),
-                                        onTap: provider.tapOnStartKyc,
-                                        isLoading: provider.isLoading,
-                                        trailing: Container(
-                                          width: 28,
-                                          height: 28,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: Colors.transparent,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
+                                      if (provider.isApproved)
+                                        AppSolidButton(
+                                          label: AppStrings.goToDashboard.tr(),
+                                          onTap: provider.goToDashboard,
+                                          trailing: Container(
+                                            width: 28,
+                                            height: 28,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: Colors.transparent,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: AppColors.white,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            child: AppIcon(
+                                              AppAssets.arrowForward,
+                                              size: 16,
                                               color: AppColors.white,
-                                              width: 1.5,
                                             ),
                                           ),
-                                          child: AppIcon(
-                                            AppAssets.arrowForward,
-                                            size: 16,
-                                            color: AppColors.white,
+                                        )
+                                      else if (provider.showStartCta)
+                                        AppSolidButton(
+                                          label: _ctaLabel(provider),
+                                          onTap: provider.tapOnStartKyc,
+                                          isLoading: provider.isLoading,
+                                          trailing: Container(
+                                            width: 28,
+                                            height: 28,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: Colors.transparent,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: AppColors.white,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            child: AppIcon(
+                                              AppAssets.arrowForward,
+                                              size: 16,
+                                              color: AppColors.white,
+                                            ),
                                           ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -196,29 +227,71 @@ class _KycStatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rejected = provider.isRejected;
-    // Avoid repeating the same rejection text: banner stays short;
-    // per-section reasons live only on the cards below.
-    final body = rejected
-        ? AppStrings.kycRejectedBody.tr()
-        : (provider.bannerMessage ?? AppStrings.kycPendingBody.tr());
+    final approved = provider.isApproved;
+    final underReview = provider.isUnderReview;
+    final readyToSubmit = provider.isReadyToSubmit;
+
+    final String title;
+    final String body;
+    final Color bgColor;
+    final Color? iconColor;
+    final Border? border;
+    final String iconAsset;
+
+    if (rejected) {
+      title = AppStrings.kycRejected.tr();
+      body = AppStrings.kycRejectedBody.tr();
+      bgColor = AppColors.destructiveLight;
+      iconColor = AppColors.destructive;
+      border = Border.all(color: AppColors.destructiveBorder);
+      iconAsset = AppAssets.kycPending;
+    } else if (approved) {
+      title = AppStrings.kycApproved.tr();
+      body = AppStrings.kycApprovedBody.tr();
+      bgColor = AppColors.greenLight;
+      iconColor = null;
+      border = null;
+      iconAsset = AppAssets.check;
+    } else if (underReview) {
+      title = AppStrings.kycUnderReview.tr();
+      body = provider.bannerMessage?.trim().isNotEmpty == true
+          ? provider.bannerMessage!
+          : AppStrings.kycUnderReviewBody.tr();
+      bgColor = AppColors.peach;
+      iconColor = null;
+      border = null;
+      iconAsset = AppAssets.kycPending;
+    } else if (readyToSubmit) {
+      title = AppStrings.reviewAndSubmit.tr();
+      body = AppStrings.kycReadyToSubmitSubtitle.tr();
+      bgColor = AppColors.peach;
+      iconColor = null;
+      border = null;
+      iconAsset = AppAssets.kycPending;
+    } else {
+      title = AppStrings.kycPending.tr();
+      body = AppStrings.kycPendingBody.tr();
+      bgColor = AppColors.peach;
+      iconColor = null;
+      border = null;
+      iconAsset = AppAssets.kycPending;
+    }
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: rejected ? AppColors.destructiveLight : AppColors.peach,
+        color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: rejected
-            ? Border.all(color: AppColors.destructiveBorder)
-            : null,
+        border: border,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppIcon(
-            AppAssets.kycPending,
+            iconAsset,
             size: 32,
-            color: rejected ? AppColors.destructive : null,
+            color: iconColor,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -226,9 +299,7 @@ class _KycStatusBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  rejected
-                      ? AppStrings.kycRejected.tr()
-                      : AppStrings.kycPending.tr(),
+                  title,
                   style: AppTextStyles.style(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
@@ -291,7 +362,6 @@ class _KycItem extends StatelessWidget {
             ),
           ),
           child: Row(
-            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(

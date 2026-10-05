@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/models/kyc_status_model.dart';
+import 'package:carzigo_partner/screens/dashboard/dashboard_screen.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_screen.dart';
 import 'package:carzigo_partner/screens/kyc/identity_proof/identity_proof_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_review/kyc_review_screen.dart';
@@ -10,6 +11,7 @@ import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 
 class KycOverviewProvider extends BaseProvider {
   KycStatusModel? overview;
@@ -22,6 +24,19 @@ class KycOverviewProvider extends BaseProvider {
   bool get canSubmit => overview?.canSubmit == true;
   String? get bannerMessage => overview?.message;
   bool get isRejected => overview?.isRejected == true;
+  bool get isApproved {
+    if (overview?.isApproved == true) return true;
+    final msg = (overview?.message ?? '').toLowerCase();
+    return msg.contains('kyc approved');
+  }
+
+  bool get isUnderReview {
+    if (isApproved || isRejected) return false;
+    if (overview?.isPendingReview == true) return true;
+    final msg = (overview?.message ?? '').toLowerCase();
+    return msg.contains('under review');
+  }
+
   bool get isAddressRejected => overview?.isAddressRejected == true;
   bool get isBankRejected => overview?.isBankRejected == true;
   String? get addressRejectReason => overview?.rejectedAddressReason;
@@ -30,6 +45,27 @@ class KycOverviewProvider extends BaseProvider {
   /// When sections were rejected, only those need rework.
   bool get hasPartialRejection =>
       isRejected && (isAddressRejected || isBankRejected);
+
+  bool get showStartCta => !isApproved && !isUnderReview;
+
+  /// Ready to review & submit (all docs uploaded, not yet sent).
+  bool get isReadyToSubmit => canSubmit && !isApproved && !isUnderReview;
+
+  String get pageTitle {
+    if (isApproved) return AppStrings.kycApproved.tr();
+    if (isUnderReview) return AppStrings.kycUnderReview.tr();
+    if (isRejected) return AppStrings.kycRejected.tr();
+    if (isReadyToSubmit) return AppStrings.reviewAndSubmit.tr();
+    return AppStrings.completeKyc.tr();
+  }
+
+  String get pageSubtitle {
+    if (isApproved) return AppStrings.kycApprovedBody.tr();
+    if (isUnderReview) return AppStrings.kycUnderReviewBody.tr();
+    if (isRejected) return AppStrings.kycRejectedBody.tr();
+    if (isReadyToSubmit) return AppStrings.kycReadyToSubmitSubtitle.tr();
+    return AppStrings.kycSubtitle.tr();
+  }
 
   Future<void> load() async {
     isLoading = true;
@@ -46,7 +82,25 @@ class KycOverviewProvider extends BaseProvider {
     safeNotifyListeners();
   }
 
+  void goToDashboard() {
+    AppNavigation.offAll(const DashboardScreen());
+  }
+
+  /// Returns true when the caller should show the logout confirmation.
+  bool handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      AppNavigation.back();
+      return false;
+    }
+    if (isApproved) {
+      goToDashboard();
+      return false;
+    }
+    return true;
+  }
+
   Future<void> tapOnStartKyc() async {
+    if (isApproved || isUnderReview) return;
     if (canSubmit) {
       await AppNavigation.to(const KycReviewScreen());
       await load();
@@ -57,6 +111,7 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnIdentity() async {
+    if (isApproved || isUnderReview) return;
     if (hasPartialRejection && isIdentityDone) {
       AppToast.error(AppStrings.kycSectionLocked.tr());
       return;
@@ -71,6 +126,7 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnAddressProof() async {
+    if (isApproved || isUnderReview) return;
     if (!isIdentityDone) {
       AppToast.error(AppStrings.completeIdentityFirst.tr());
       return;
@@ -88,6 +144,7 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnBank() async {
+    if (isApproved || isUnderReview) return;
     if (!isIdentityDone) {
       AppToast.error(AppStrings.completeIdentityFirst.tr());
       return;
@@ -107,6 +164,7 @@ class KycOverviewProvider extends BaseProvider {
   }
 
   Future<void> tapOnProfilePhoto() async {
+    if (isApproved || isUnderReview) return;
     if (hasPartialRejection && isProfilePhotoDone) {
       AppToast.error(AppStrings.kycSectionLocked.tr());
       return;

@@ -77,7 +77,6 @@ class ChangeNumberProvider extends BaseProvider {
       return;
     }
 
-    AppToast.success(res.message ?? AppStrings.otpResent.tr());
     final verified = await AppNavigation.to<bool>(
       OtpVerifyScreen(
         phone: phone.trim(),

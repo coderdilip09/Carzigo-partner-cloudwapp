@@ -188,7 +188,7 @@ class _HelpSupportView extends StatelessWidget {
                                 ? null
                                 : () => _callSupport(provider),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.notification,
+                              backgroundColor: AppColors.primary,
                               foregroundColor: AppColors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -316,7 +316,8 @@ class _HelpSupportView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (isPageLoading || provider.supportPhone?.isNotEmpty == true)
+                  if (isPageLoading ||
+                      provider.supportPhone?.isNotEmpty == true)
                     _ContactCard(
                       iconAsset: AppAssets.phone,
                       title: AppStrings.callUs.tr(),
@@ -329,7 +330,8 @@ class _HelpSupportView extends StatelessWidget {
                           ? null
                           : () => _callSupport(provider),
                     ),
-                  if (isPageLoading || provider.supportEmail?.isNotEmpty == true)
+                  if (isPageLoading ||
+                      provider.supportEmail?.isNotEmpty == true)
                     _ContactCard(
                       iconAsset: AppAssets.email,
                       title: AppStrings.emailUsTitle.tr(),
@@ -342,7 +344,8 @@ class _HelpSupportView extends StatelessWidget {
                           ? null
                           : () => _emailSupport(provider),
                     ),
-                  if (isPageLoading || provider.supportHours?.isNotEmpty == true)
+                  if (isPageLoading ||
+                      provider.supportHours?.isNotEmpty == true)
                     _ContactCard(
                       iconAsset: AppAssets.clock,
                       title: AppStrings.supportHours.tr(),
@@ -526,7 +529,7 @@ class _ContactCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
-              color: AppColors.notification,
+              color: AppColors.primary,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -591,7 +594,7 @@ class _ContactCard extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onAction,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.notification,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 12),

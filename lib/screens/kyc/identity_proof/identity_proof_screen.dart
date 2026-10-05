@@ -16,10 +16,12 @@ class IdentityProofScreen extends StatelessWidget {
     super.key,
     this.loadSaved = false,
     this.editOnly = false,
+    this.forDocumentChange = false,
   });
 
   final bool loadSaved;
   final bool editOnly;
+  final bool forDocumentChange;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +29,7 @@ class IdentityProofScreen extends StatelessWidget {
       create: (_) => IdentityProofProvider(
         loadSaved: loadSaved,
         editOnly: editOnly,
+        forDocumentChange: forDocumentChange,
       ),
       child: Consumer<IdentityProofProvider>(
         builder: (context, provider, _) {
@@ -66,8 +69,7 @@ class IdentityProofScreen extends StatelessWidget {
                             color: AppColors.textSecondary,
                           ),
                         ),
-                        if (provider.isVerified &&
-                            (provider.verifiedName ?? '').isNotEmpty) ...[
+                        if (provider.isVerified) ...[
                           const SizedBox(height: 20),
                           Container(
                             width: double.infinity,
@@ -90,14 +92,17 @@ class IdentityProofScreen extends StatelessWidget {
                                     color: AppColors.primary,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  provider.verifiedName!,
-                                  style: AppTextStyles.style(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                                if ((provider.verifiedName ?? '')
+                                    .isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    provider.verifiedName!,
+                                    style: AppTextStyles.style(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           ),

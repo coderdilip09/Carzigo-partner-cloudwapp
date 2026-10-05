@@ -1,3 +1,4 @@
+import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_job_card.dart';
 import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
@@ -77,20 +78,23 @@ class ScheduleScreen extends StatelessWidget {
             ),
           };
 
-          return SafeArea(
-            child: RefreshIndicator(
-              onRefresh: () => provider.load(silent: true),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  16,
-                  16,
-                  showBottomNav ? 80 : 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: AppBg(
+              child: SafeArea(
+                child: RefreshIndicator(
+                  onRefresh: () => provider.load(silent: true),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      16,
+                      16,
+                      showBottomNav ? 80 : 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                     Row(
                       children: [
                         Expanded(
@@ -114,9 +118,30 @@ class ScheduleScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const AppIcon(AppAssets.search),
+                        InkWell(
+                          onTap: provider.toggleSearch,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: provider.isSearchOpen
+                                ? const Icon(
+                                    Icons.close,
+                                    size: 22,
+                                    color: AppColors.textPrimary,
+                                  )
+                                : const AppIcon(AppAssets.search),
+                          ),
+                        ),
                       ],
                     ),
+                    if (provider.isSearchOpen) ...[
+                      const SizedBox(height: 12),
+                      _ScheduleSearchField(
+                        initialValue: provider.searchQuery,
+                        onChanged: provider.onSearchChanged,
+                        onClear: provider.clearSearch,
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Row(
                       children: ScheduleTab.values.map((tab) {
@@ -261,6 +286,8 @@ class ScheduleScreen extends StatelessWidget {
                   ],
                 ),
               ),
+                ),
+              ),
             ),
           );
         },
@@ -293,6 +320,92 @@ class _DateChip extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ScheduleSearchField extends StatefulWidget {
+  const _ScheduleSearchField({
+    required this.initialValue,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final String initialValue;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  State<_ScheduleSearchField> createState() => _ScheduleSearchFieldState();
+}
+
+class _ScheduleSearchFieldState extends State<_ScheduleSearchField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.textFieldFill,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const AppIcon(AppAssets.search, size: 20, color: AppColors.black),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              autofocus: true,
+              onChanged: (value) {
+                setState(() {});
+                widget.onChanged(value);
+              },
+              style: AppTextStyles.style(fontSize: 14, color: AppColors.black),
+              cursorColor: AppColors.primary,
+              decoration: InputDecoration(
+                hintText: AppStrings.search.tr(),
+                hintStyle: AppTextStyles.style(
+                  fontSize: 14,
+                  color: AppColors.textHint,
+                ),
+                filled: true,
+                fillColor: AppColors.textFieldFill,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onTapOutside: (_) => FocusScope.of(context).unfocus(),
+            ),
+          ),
+          if (_controller.text.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _controller.clear();
+                widget.onClear();
+                setState(() {});
+              },
+              child: const Icon(Icons.close, size: 18, color: AppColors.black),
+            ),
+        ],
       ),
     );
   }

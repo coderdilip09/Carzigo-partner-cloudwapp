@@ -82,89 +82,126 @@ Future<void> _showRequestChangeSheet(
   BuildContext context,
   DocumentsProvider provider,
 ) async {
-  final reasonController = TextEditingController();
-  var identity = false;
-  var address = false;
-  var bank = false;
-
   final submitted = await showAppBottomSheet<bool>(
     context: context,
-    builder: (ctx) {
-      return AppBottomSheetBody(
-        child: StatefulBuilder(
-          builder: (context, setModalState) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.requestDocumentChange.tr(),
-                  style: AppTextStyles.style(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: identity,
-                  title: Text(AppStrings.identityProof.tr()),
-                  onChanged: (v) => setModalState(() => identity = v ?? false),
-                ),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: address,
-                  title: Text(AppStrings.addressProof.tr()),
-                  onChanged: (v) => setModalState(() => address = v ?? false),
-                ),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: bank,
-                  title: Text(AppStrings.bankDetails.tr()),
-                  onChanged: (v) => setModalState(() => bank = v ?? false),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: reasonController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: AppStrings.docChangeReasonHint.tr(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                AppSolidButton(
-                  label: AppStrings.submit.tr(),
-                  isLoading: provider.isRequestingChange,
-                  onTap: () async {
-                    final sections = <String>[
-                      if (identity) 'identity',
-                      if (address) 'address',
-                      if (bank) 'bank',
-                    ];
-                    final ok = await provider.submitChangeRequest(
-                      sections: sections,
-                      reason: reasonController.text,
-                    );
-                    if (ok && context.mounted) {
-                      Navigator.of(context).pop(true);
-                    }
-                  },
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    },
+    builder: (ctx) => _RequestDocumentChangeSheet(provider: provider),
   );
 
-  reasonController.dispose();
   if (submitted == true) {
-    // already refreshed via provider
+    await provider.load();
+  }
+}
+
+/// Owns [TextEditingController] for the sheet so it is disposed only after the
+/// route is fully removed (not when [showModalBottomSheet] returns mid-animation).
+class _RequestDocumentChangeSheet extends StatefulWidget {
+  const _RequestDocumentChangeSheet({required this.provider});
+
+  final DocumentsProvider provider;
+
+  @override
+  State<_RequestDocumentChangeSheet> createState() =>
+      _RequestDocumentChangeSheetState();
+}
+
+class _RequestDocumentChangeSheetState
+    extends State<_RequestDocumentChangeSheet> {
+  final _reasonController = TextEditingController();
+  var _identity = false;
+  var _address = false;
+  var _bank = false;
+
+  DocumentsProvider get _provider => widget.provider;
+
+  bool get _coupleAddress => _provider.couplesIdentityWithAddress;
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onSubmit() async {
+    final sections = <String>[
+      if (_identity) 'identity',
+      if (_address) 'address',
+      if (_bank) 'bank',
+    ];
+    final ok = await _provider.submitChangeRequest(
+      sections: sections,
+      reason: _reasonController.text,
+    );
+    if (ok && mounted) {
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBottomSheetBody(
+      child: ListenableBuilder(
+        listenable: _provider,
+        builder: (context, _) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppStrings.requestDocumentChange.tr(),
+                style: AppTextStyles.style(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _identity,
+                title: Text(AppStrings.identityProof.tr()),
+                onChanged: (v) => setState(() {
+                  _identity = v ?? false;
+                  if (_coupleAddress && _identity) {
+                    _address = true;
+                  }
+                }),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _address,
+                title: Text(AppStrings.addressProof.tr()),
+                onChanged: _coupleAddress && _identity
+                    ? null
+                    : (v) => setState(() => _address = v ?? false),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _bank,
+                title: Text(AppStrings.bankDetails.tr()),
+                onChanged: (v) => setState(() => _bank = v ?? false),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _reasonController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: AppStrings.docChangeReasonHint.tr(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              AppSolidButton(
+                label: AppStrings.submit.tr(),
+                isLoading: _provider.isRequestingChange,
+                onTap: _onSubmit,
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }
 
