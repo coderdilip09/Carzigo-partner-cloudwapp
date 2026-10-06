@@ -79,9 +79,11 @@ class AppJobCard extends StatelessWidget {
   }
 
   Widget _buildCompact(String resolvedTime) {
-    final parts = resolvedTime.trim().split(RegExp(r'\s+'));
-    final timePart = parts.isNotEmpty ? parts.first : resolvedTime;
-    final periodPart = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    final match = RegExp(
+      r'^(\d{1,2}:\d{2})\s*([AaPp][Mm])?',
+    ).firstMatch(resolvedTime.trim());
+    final timePart = match?.group(1) ?? resolvedTime.trim();
+    final periodPart = (match?.group(2) ?? '').toUpperCase();
 
     return Row(
       children: [
@@ -101,7 +103,7 @@ class AppJobCard extends StatelessWidget {
                 style: AppTextStyles.style(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.black,
+                  color: AppColors.primary,
                 ),
               ),
               if (periodPart.isNotEmpty)
@@ -110,7 +112,8 @@ class AppJobCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.style(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
                   ),
                 ),
             ],

@@ -162,12 +162,15 @@ class AppStrings {
   static const String performanceSummary = 'performance_summary';
   static const String thisMonth = 'this_month';
   static const String thisWeek = 'this_week';
+  static const String thisYear = 'this_year';
   static const String upcoming = 'upcoming';
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';
   static const String notComplete = 'not_complete';
   static const String reject = 'reject';
   static const String inProgress = 'in_progress';
+  static const String todayComplete = 'today_complete';
+  static const String todayInProgress = 'today_in_progress';
   static const String avgRating = 'avg_rating';
   static const String helloName = 'hello_name';
   static const String helpSupport = 'help_support';
@@ -295,6 +298,7 @@ class AppStrings {
   static const String scheduleJobs = 'schedule_jobs';
   static const String scheduleSubtitle = 'schedule_subtitle';
   static const String upcomingJobs = 'upcoming_jobs';
+  static const String inProgressJobs = 'in_progress_jobs';
   static const String completedJobs = 'completed_jobs';
   static const String cancelledJobs = 'cancelled_jobs';
   static const String totalJobs = 'total_jobs';
@@ -348,6 +352,7 @@ class AppStrings {
   static const String referralRewardPending = 'referral_reward_pending';
   static const String referralRewardToPay = 'referral_reward_to_pay';
   static const String referralRewardPaid = 'referral_reward_paid';
+  static const String referralUsedOn = 'referral_used_on';
   static const String referralCodeCopied = 'referral_code_copied';
   static const String referralLinkCopied = 'referral_link_copied';
   static const String helpHere = 'help_here';

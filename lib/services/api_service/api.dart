@@ -409,6 +409,7 @@ class Api {
   static Future<ResponseWrapperModel<ReferralCustomersPage>>
   getReferralCustomers({
     String filter = 'total',
+    String period = 'month',
     int page = 1,
     int limit = 15,
   }) async {
@@ -416,6 +417,7 @@ class Api {
       url: ApiUrls.referralCustomersUrl(),
       query: {
         RequestKeys.filter: filter,
+        RequestKeys.period: period,
         RequestKeys.page: '$page',
         RequestKeys.limit: '$limit',
       },

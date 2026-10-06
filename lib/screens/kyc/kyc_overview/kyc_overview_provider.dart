@@ -96,7 +96,9 @@ class KycOverviewProvider extends BaseProvider {
       goToDashboard();
       return false;
     }
-    return true;
+    // Incomplete / in-progress KYC: go to profile edit, not logout.
+    AppNavigation.to(const EditProfileScreen());
+    return false;
   }
 
   Future<void> tapOnStartKyc() async {

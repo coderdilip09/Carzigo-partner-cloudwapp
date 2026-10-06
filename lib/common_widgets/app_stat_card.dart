@@ -10,54 +10,60 @@ class AppStatCard extends StatelessWidget {
     required this.value,
     required this.label,
     this.backgroundColor,
+    this.onTap,
   });
 
   final String iconAsset;
   final String value;
   final String label;
   final Color? backgroundColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        decoration: BoxDecoration(
-          color: backgroundColor ?? AppColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.peachCard),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: AppColors.peach,
-                shape: BoxShape.circle,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            color: backgroundColor ?? AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.peachCard),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: AppColors.peach,
+                  shape: BoxShape.circle,
+                ),
+                child: AppIcon(iconAsset, color: AppColors.primary, size: 18),
               ),
-              child: AppIcon(iconAsset, color: AppColors.primary, size: 18),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              key: ValueKey(value),
-              style: AppTextStyles.style(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+              const SizedBox(height: 8),
+              Text(
+                value,
+                key: ValueKey(value),
+                style: AppTextStyles.style(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.style(
-                fontSize: 10,
-                color: AppColors.textSecondary,
+              const SizedBox(height: 2),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.style(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

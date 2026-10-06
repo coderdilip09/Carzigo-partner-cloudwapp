@@ -31,6 +31,7 @@ class JobListStatus {
   JobListStatus._();
 
   static const String upcoming = 'upcoming';
+  static const String inProgress = 'in_progress';
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';
 }
@@ -422,6 +423,7 @@ class ScheduleListDataModel {
   String get totalJobsLabel => _pad(totalJobs);
   String get completedLabel => _pad(completedCount);
   String get inProgressLabel => _pad(inProgressCount);
+  String get cancelledLabel => _pad(cancelledCount);
 
   static String _pad(int? value) => (value ?? 0).toString().padLeft(2, '0');
 
@@ -456,7 +458,12 @@ class ScheduleListDataModel {
             map['in_progress_count'],
       ),
       upcomingCount: asInt(map['upcomingCount'] ?? map['upcoming_count']),
-      cancelledCount: asInt(map['cancelledCount'] ?? map['cancelled_count']),
+      cancelledCount: asInt(
+        stats?['cancelled'] ??
+            map['cancelledCount'] ??
+            map['cancelled_count'] ??
+            map['cancelled'],
+      ),
       tab: asString(map['tab']),
       jobs: asModelList(rawJobs, JobDataModel.fromJson),
     );

@@ -17,7 +17,7 @@ class ReferralHowItWorksStepModel {
 }
 
 class ReferralStatsModel {
-  ReferralStatsModel({
+  const ReferralStatsModel({
     this.totalReferred,
     this.onboarded,
     this.completedFirstWash,
@@ -78,6 +78,31 @@ class ReferredCustomerDataModel {
   String get displayPhone => phone ?? '';
 
   String get displayStatus => status ?? '';
+
+  String get displayAppliedAt {
+    final at = appliedAt?.toLocal();
+    if (at == null) return '';
+    final day = at.day.toString().padLeft(2, '0');
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final hour24 = at.hour;
+    final hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
+    final minute = at.minute.toString().padLeft(2, '0');
+    final ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return '$day ${months[at.month - 1]} ${at.year}, $hour12:$minute $ampm';
+  }
 
   String get displayInitials {
     final saved = initials?.trim();
@@ -161,6 +186,7 @@ class ReferralDataModel {
     this.howItWorks = const [],
     this.stats,
     this.weekStats,
+    this.yearStats,
     this.customers = const [],
   });
 
@@ -170,6 +196,7 @@ class ReferralDataModel {
   final List<ReferralHowItWorksStepModel> howItWorks;
   final ReferralStatsModel? stats;
   final ReferralStatsModel? weekStats;
+  final ReferralStatsModel? yearStats;
   final List<ReferredCustomerDataModel> customers;
 
   String get rewardLabel {
@@ -182,6 +209,7 @@ class ReferralDataModel {
   factory ReferralDataModel.fromJson(Map<String, dynamic> json) {
     final statsMap = asMap(json['stats'] ?? json['month_stats'] ?? json['monthStats']);
     final weekStatsMap = asMap(json['week_stats'] ?? json['weekStats']);
+    final yearStatsMap = asMap(json['year_stats'] ?? json['yearStats']);
     final rawCustomers =
         json['referred_customers'] ??
         json['referredCustomers'] ??
@@ -202,6 +230,8 @@ class ReferralDataModel {
       stats: statsMap == null ? null : ReferralStatsModel.fromJson(statsMap),
       weekStats:
           weekStatsMap == null ? null : ReferralStatsModel.fromJson(weekStatsMap),
+      yearStats:
+          yearStatsMap == null ? null : ReferralStatsModel.fromJson(yearStatsMap),
       customers: asModelList(rawCustomers, ReferredCustomerDataModel.fromJson),
     );
   }

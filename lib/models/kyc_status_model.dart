@@ -76,16 +76,19 @@ class KycDocumentDataModel {
   final String? status;
   final bool? completed;
 
-  bool get isDone =>
-      completed == true ||
-      asBool(status) == true ||
-      status == 'done' ||
-      status == 'uploaded' ||
-      status == 'approved' ||
-      status == 'completed' ||
-      frontUrl != null ||
-      documentUrl != null ||
-      verifiedVia == 'digilocker';
+  bool get isDone {
+    // Explicit API flag wins (Digilocker may prefill docs before Address Submit).
+    if (completed == false) return false;
+    if (completed == true) return true;
+    return asBool(status) == true ||
+        status == 'done' ||
+        status == 'uploaded' ||
+        status == 'approved' ||
+        status == 'completed' ||
+        frontUrl != null ||
+        documentUrl != null ||
+        verifiedVia == 'digilocker';
+  }
 
   factory KycDocumentDataModel.fromJson(Map<String, dynamic> json) {
     return KycDocumentDataModel(
@@ -131,12 +134,15 @@ class LocalAddressDataModel {
   final String? pincode;
   final bool? completed;
 
-  bool get isDone =>
-      completed == true ||
-      ((addressLine?.trim().isNotEmpty ?? false) &&
-          (city?.trim().isNotEmpty ?? false) &&
-          (state?.trim().isNotEmpty ?? false) &&
-          (pincode?.trim().isNotEmpty ?? false));
+  bool get isDone {
+    // Explicit API flag wins (prefilled Digilocker address stays pending).
+    if (completed == false) return false;
+    if (completed == true) return true;
+    return (addressLine?.trim().isNotEmpty ?? false) &&
+        (city?.trim().isNotEmpty ?? false) &&
+        (state?.trim().isNotEmpty ?? false) &&
+        (pincode?.trim().isNotEmpty ?? false);
+  }
 
   factory LocalAddressDataModel.fromJson(Map<String, dynamic> json) {
     return LocalAddressDataModel(
@@ -338,8 +344,14 @@ class KycStatusModel {
     localAddress?.isDone ?? false,
   );
   /// Address Proof card (unified doc + residential fields).
-  bool get isAddressProofDone =>
-      isAddressDone || (isLocalAddressDone && (address?.isDone ?? false));
+  /// Requires partner confirmation via Address Proof Submit (`same_as_document`).
+  bool get isAddressProofDone {
+    if (addressSameAsDocument == null && addressDone != true) {
+      // Prefill-only Digilocker address must stay pending until Submit.
+      return false;
+    }
+    return isAddressDone || (isLocalAddressDone && (address?.isDone ?? false));
+  }
   bool get isBankDone =>
       _isStepCompleted(KycStepKey.bank, bankDone, bank?.isDone ?? false);
   bool get isProfilePhotoDone => _isStepCompleted(

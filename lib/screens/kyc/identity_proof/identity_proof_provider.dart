@@ -229,7 +229,6 @@ class IdentityProofProvider extends BaseProvider {
       // Live KYC is untouched in document-change mode (drafts only).
       if (!forDocumentChange) {
         KycStatus.markIdentityDone();
-        KycStatus.markAddressDone();
       }
       AppToast.success(
         complete.message ?? AppStrings.digilockerVerified.tr(),

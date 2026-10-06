@@ -9,7 +9,7 @@ import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 
-enum PerformancePeriod { month, week }
+enum PerformancePeriod { week, month, year }
 
 class DashboardProvider extends BaseProvider {
   DashboardProvider() {
@@ -38,18 +38,38 @@ class DashboardProvider extends BaseProvider {
     return null;
   }
 
-  String get performancePeriodLabel => performancePeriod == PerformancePeriod.week
-      ? AppStrings.thisWeek
-      : AppStrings.thisMonth;
+  String get performancePeriodLabel {
+    switch (performancePeriod) {
+      case PerformancePeriod.week:
+        return AppStrings.thisWeek;
+      case PerformancePeriod.year:
+        return AppStrings.thisYear;
+      case PerformancePeriod.month:
+        return AppStrings.thisMonth;
+    }
+  }
 
-  int get performanceCompleted => performancePeriod == PerformancePeriod.week
-      ? (dashboard?.weekCompleted ?? 0)
-      : (dashboard?.monthCompleted ?? 0);
+  int get performanceCompleted {
+    switch (performancePeriod) {
+      case PerformancePeriod.week:
+        return dashboard?.weekCompleted ?? 0;
+      case PerformancePeriod.year:
+        return dashboard?.yearCompleted ?? 0;
+      case PerformancePeriod.month:
+        return dashboard?.monthCompleted ?? 0;
+    }
+  }
 
-  double? get performanceAvgRating =>
-      performancePeriod == PerformancePeriod.week
-      ? dashboard?.weekAvgRating
-      : dashboard?.monthAvgRating;
+  double? get performanceAvgRating {
+    switch (performancePeriod) {
+      case PerformancePeriod.week:
+        return dashboard?.weekAvgRating;
+      case PerformancePeriod.year:
+        return dashboard?.yearAvgRating;
+      case PerformancePeriod.month:
+        return dashboard?.monthAvgRating;
+    }
+  }
 
   void setPerformancePeriod(PerformancePeriod period) {
     if (performancePeriod == period) return;

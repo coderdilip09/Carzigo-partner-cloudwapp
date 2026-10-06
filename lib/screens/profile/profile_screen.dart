@@ -58,7 +58,8 @@ class ProfileProvider extends BaseProvider {
   void tapOnDocuments() => AppNavigation.to(const DocumentsScreen());
   void tapOnHelp() => AppNavigation.to(const HelpSupportScreen());
   Future<void> tapOnRateApp() => AppRatingService.instance.rateFromMenu();
-  Future<void> tapOnShareApp() => ShareService.instance.shareApp();
+  Future<void> tapOnShareApp(BuildContext context) =>
+      ShareService.instance.shareApp(context: context);
   // void tapOnLanguage() => AppNavigation.to(const LanguageScreen());
   void tapOnTerms() => AppNavigation.to(const TermsScreen());
   void tapOnPrivacy() => AppNavigation.to(const PrivacyScreen());
@@ -263,7 +264,7 @@ class ProfileScreen extends StatelessWidget {
                       iconAsset: AppAssets.share,
                       title: AppStrings.shareApp.tr(),
                       subtitle: AppStrings.shareAppSubtitle.tr(),
-                      onTap: provider.tapOnShareApp,
+                      onTap: () => provider.tapOnShareApp(context),
                     ),
                     // Language (temporarily disabled)
                     // _MenuTile(

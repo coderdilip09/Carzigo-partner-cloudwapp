@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/models/referral_data_model.dart';
+import 'package:carzigo_partner/screens/refer_earn/refer_earn_provider.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
@@ -9,13 +10,20 @@ import 'package:flutter/material.dart';
 enum ReferredCustomerFilter { total, onboard, complete }
 
 class ReferredCustomersProvider extends BaseProvider {
-  ReferredCustomersProvider() {
+  ReferredCustomersProvider({
+    this.initialFilter = ReferredCustomerFilter.total,
+    this.initialPeriod = ReferralSummaryPeriod.month,
+  }) : filter = initialFilter,
+       period = initialPeriod {
     load(reset: true);
   }
 
+  final ReferredCustomerFilter initialFilter;
+  final ReferralSummaryPeriod initialPeriod;
   static const int pageSize = 15;
 
-  ReferredCustomerFilter filter = ReferredCustomerFilter.total;
+  ReferredCustomerFilter filter;
+  ReferralSummaryPeriod period;
   final List<ReferredCustomerDataModel> customers = [];
   Map<String, int> counts = const {};
   bool isLoading = true;
@@ -23,6 +31,17 @@ class ReferredCustomersProvider extends BaseProvider {
   bool hasMore = false;
   int page = 1;
   String rewardLabel = '';
+
+  String get _apiPeriod {
+    switch (period) {
+      case ReferralSummaryPeriod.week:
+        return 'week';
+      case ReferralSummaryPeriod.year:
+        return 'year';
+      case ReferralSummaryPeriod.month:
+        return 'month';
+    }
+  }
 
   int countFor(ReferredCustomerFilter value) {
     switch (value) {
@@ -41,6 +60,12 @@ class ReferredCustomersProvider extends BaseProvider {
     await load(reset: true);
   }
 
+  Future<void> setPeriod(ReferralSummaryPeriod value) async {
+    if (period == value) return;
+    period = value;
+    await load(reset: true);
+  }
+
   Future<void> load({bool reset = false}) async {
     if (reset) {
       page = 1;
@@ -56,6 +81,7 @@ class ReferredCustomersProvider extends BaseProvider {
     try {
       final res = await Api.getReferralCustomers(
         filter: filter.name,
+        period: _apiPeriod,
         page: page,
         limit: pageSize,
       );

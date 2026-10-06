@@ -7,6 +7,7 @@ import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_stat_card.dart';
 import 'package:carzigo_partner/screens/refer_earn/refer_earn_provider.dart';
+import 'package:carzigo_partner/screens/refer_earn/referred_customers/referred_customers_provider.dart';
 import 'package:carzigo_partner/screens/refer_earn/referred_customers/referred_customers_screen.dart';
 import 'package:carzigo_partner/screens/refer_earn/widgets/referred_customer_card.dart';
 import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
@@ -437,6 +438,12 @@ class ReferEarnScreen extends StatelessWidget {
                           iconAsset: AppAssets.calendar,
                           value: provider.totalReferred,
                           label: AppStrings.totalReferred.tr(),
+                          onTap: () => AppNavigation.to(
+                            ReferredCustomersScreen(
+                              initialFilter: ReferredCustomerFilter.total,
+                              initialPeriod: provider.summaryPeriod,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         AppStatCard(
@@ -446,6 +453,12 @@ class ReferEarnScreen extends StatelessWidget {
                           iconAsset: AppAssets.logoCar,
                           value: provider.onboarded,
                           label: AppStrings.onboarded.tr(),
+                          onTap: () => AppNavigation.to(
+                            ReferredCustomersScreen(
+                              initialFilter: ReferredCustomerFilter.onboard,
+                              initialPeriod: provider.summaryPeriod,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         AppStatCard(
@@ -455,6 +468,12 @@ class ReferEarnScreen extends StatelessWidget {
                           iconAsset: AppAssets.clock,
                           value: provider.completedFirstWash,
                           label: AppStrings.completedFirstWash.tr(),
+                          onTap: () => AppNavigation.to(
+                            ReferredCustomersScreen(
+                              initialFilter: ReferredCustomerFilter.complete,
+                              initialPeriod: provider.summaryPeriod,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -468,40 +487,7 @@ class ReferEarnScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.15,
-                    children: provider.howItWorks.isNotEmpty
-                        ? [
-                            for (final step in provider.howItWorks)
-                              _HowItWorksCard(
-                                title: step.title ?? '',
-                                desc: step.description ?? '',
-                              ),
-                          ]
-                        : [
-                            _HowItWorksCard(
-                              title: AppStrings.stepReferCustomer.tr(),
-                              desc: AppStrings.stepShareCode.tr(),
-                            ),
-                            _HowItWorksCard(
-                              title: AppStrings.stepCustomerOnboards.tr(),
-                              desc: AppStrings.stepTheySignup.tr(),
-                            ),
-                            _HowItWorksCard(
-                              title: AppStrings.stepFirstWashTitle.tr(),
-                              desc: AppStrings.stepFirstWash.tr(),
-                            ),
-                            _HowItWorksCard(
-                              title: AppStrings.stepYouEarnTitle.tr(),
-                              desc: AppStrings.stepYouEarn.tr(),
-                            ),
-                          ],
-                  ),
+                  _HowItWorksGrid(steps: _howItWorksSteps(provider)),
                   const SizedBox(height: 20),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -554,7 +540,7 @@ class ReferEarnScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   AppSolidButton(
                     label: AppStrings.shareNow.tr(),
-                    onTap: provider.shareNow,
+                    onTap: () => provider.shareNow(context),
                     leading: AppIcon(
                       AppAssets.share,
                       size: 18,
@@ -575,7 +561,10 @@ class ReferEarnScreen extends StatelessWidget {
                         const Spacer(),
                         GestureDetector(
                           onTap: () => AppNavigation.to(
-                            const ReferredCustomersScreen(),
+                            ReferredCustomersScreen(
+                              initialFilter: ReferredCustomerFilter.total,
+                              initialPeriod: provider.summaryPeriod,
+                            ),
                           ),
                           behavior: HitTestBehavior.opaque,
                           child: Row(
@@ -625,7 +614,7 @@ class ReferEarnScreen extends StatelessWidget {
                         amount: '₹100',
                       ),
                     )
-                  else if (provider.periodCustomers.isEmpty)
+                  else if (provider.customers.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Center(
@@ -646,6 +635,7 @@ class ReferEarnScreen extends StatelessWidget {
                         phone: c.displayPhone,
                         status: c.displayStatus,
                         statusKey: c.statusKey,
+                        appliedAt: c.displayAppliedAt,
                         amount: c.amount ?? provider.rewardLabel,
                       ),
                     ),
@@ -679,8 +669,9 @@ class _PeriodToggle extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _chip(ReferralSummaryPeriod.month, AppStrings.thisMonth.tr()),
           _chip(ReferralSummaryPeriod.week, AppStrings.thisWeek.tr()),
+          _chip(ReferralSummaryPeriod.month, AppStrings.thisMonth.tr()),
+          _chip(ReferralSummaryPeriod.year, AppStrings.thisYear.tr()),
         ],
       ),
     );
@@ -695,7 +686,7 @@ class _PeriodToggle extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             color: selected ? AppColors.primary : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
@@ -703,13 +694,67 @@ class _PeriodToggle extends StatelessWidget {
           child: Text(
             label,
             style: AppTextStyles.style(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w700,
               color: selected ? AppColors.white : AppColors.accentOrange,
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _HowItWorksGrid extends StatelessWidget {
+  const _HowItWorksGrid({required this.steps});
+
+  final List<(String, String)> steps;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = steps.isNotEmpty
+        ? steps
+        : [
+            (AppStrings.stepReferCustomer.tr(), AppStrings.stepShareCode.tr()),
+            (
+              AppStrings.stepCustomerOnboards.tr(),
+              AppStrings.stepTheySignup.tr(),
+            ),
+            (
+              AppStrings.stepFirstWashTitle.tr(),
+              AppStrings.stepFirstWash.tr(),
+            ),
+            (AppStrings.stepYouEarnTitle.tr(), AppStrings.stepYouEarn.tr()),
+          ];
+
+    return Column(
+      children: [
+        for (var i = 0; i < items.length; i += 2) ...[
+          if (i > 0) const SizedBox(height: 10),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _HowItWorksCard(
+                    title: items[i].$1,
+                    desc: items[i].$2,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: i + 1 < items.length
+                      ? _HowItWorksCard(
+                          title: items[i + 1].$1,
+                          desc: items[i + 1].$2,
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -723,13 +768,15 @@ class _HowItWorksCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
@@ -743,7 +790,7 @@ class _HowItWorksCard extends StatelessWidget {
               size: 16,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             title,
             textAlign: TextAlign.center,
@@ -753,15 +800,18 @@ class _HowItWorksCard extends StatelessWidget {
               color: AppColors.howItWorksText,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            desc,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.style(
-              fontSize: 10,
-              color: AppColors.howItWorksText,
+          if (desc.trim().isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              desc,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.style(
+                fontSize: 10,
+                color: AppColors.howItWorksText,
+                height: 1.3,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

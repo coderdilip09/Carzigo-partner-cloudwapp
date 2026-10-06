@@ -34,10 +34,7 @@ Widget _dialogShell({required Widget child}) {
         borderRadius: BorderRadius.circular(24),
         boxShadow: const [_dialogTopShadow],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: child,
-      ),
+      child: Padding(padding: const EdgeInsets.all(24), child: child),
     ),
   );
 }
@@ -205,7 +202,7 @@ void showLogoutDialog(BuildContext context) {
                             ),
                       label: Text(AppStrings.logoutConfirmYes.tr()),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.destructive,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -222,9 +219,7 @@ void showLogoutDialog(BuildContext context) {
                       onPressed: isLoading ? null : () => Navigator.pop(ctx),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.black,
-                        side: const BorderSide(
-                          color: AppColors.destructiveBorder,
-                        ),
+                        side: const BorderSide(color: AppColors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
                         ),

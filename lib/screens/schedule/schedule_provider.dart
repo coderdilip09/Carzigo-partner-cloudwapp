@@ -6,7 +6,7 @@ import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-enum ScheduleTab { upcoming, completed, cancelled }
+enum ScheduleTab { upcoming, inProgress, completed, cancelled }
 
 class ScheduleProvider extends BaseProvider {
   ScheduleProvider({ScheduleTab initialTab = ScheduleTab.upcoming})
@@ -19,6 +19,17 @@ class ScheduleProvider extends BaseProvider {
   bool isLoading = true;
   bool isSearchOpen = false;
   String searchQuery = '';
+
+  String get _apiTab {
+    switch (currentTab) {
+      case ScheduleTab.inProgress:
+        return 'in_progress';
+      case ScheduleTab.upcoming:
+      case ScheduleTab.completed:
+      case ScheduleTab.cancelled:
+        return currentTab.name;
+    }
+  }
 
   List<JobDataModel> get jobs {
     final all = data?.jobs ?? [];
@@ -38,6 +49,7 @@ class ScheduleProvider extends BaseProvider {
   String get totalJobs => data?.totalJobsLabel ?? '00';
   String get completed => data?.completedLabel ?? '00';
   String get inProgress => data?.inProgressLabel ?? '00';
+  String get cancelled => data?.cancelledLabel ?? '00';
 
   List<(String date, List<JobDataModel> jobs)> get groupedJobs {
     final map = <String, List<JobDataModel>>{};
@@ -91,7 +103,7 @@ class ScheduleProvider extends BaseProvider {
     }
 
     try {
-      final res = await Api.getJobs(tab: tab.name);
+      final res = await Api.getJobs(tab: _apiTab);
       if (tab != currentTab) return;
       if (!res.isSuccess || res.data == null) {
         AppToast.error(res.message ?? AppStrings.requestFailed.tr());

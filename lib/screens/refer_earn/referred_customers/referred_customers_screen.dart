@@ -1,6 +1,7 @@
 import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
+import 'package:carzigo_partner/screens/refer_earn/refer_earn_provider.dart';
 import 'package:carzigo_partner/screens/refer_earn/referred_customers/referred_customers_provider.dart';
 import 'package:carzigo_partner/screens/refer_earn/widgets/referred_customer_card.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
@@ -11,12 +12,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ReferredCustomersScreen extends StatelessWidget {
-  const ReferredCustomersScreen({super.key});
+  const ReferredCustomersScreen({
+    super.key,
+    this.initialFilter = ReferredCustomerFilter.total,
+    this.initialPeriod = ReferralSummaryPeriod.month,
+  });
+
+  final ReferredCustomerFilter initialFilter;
+  final ReferralSummaryPeriod initialPeriod;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ReferredCustomersProvider(),
+      create: (_) => ReferredCustomersProvider(
+        initialFilter: initialFilter,
+        initialPeriod: initialPeriod,
+      ),
       child: const _ReferredCustomersView(),
     );
   }
@@ -76,7 +87,13 @@ class _ReferredCustomersViewState extends State<_ReferredCustomersView> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: _FilterSegments(provider: provider),
+                child: Column(
+                  children: [
+                    _PeriodToggle(provider: provider),
+                    const SizedBox(height: 10),
+                    _FilterSegments(provider: provider),
+                  ],
+                ),
               ),
               Expanded(
                 child: RefreshIndicator(
@@ -140,6 +157,7 @@ class _ReferredCustomersViewState extends State<_ReferredCustomersView> {
                                 phone: c.displayPhone,
                                 status: c.displayStatus,
                                 statusKey: c.statusKey,
+                                appliedAt: c.displayAppliedAt,
                                 amount: c.amount ?? provider.rewardLabel,
                               );
                             },
@@ -148,6 +166,61 @@ class _ReferredCustomersViewState extends State<_ReferredCustomersView> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PeriodToggle extends StatelessWidget {
+  const _PeriodToggle({required this.provider});
+
+  final ReferredCustomersProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.peach,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          _chip(ReferralSummaryPeriod.week, AppStrings.thisWeek.tr()),
+          _chip(ReferralSummaryPeriod.month, AppStrings.thisMonth.tr()),
+          _chip(ReferralSummaryPeriod.year, AppStrings.thisYear.tr()),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(ReferralSummaryPeriod period, String label) {
+    final selected = provider.period == period;
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => provider.setPeriod(period),
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.style(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: selected ? AppColors.white : AppColors.accentOrange,
+              ),
+            ),
           ),
         ),
       ),

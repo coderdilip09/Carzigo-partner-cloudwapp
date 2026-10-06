@@ -184,7 +184,6 @@ class _DashboardHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dashboard = provider.dashboard;
-    final nextJob = dashboard?.nextJob;
     final jobs = dashboard?.todaySchedule ?? const [];
     final previewJobs = jobs.take(3).toList();
     final serviceArea = provider.serviceArea;
@@ -196,325 +195,284 @@ class _DashboardHome extends StatelessWidget {
         child: AppShimmer(
           enabled: loading,
           child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: onProfileTap,
-                      behavior: HitTestBehavior.opaque,
-                      child: Row(
-                        children: [
-                          AppUserAvatar(
-                            url: provider.user?.photoUrl,
-                            size: 44,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        AppStrings.helloName.tr(
-                                          args: [provider.helloName],
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.style(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    const AppIcon(AppAssets.hand, size: 18),
-                                  ],
-                                ),
-                                if (serviceArea != null)
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: onProfileTap,
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          children: [
+                            AppUserAvatar(
+                              url: provider.user?.photoUrl,
+                              size: 44,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Row(
                                     children: [
                                       Flexible(
                                         child: Text(
-                                          serviceArea,
+                                          AppStrings.helloName.tr(
+                                            args: [provider.helloName],
+                                          ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: AppTextStyles.style(
-                                            fontSize: 12,
-                                            color: AppColors.textSecondary,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
                                           ),
                                         ),
                                       ),
-                                      const AppIcon(
-                                        AppAssets.chevronDown,
-                                        size: 16,
-                                      ),
+                                      const SizedBox(width: 6),
+                                      const AppIcon(AppAssets.hand, size: 18),
                                     ],
                                   ),
-                              ],
+                                  if (serviceArea != null)
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            serviceArea,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.style(
+                                              fontSize: 12,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ),
+                                        const AppIcon(
+                                          AppAssets.chevronDown,
+                                          size: 16,
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: onNotificationTap,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: const AppIcon(AppAssets.notification, size: 22),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.pinkSection,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      _StatChip(
+                        value: _padCount(dashboard?.todayCompleted ?? 0),
+                        label: AppStrings.todayComplete.tr(),
+                        leadingAsset: AppAssets.progressCheck,
+                        trailingAsset: AppAssets.chevronRight,
+                        onTap: () =>
+                            provider.openSchedule(ScheduleTab.completed),
+                      ),
+                      const SizedBox(width: 12),
+                      _StatChip(
+                        value: _padCount(dashboard?.todayInProgress ?? 0),
+                        label: AppStrings.todayInProgress.tr(),
+                        leadingAsset: AppAssets.progressDown,
+                        trailingAsset: AppAssets.chevronRight,
+                        onTap: () =>
+                            provider.openSchedule(ScheduleTab.inProgress),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Text(
+                      AppStrings.todaysSchedule.tr(),
+                      style: AppTextStyles.style(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: AppColors.sectionTitle,
+                      ),
+                    ),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () => provider.openSchedule(),
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(
+                        children: [
+                          Text(
+                            AppStrings.viewAll.tr(),
+                            style: AppTextStyles.style(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          _smallCircleArrow(
+                            asset: AppAssets.chevronRight,
+                            color: AppColors.primary,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: onNotificationTap,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: const AppIcon(AppAssets.notification, size: 22),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.pinkSection,
-                  borderRadius: BorderRadius.circular(16),
+                  ],
                 ),
-                child: Column(
-                  children: [
-                    if (nextJob != null) ...[
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: AppColors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: AppIcon(
-                              AppAssets.logoCar,
-                              size: 18,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.peachCard),
+                  ),
+                  child: AppShimmer(
+                    enabled: provider.isLoading && dashboard == null,
+                    child: provider.isLoading && dashboard == null
+                        ? Column(
                             children: [
-                              if (nextJob.date != null)
-                                Text(
-                                  nextJob.date!,
-                                  style: AppTextStyles.style(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
+                              for (var i = 0; i < 3; i++)
+                                AppJobCard(
+                                  status: AppStrings.upcoming.tr(),
+                                  timeLabel: '09:00 AM - 10:00 AM',
+                                  serviceName: 'Exterior Wash Service',
+                                  customerName: 'Customer Name',
+                                  carName: 'Car Model Name',
+                                  embedded: true,
+                                  showBottomDivider: i < 2,
                                 ),
-                              if (nextJob.timeRange != null)
-                                Text(
-                                  nextJob.timeRange!,
-                                  style: AppTextStyles.style(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary,
+                            ],
+                          )
+                        : jobs.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 28),
+                            child: Center(
+                              child: Text(
+                                AppStrings.noData.tr(),
+                                style: AppTextStyles.style(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              for (var i = 0; i < previewJobs.length; i++)
+                                AppJobCard(
+                                  status: _jobStatusLabel(previewJobs[i]),
+                                  timeLabel: previewJobs[i].timeRange,
+                                  serviceName: previewJobs[i].serviceName,
+                                  customerName: previewJobs[i].customerName,
+                                  carName: previewJobs[i].car,
+                                  embedded: true,
+                                  showBottomDivider: i < previewJobs.length - 1,
+                                  onTap: () => AppNavigation.to(
+                                    ServiceDetailsScreen(job: previewJobs[i]),
                                   ),
                                 ),
                             ],
                           ),
-                        ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Text(
+                      AppStrings.performanceSummary.tr(),
+                      style: AppTextStyles.style(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: AppColors.sectionTitle,
                       ),
-                      const SizedBox(height: 12),
-                    ],
-                    Row(
-                      children: [
-                        _StatChip(
-                          value: _padCount(dashboard?.todayCompleted ?? 0),
-                          label: AppStrings.completed.tr(),
-                          leadingAsset: AppAssets.progressCheck,
-                          trailingAsset: AppAssets.chevronRight,
-                          onTap: () =>
-                              provider.openSchedule(ScheduleTab.completed),
+                    ),
+                    const Spacer(),
+                    PopupMenuButton<PerformancePeriod>(
+                      padding: EdgeInsets.zero,
+                      offset: const Offset(0, 28),
+                      color: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      onSelected: provider.setPerformancePeriod,
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: PerformancePeriod.week,
+                          child: Text(AppStrings.thisWeek.tr()),
                         ),
-                        const SizedBox(width: 12),
-                        _StatChip(
-                          value: _padCount(dashboard?.todayInProgress ?? 0),
-                          label: AppStrings.inProgress.tr(),
-                          leadingAsset: AppAssets.progressDown,
-                          trailingAsset: AppAssets.chevronRight,
-                          onTap: () =>
-                              provider.openSchedule(ScheduleTab.upcoming),
+                        PopupMenuItem(
+                          value: PerformancePeriod.month,
+                          child: Text(AppStrings.thisMonth.tr()),
+                        ),
+                        PopupMenuItem(
+                          value: PerformancePeriod.year,
+                          child: Text(AppStrings.thisYear.tr()),
                         ),
                       ],
+                      child: Row(
+                        children: [
+                          Text(
+                            provider.performancePeriodLabel.tr(),
+                            style: AppTextStyles.style(
+                              color: AppColors.accentOrange,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          _smallCircleArrow(
+                            asset: AppAssets.chevronDown,
+                            color: AppColors.accentOrange,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Text(
-                    AppStrings.todaysSchedule.tr(),
-                    style: AppTextStyles.style(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                      color: AppColors.sectionTitle,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _performanceCard(
+                      icon: AppAssets.logoCar,
+                      value: '${provider.performanceCompleted}',
+                      label: AppStrings.completed.tr(),
                     ),
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () => provider.openSchedule(),
-                    behavior: HitTestBehavior.opaque,
-                    child: Row(
-                      children: [
-                        Text(
-                          AppStrings.viewAll.tr(),
-                          style: AppTextStyles.style(
-                            color: AppColors.viewAll,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        _smallCircleArrow(
-                          asset: AppAssets.chevronRight,
-                          color: AppColors.viewAll,
-                        ),
-                      ],
+                    const SizedBox(width: 12),
+                    _performanceCard(
+                      icon: AppAssets.star,
+                      value: _ratingLabel(provider.performanceAvgRating),
+                      label: AppStrings.avgRating.tr(),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.peachCard),
+                  ],
                 ),
-                child: AppShimmer(
-                  enabled: provider.isLoading && dashboard == null,
-                  child: provider.isLoading && dashboard == null
-                      ? Column(
-                          children: [
-                            for (var i = 0; i < 3; i++)
-                              AppJobCard(
-                                status: AppStrings.upcoming.tr(),
-                                timeLabel: '09:00 AM - 10:00 AM',
-                                serviceName: 'Exterior Wash Service',
-                                customerName: 'Customer Name',
-                                carName: 'Car Model Name',
-                                embedded: true,
-                                showBottomDivider: i < 2,
-                              ),
-                          ],
-                        )
-                      : jobs.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 28),
-                          child: Center(
-                            child: Text(
-                              AppStrings.noData.tr(),
-                              style: AppTextStyles.style(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        )
-                      : Column(
-                          children: [
-                            for (var i = 0; i < previewJobs.length; i++)
-                              AppJobCard(
-                                status: _jobStatusLabel(previewJobs[i]),
-                                timeLabel: previewJobs[i].timeRange,
-                                serviceName: previewJobs[i].serviceName,
-                                customerName: previewJobs[i].customerName,
-                                carName: previewJobs[i].car,
-                                embedded: true,
-                                showBottomDivider: i < previewJobs.length - 1,
-                                onTap: () => AppNavigation.to(
-                                  ServiceDetailsScreen(job: previewJobs[i]),
-                                ),
-                              ),
-                          ],
-                        ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Text(
-                    AppStrings.performanceSummary.tr(),
-                    style: AppTextStyles.style(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                      color: AppColors.sectionTitle,
-                    ),
-                  ),
-                  const Spacer(),
-                  PopupMenuButton<PerformancePeriod>(
-                    padding: EdgeInsets.zero,
-                    offset: const Offset(0, 28),
-                    color: AppColors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    onSelected: provider.setPerformancePeriod,
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: PerformancePeriod.month,
-                        child: Text(AppStrings.thisMonth.tr()),
-                      ),
-                      PopupMenuItem(
-                        value: PerformancePeriod.week,
-                        child: Text(AppStrings.thisWeek.tr()),
-                      ),
-                    ],
-                    child: Row(
-                      children: [
-                        Text(
-                          provider.performancePeriodLabel.tr(),
-                          style: AppTextStyles.style(
-                            color: AppColors.accentOrange,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        _smallCircleArrow(
-                          asset: AppAssets.chevronDown,
-                          color: AppColors.accentOrange,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _performanceCard(
-                    icon: AppAssets.logoCar,
-                    value: '${provider.performanceCompleted}',
-                    label: AppStrings.completed.tr(),
-                  ),
-                  const SizedBox(width: 12),
-                  _performanceCard(
-                    icon: AppAssets.star,
-                    value: _ratingLabel(provider.performanceAvgRating),
-                    label: AppStrings.avgRating.tr(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 80),
-            ],
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -570,11 +528,12 @@ class _StatChip extends StatelessWidget {
                     ),
                     Text(
                       label,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.style(
                         fontSize: 10,
                         color: AppColors.textSecondary,
+                        height: 1.2,
                       ),
                     ),
                   ],

@@ -5,11 +5,9 @@ class AppColors {
 
   static const Color primary = Color(0xFFFF5C00);
   static const Color primaryDark = Color(0xFFE04F00);
-  static const Color notification = Color(0xFFFB3002);
   static const Color contactCard = Color(0x1AFF5C00);
   static const Color sendEmailBorder = Color(0x66FF5C00);
   static const Color accentOrange = Color(0xFFFD5903);
-  static const Color viewAll = Color(0xFFD32802);
   static const Color dateChipBg = Color(0x1AD32802);
   static const Color viewAllLink = Color(0xFF198BFB);
   static const Color sectionTitle = Color(0xFF122511);

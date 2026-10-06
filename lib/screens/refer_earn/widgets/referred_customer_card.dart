@@ -15,6 +15,7 @@ class ReferredCustomerCard extends StatelessWidget {
     required this.status,
     required this.amount,
     this.statusKey,
+    this.appliedAt,
     this.onTap,
   });
 
@@ -24,11 +25,13 @@ class ReferredCustomerCard extends StatelessWidget {
   final String status;
   final String amount;
   final String? statusKey;
+  final String? appliedAt;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final style = _StatusStyle.from(statusKey, status);
+    final usedOn = appliedAt?.trim() ?? '';
 
     return GestureDetector(
       onTap: onTap,
@@ -126,6 +129,18 @@ class ReferredCustomerCard extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            if (usedOn.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                '${AppStrings.referralUsedOn.tr()} $usedOn',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.style(
+                                  fontSize: 10,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

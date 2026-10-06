@@ -8,7 +8,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-enum ReferralSummaryPeriod { month, week }
+enum ReferralSummaryPeriod { week, month, year }
 
 class ReferEarnProvider extends BaseProvider {
   ReferEarnProvider() {
@@ -26,37 +26,27 @@ class ReferEarnProvider extends BaseProvider {
   String get link => data?.link ?? '';
   String get rewardLabel => data?.rewardLabel ?? '';
 
-  DateTime get _periodStart {
-    final now = DateTime.now();
-    if (summaryPeriod == ReferralSummaryPeriod.week) {
-      final mondayOffset = now.weekday - DateTime.monday;
-      return DateTime(now.year, now.month, now.day - mondayOffset);
-    }
-    return DateTime(now.year, now.month, 1);
-  }
-
-  List<ReferredCustomerDataModel> get periodCustomers {
-    final start = _periodStart;
-    return customers.where((c) {
-      final at = c.appliedAt?.toLocal();
-      if (at == null) return false;
-      return !at.isBefore(start);
-    }).toList();
-  }
-
   ReferralStatsModel get _activeStats {
-    final scoped = periodCustomers;
-    return ReferralStatsModel(
-      totalReferred: scoped.length,
-      onboarded: scoped.where((c) => c.isOnboard).length,
-      completedFirstWash: scoped.where((c) => c.isComplete).length,
-    );
+    switch (summaryPeriod) {
+      case ReferralSummaryPeriod.week:
+        return data?.weekStats ?? const ReferralStatsModel();
+      case ReferralSummaryPeriod.year:
+        return data?.yearStats ?? const ReferralStatsModel();
+      case ReferralSummaryPeriod.month:
+        return data?.stats ?? const ReferralStatsModel();
+    }
   }
 
-  String get summaryPeriodLabel =>
-      summaryPeriod == ReferralSummaryPeriod.week
-      ? AppStrings.thisWeek
-      : AppStrings.thisMonth;
+  String get summaryPeriodLabel {
+    switch (summaryPeriod) {
+      case ReferralSummaryPeriod.week:
+        return AppStrings.thisWeek;
+      case ReferralSummaryPeriod.year:
+        return AppStrings.thisYear;
+      case ReferralSummaryPeriod.month:
+        return AppStrings.thisMonth;
+    }
+  }
 
   String get totalReferred =>
       ReferralDataModel.pad(_activeStats.totalReferred);
@@ -65,7 +55,7 @@ class ReferEarnProvider extends BaseProvider {
       ReferralDataModel.pad(_activeStats.completedFirstWash);
 
   List<ReferredCustomerDataModel> get previewCustomers =>
-      periodCustomers.take(3).toList();
+      customers.take(3).toList();
 
   void setSummaryPeriod(ReferralSummaryPeriod period) {
     if (summaryPeriod == period) return;
@@ -117,11 +107,12 @@ class ReferEarnProvider extends BaseProvider {
     return parts.join(' ');
   }
 
-  Future<void> shareNow() async {
+  Future<void> shareNow([BuildContext? context]) async {
     if (code.isEmpty && link.isEmpty) return;
     final shared = await ShareService.instance.shareText(
       shareText,
       subject: AppStrings.shareAppSubject.tr(),
+      context: context,
     );
     if (!shared) {
       await Clipboard.setData(ClipboardData(text: shareText));
