@@ -143,22 +143,24 @@ class OtpVerifyProvider extends BaseProvider {
       return;
     }
 
-    final fcmToken = await FirebaseService().ensureFcmToken();
+    // Force Firebase getToken at login — prefs alone is often empty on this device.
+    final fcmToken = await FirebaseService().ensureFcmToken(forceRefresh: true);
     final trimmedFcm = fcmToken?.trim() ?? '';
     final hasFcm = trimmedFcm.isNotEmpty;
     final preview = hasFcm
         ? '${trimmedFcm.substring(0, 8)}…${trimmedFcm.substring(trimmedFcm.length - 6)}'
         : '(none)';
-    debugPrint(
+    // ignore: avoid_print
+    print(
       hasFcm
           ? '[fcm] ✅ partner verifyOtp will send token len=${trimmedFcm.length} preview=$preview'
-          : '[fcm] ❌ partner verifyOtp — NO fcm token to send',
+          : '[fcm] ❌ partner verifyOtp — NO fcm token to send (check Play Services / notification permission)',
     );
     final res = await Api.verifyOtp(
       countryCode: countryCode,
       mobile: phone,
       otp: otp.trim(),
-      fcmToken: fcmToken,
+      fcmToken: trimmedFcm.isEmpty ? null : trimmedFcm,
     );
 
     if (!res.isSuccess || res.data?.token == null) {
@@ -169,8 +171,8 @@ class OtpVerifyProvider extends BaseProvider {
     }
 
     await PrefsService().saveAuth(res.data!);
-    // Await so the token is on the server before the next admin action.
-    await FirebaseService().syncFcmTokenToServer(fcmToken);
+    // Keep retrying after login — token can arrive a few seconds later.
+    unawaited(FirebaseService().syncFcmTokenWithRetry());
     final next = await AuthRouteService.resolveLoggedIn(auth: res.data);
     isLoading = false;
     safeNotifyListeners();

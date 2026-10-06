@@ -151,65 +151,134 @@ class FirebaseService {
   }
 
   /// Prefer in-memory / prefs, otherwise fetch from Firebase with retries.
-  Future<String?> ensureFcmToken({int attempts = 6}) async {
-    final cached = (fcmToken ?? await PrefsService().getFcmToken())?.trim();
-    if (cached != null && cached.isNotEmpty) {
-      fcmToken = cached;
-      return cached;
+  /// Use [forceRefresh] on login so we don't rely on a stale/empty prefs value.
+  Future<String?> ensureFcmToken({
+    int attempts = 8,
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh) {
+      final cached = (fcmToken ?? await PrefsService().getFcmToken())?.trim();
+      if (cached != null && cached.isNotEmpty) {
+        fcmToken = cached;
+        // ignore: avoid_print
+        print('[fcm] partner using cached token len=${cached.length}');
+        return cached;
+      }
+    }
+
+    try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+        // ignore: avoid_print
+        print('[fcm] partner Firebase.initializeApp inside ensureFcmToken');
+      }
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('[fcm] ❌ partner Firebase init failed: $e\n$st');
+      return null;
     }
 
     final messaging = FirebaseMessaging.instance;
+    try {
+      await messaging.requestPermission(alert: true, badge: true, sound: true);
+      final androidPlugin = _localNotifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      await androidPlugin?.requestNotificationsPermission();
+    } catch (e) {
+      // ignore: avoid_print
+      print('[fcm] partner permission request error (continuing): $e');
+    }
+
     if (Platform.isIOS) {
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 15; i++) {
         final apns = await messaging.getAPNSToken();
-        if (apns != null) break;
-        await Future<void>.delayed(const Duration(milliseconds: 300));
+        if (apns != null) {
+          // ignore: avoid_print
+          print('[fcm] partner APNS token ready');
+          break;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 400));
       }
     }
 
     for (var i = 0; i < attempts; i++) {
       try {
-        final token = (await messaging.getToken())?.trim();
+        // ignore: avoid_print
+        print('[fcm] partner getToken attempt ${i + 1}/$attempts …');
+        final token = (await messaging.getToken().timeout(
+          const Duration(seconds: 10),
+          onTimeout: () => null,
+        ))
+            ?.trim();
         if (token != null && token.isNotEmpty) {
           fcmToken = token;
           await PrefsService().saveFcmToken(token);
-          debugPrint('FCM token: $token');
+          // ignore: avoid_print
+          print('[fcm] ✅ partner getToken OK len=${token.length} token=$token');
           return token;
         }
+        // ignore: avoid_print
+        print('[fcm] partner getToken returned empty on attempt ${i + 1}');
       } catch (e, st) {
-        debugPrint('FCM getToken attempt ${i + 1} failed: $e\n$st');
+        // ignore: avoid_print
+        print('[fcm] ❌ partner getToken attempt ${i + 1} failed: $e\n$st');
       }
-      await Future<void>.delayed(Duration(milliseconds: 400 * (i + 1)));
+      await Future<void>.delayed(Duration(milliseconds: 500 * (i + 1)));
     }
 
-    debugPrint('FCM token unavailable after $attempts attempts');
+    // ignore: avoid_print
+    print('[fcm] ❌ partner FCM token unavailable after $attempts attempts');
     return null;
+  }
+
+  /// Keep trying after login — token sometimes arrives a few seconds late.
+  Future<void> syncFcmTokenWithRetry({int tries = 6}) async {
+    for (var i = 0; i < tries; i++) {
+      final token = await ensureFcmToken(forceRefresh: i > 0);
+      if (token != null && token.isNotEmpty) {
+        await syncFcmTokenToServer(token);
+        return;
+      }
+      await Future<void>.delayed(Duration(seconds: 2 + i));
+    }
+    // ignore: avoid_print
+    print('[fcm] ❌ partner gave up syncing FCM after $tries tries');
   }
 
   /// Upload FCM token when the partner is logged in.
   Future<void> syncFcmTokenToServer([String? token]) async {
-    final value = (token ?? await ensureFcmToken())?.trim();
+    final value = (token ?? await ensureFcmToken(forceRefresh: true))?.trim();
     if (value == null || value.isEmpty) {
-      debugPrint('[fcm] ❌ PARTNER TOKEN SYNC SKIPPED — no token');
+      // ignore: avoid_print
+      print('[fcm] ❌ PARTNER TOKEN SYNC SKIPPED — no token');
       return;
     }
     if (!await PrefsService().isLoggedIn) {
-      debugPrint('[fcm] ❌ PARTNER TOKEN SYNC SKIPPED — not logged in');
+      // ignore: avoid_print
+      print('[fcm] ❌ PARTNER TOKEN SYNC SKIPPED — not logged in');
       return;
     }
     final preview = value.length < 12
         ? '***'
         : '${value.substring(0, 8)}…${value.substring(value.length - 6)}';
-    debugPrint('[fcm] partner uploading token len=${value.length} preview=$preview');
+    // ignore: avoid_print
+    print('[fcm] partner uploading token len=${value.length} preview=$preview');
     try {
       final res = await Api.registerDeviceToken(value);
       if (!res.isSuccess) {
-        debugPrint('[fcm] ❌ PARTNER TOKEN SYNC FAILED: ${res.message}');
+        // ignore: avoid_print
+        print('[fcm] ❌ PARTNER TOKEN SYNC FAILED: ${res.message}');
         return;
       }
-      debugPrint('[fcm] ✅ PARTNER TOKEN SYNCED TO SERVER preview=$preview');
+      // ignore: avoid_print
+      print('[fcm] ✅ PARTNER TOKEN SYNCED TO SERVER preview=$preview');
     } catch (e, st) {
-      debugPrint('[fcm] ❌ PARTNER TOKEN SYNC FAILED: $e\n$st');
+      // ignore: avoid_print
+      print('[fcm] ❌ PARTNER TOKEN SYNC FAILED: $e\n$st');
     }
   }
 
