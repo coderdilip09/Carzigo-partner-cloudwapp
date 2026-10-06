@@ -9,6 +9,7 @@ import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 
 class OtpVerifyProvider extends BaseProvider {
   OtpVerifyProvider({
@@ -143,6 +144,16 @@ class OtpVerifyProvider extends BaseProvider {
     }
 
     final fcmToken = await FirebaseService().ensureFcmToken();
+    final trimmedFcm = fcmToken?.trim() ?? '';
+    final hasFcm = trimmedFcm.isNotEmpty;
+    final preview = hasFcm
+        ? '${trimmedFcm.substring(0, 8)}…${trimmedFcm.substring(trimmedFcm.length - 6)}'
+        : '(none)';
+    debugPrint(
+      hasFcm
+          ? '[fcm] ✅ partner verifyOtp will send token len=${trimmedFcm.length} preview=$preview'
+          : '[fcm] ❌ partner verifyOtp — NO fcm token to send',
+    );
     final res = await Api.verifyOtp(
       countryCode: countryCode,
       mobile: phone,
