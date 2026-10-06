@@ -190,22 +190,26 @@ class FirebaseService {
   Future<void> syncFcmTokenToServer([String? token]) async {
     final value = (token ?? await ensureFcmToken())?.trim();
     if (value == null || value.isEmpty) {
-      debugPrint('FCM token sync skipped — no token');
+      debugPrint('[fcm] ❌ PARTNER TOKEN SYNC SKIPPED — no token');
       return;
     }
     if (!await PrefsService().isLoggedIn) {
-      debugPrint('FCM token sync skipped — not logged in');
+      debugPrint('[fcm] ❌ PARTNER TOKEN SYNC SKIPPED — not logged in');
       return;
     }
+    final preview = value.length < 12
+        ? '***'
+        : '${value.substring(0, 8)}…${value.substring(value.length - 6)}';
+    debugPrint('[fcm] partner uploading token len=${value.length} preview=$preview');
     try {
       final res = await Api.registerDeviceToken(value);
       if (!res.isSuccess) {
-        debugPrint('FCM token sync failed: ${res.message}');
+        debugPrint('[fcm] ❌ PARTNER TOKEN SYNC FAILED: ${res.message}');
         return;
       }
-      debugPrint('FCM token synced to server');
+      debugPrint('[fcm] ✅ PARTNER TOKEN SYNCED TO SERVER preview=$preview');
     } catch (e, st) {
-      debugPrint('FCM token sync failed: $e\n$st');
+      debugPrint('[fcm] ❌ PARTNER TOKEN SYNC FAILED: $e\n$st');
     }
   }
 
