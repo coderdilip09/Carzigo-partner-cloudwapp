@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
@@ -29,6 +30,19 @@ class EditProfileScreen extends StatelessWidget {
             title: AppStrings.editProfile.tr(),
             showBackText: true,
             titleInline: false,
+            trailing: TextButton(
+              onPressed: () => showLogoutDialog(context),
+              child: Text(
+                AppStrings.logout.tr(),
+                style: AppTextStyles.style(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                ).copyWith(
+                  decorationColor: AppColors.primary,
+                ),
+              ),
+            ),
             headerExtra: Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(

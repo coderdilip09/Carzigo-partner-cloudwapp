@@ -62,6 +62,22 @@ class KycOverviewScreen extends StatelessWidget {
                                         title: provider.pageTitle,
                                         onBack: () =>
                                             _onBack(context, provider),
+                                        trailing: TextButton(
+                                          onPressed: () =>
+                                              showLogoutDialog(context),
+                                          child: Text(
+                                            AppStrings.logout.tr(),
+                                            style: AppTextStyles.style(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                            ).copyWith(
+                                              decorationColor:
+                                                  AppColors.primary,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                       const SizedBox(height: 6),
                                       Text(

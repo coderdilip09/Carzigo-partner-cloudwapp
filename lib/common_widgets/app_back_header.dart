@@ -14,12 +14,14 @@ class AppBackHeader extends StatelessWidget {
     this.showBackText = true,
     this.titleInline = false,
     this.onBack,
+    this.trailing,
   });
 
   final String? title;
   final bool showBackText;
   final bool titleInline;
   final VoidCallback? onBack;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +62,9 @@ class AppBackHeader extends StatelessWidget {
                 ),
               ),
             ),
-          ],
+          ] else
+            const Spacer(),
+          if (trailing != null) trailing!,
         ],
       );
     }
@@ -68,7 +72,13 @@ class AppBackHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [backButton]),
+        Row(
+          children: [
+            backButton,
+            const Spacer(),
+            if (trailing != null) trailing!,
+          ],
+        ),
         if (title != null) ...[
           const SizedBox(height: 16),
           Text(

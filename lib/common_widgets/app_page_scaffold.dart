@@ -13,6 +13,7 @@ class AppPageScaffold extends StatefulWidget {
     this.showBackText = false,
     this.titleInline = true,
     this.onBack,
+    this.trailing,
     this.headerPadding = const EdgeInsets.fromLTRB(20, 12, 20, 8),
     this.headerExtra,
     this.bottomBar,
@@ -26,6 +27,7 @@ class AppPageScaffold extends StatefulWidget {
   final bool showBackText;
   final bool titleInline;
   final VoidCallback? onBack;
+  final Widget? trailing;
   final EdgeInsetsGeometry headerPadding;
   final Widget? headerExtra;
   final Widget? bottomBar;
@@ -83,6 +85,7 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
                       showBackText: widget.showBackText,
                       titleInline: widget.titleInline,
                       onBack: widget.onBack,
+                      trailing: widget.trailing,
                     ),
                     if (widget.headerExtra != null) widget.headerExtra!,
                   ],
