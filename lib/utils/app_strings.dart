@@ -217,6 +217,7 @@ class AppStrings {
   static const String backSide = 'back_side';
   static const String logoutSubtitle = 'logout_subtitle';
   static const String deleteSubtitle = 'delete_subtitle';
+  static const String appVersion = 'app_version';
   static const String serviceDetails = 'service_details';
   static const String serviceAddress = 'service_address';
   static const String navigate = 'navigate';

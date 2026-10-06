@@ -205,6 +205,7 @@
   "back_side": "Back",
   "logout_subtitle": "Sign out from your account",
   "delete_subtitle": "Delete from your account",
+  "app_version": "Version {version}",
   "service_details": "Service Schedule Details",
   "service_address": "Service Address",
   "navigate": "Navigate",
