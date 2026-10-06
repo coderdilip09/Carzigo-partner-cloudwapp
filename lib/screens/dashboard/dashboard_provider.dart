@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:carzigo_partner/models/dashboard_data_model.dart';
 import 'package:carzigo_partner/models/user_data_model.dart';
 import 'package:carzigo_partner/screens/schedule/schedule_provider.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
+import 'package:carzigo_partner/services/firebase_service/firebase_service.dart';
 import 'package:carzigo_partner/services/prefs_service/prefs_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
@@ -13,6 +16,7 @@ enum PerformancePeriod { week, month, year }
 
 class DashboardProvider extends BaseProvider {
   DashboardProvider() {
+    unawaited(FirebaseService().syncFcmTokenToServer());
     loadProfile();
     loadDashboard();
   }

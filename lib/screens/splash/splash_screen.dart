@@ -28,6 +28,9 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _navigateNext() async {
     if (!mounted) return;
 
+    // Re-register push token on every cold start while logged in.
+    await FirebaseService().syncFcmTokenToServer();
+
     final next = await _nextScreen();
     if (!mounted) return;
 

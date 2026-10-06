@@ -142,10 +142,12 @@ class OtpVerifyProvider extends BaseProvider {
       return;
     }
 
+    final fcmToken = await FirebaseService().ensureFcmToken();
     final res = await Api.verifyOtp(
       countryCode: countryCode,
       mobile: phone,
       otp: otp.trim(),
+      fcmToken: fcmToken,
     );
 
     if (!res.isSuccess || res.data?.token == null) {
@@ -156,7 +158,8 @@ class OtpVerifyProvider extends BaseProvider {
     }
 
     await PrefsService().saveAuth(res.data!);
-    unawaited(FirebaseService().syncFcmTokenToServer());
+    // Await so the token is on the server before the next admin action.
+    await FirebaseService().syncFcmTokenToServer(fcmToken);
     final next = await AuthRouteService.resolveLoggedIn(auth: res.data);
     isLoading = false;
     safeNotifyListeners();

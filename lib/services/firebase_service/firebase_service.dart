@@ -138,6 +138,27 @@ class FirebaseService {
 
   Future<void> _loadFcmToken() async {
     final messaging = FirebaseMessaging.instance;
+    final token = await ensureFcmToken();
+    if (token != null && token.isNotEmpty) {
+      unawaited(syncFcmTokenToServer(token));
+    }
+
+    messaging.onTokenRefresh.listen((refreshed) {
+      fcmToken = refreshed;
+      unawaited(PrefsService().saveFcmToken(refreshed));
+      unawaited(syncFcmTokenToServer(refreshed));
+    });
+  }
+
+  /// Prefer in-memory / prefs, otherwise fetch from Firebase with retries.
+  Future<String?> ensureFcmToken({int attempts = 6}) async {
+    final cached = (fcmToken ?? await PrefsService().getFcmToken())?.trim();
+    if (cached != null && cached.isNotEmpty) {
+      fcmToken = cached;
+      return cached;
+    }
+
+    final messaging = FirebaseMessaging.instance;
     if (Platform.isIOS) {
       for (var i = 0; i < 10; i++) {
         final apns = await messaging.getAPNSToken();
@@ -146,28 +167,43 @@ class FirebaseService {
       }
     }
 
-    fcmToken = await messaging.getToken();
-    debugPrint('FCM token: $fcmToken');
-    if (fcmToken != null && fcmToken!.isNotEmpty) {
-      await PrefsService().saveFcmToken(fcmToken!);
-      unawaited(syncFcmTokenToServer(fcmToken!));
+    for (var i = 0; i < attempts; i++) {
+      try {
+        final token = (await messaging.getToken())?.trim();
+        if (token != null && token.isNotEmpty) {
+          fcmToken = token;
+          await PrefsService().saveFcmToken(token);
+          debugPrint('FCM token: $token');
+          return token;
+        }
+      } catch (e, st) {
+        debugPrint('FCM getToken attempt ${i + 1} failed: $e\n$st');
+      }
+      await Future<void>.delayed(Duration(milliseconds: 400 * (i + 1)));
     }
 
-    messaging.onTokenRefresh.listen((token) {
-      fcmToken = token;
-      unawaited(PrefsService().saveFcmToken(token));
-      unawaited(syncFcmTokenToServer(token));
-    });
+    debugPrint('FCM token unavailable after $attempts attempts');
+    return null;
   }
 
   /// Upload FCM token when the partner is logged in.
   Future<void> syncFcmTokenToServer([String? token]) async {
-    final value = (token ?? fcmToken ?? await PrefsService().getFcmToken())
-        ?.trim();
-    if (value == null || value.isEmpty) return;
-    if (!await PrefsService().isLoggedIn) return;
+    final value = (token ?? await ensureFcmToken())?.trim();
+    if (value == null || value.isEmpty) {
+      debugPrint('FCM token sync skipped — no token');
+      return;
+    }
+    if (!await PrefsService().isLoggedIn) {
+      debugPrint('FCM token sync skipped — not logged in');
+      return;
+    }
     try {
-      await Api.registerDeviceToken(value);
+      final res = await Api.registerDeviceToken(value);
+      if (!res.isSuccess) {
+        debugPrint('FCM token sync failed: ${res.message}');
+        return;
+      }
+      debugPrint('FCM token synced to server');
     } catch (e, st) {
       debugPrint('FCM token sync failed: $e\n$st');
     }

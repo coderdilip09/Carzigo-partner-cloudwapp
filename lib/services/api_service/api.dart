@@ -40,8 +40,9 @@ class Api {
     required String countryCode,
     required String mobile,
     required String otp,
+    String? fcmToken,
   }) async {
-    final fcm = await PrefsService().getFcmToken();
+    final fcm = (fcmToken ?? await PrefsService().getFcmToken())?.trim();
     final device = await DeviceService().getInfo();
     return _postParsed(
       ApiUrls.verifyOtpUrl(),
