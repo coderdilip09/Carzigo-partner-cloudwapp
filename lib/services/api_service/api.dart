@@ -530,8 +530,17 @@ class Api {
     return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
   }
 
-  static Future<ResponseWrapperModel<Map<String, dynamic>?>> getPayouts() async {
-    final json = await ApiClientMethods.getMethod(url: ApiUrls.payoutsUrl());
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> getPayouts({
+    int page = 1,
+    int limit = 15,
+  }) async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.payoutsUrl(),
+      query: {
+        RequestKeys.page: '$page',
+        RequestKeys.limit: '$limit',
+      },
+    );
     return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
   }
 

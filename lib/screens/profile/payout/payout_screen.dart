@@ -22,18 +22,30 @@ class PayoutProvider extends BaseProvider {
   final noteController = TextEditingController();
 
   bool isLoading = true;
+  bool isLoadingMore = false;
   bool isSubmitting = false;
+  bool hasMore = false;
+  int page = 1;
+  static const int pageSize = 15;
   int revenue = 0;
   int pending = 0;
   int paid = 0;
   int available = 0;
-  List<Map<String, dynamic>> requests = const [];
+  List<Map<String, dynamic>> requests = [];
 
-  Future<void> load() async {
-    isLoading = true;
-    safeNotifyListeners();
+  Future<void> load({bool reset = true}) async {
+    if (reset) {
+      page = 1;
+      hasMore = false;
+      isLoading = true;
+      safeNotifyListeners();
+    } else {
+      if (isLoadingMore || !hasMore || isLoading) return;
+      isLoadingMore = true;
+      safeNotifyListeners();
+    }
     try {
-      final res = await Api.getPayouts();
+      final res = await Api.getPayouts(page: page, limit: pageSize);
       if (!res.isSuccess || res.data == null) {
         AppToast.error(res.message ?? AppStrings.requestFailed.tr());
         return;
@@ -44,17 +56,28 @@ class PayoutProvider extends BaseProvider {
       paid = _asInt(data['paid']);
       available = _asInt(data['available']);
       final raw = data['requests'];
-      requests = raw is List
+      final incoming = raw is List
           ? raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList()
-          : const [];
+          : <Map<String, dynamic>>[];
+      if (reset) {
+        requests = incoming;
+      } else {
+        requests = [...requests, ...incoming];
+      }
+      hasMore = data['has_more'] == true || data['hasMore'] == true;
+      page = _asInt(data['page']) + 1;
+      if (page < 2) page = 2;
     } catch (e, st) {
       debugPrint('Payout load failed: $e\n$st');
       AppToast.error(AppStrings.requestFailed.tr());
     } finally {
       isLoading = false;
+      isLoadingMore = false;
       safeNotifyListeners();
     }
   }
+
+  Future<void> loadMore() => load(reset: false);
 
   Future<void> submit() async {
     final amount = int.tryParse(amountController.text.trim()) ?? 0;
@@ -116,8 +139,17 @@ class PayoutScreen extends StatelessWidget {
                 child: provider.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : RefreshIndicator(
-                        onRefresh: provider.load,
-                        child: ListView(
+                        onRefresh: () => provider.load(),
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            if (notification.metrics.pixels <
+                                notification.metrics.maxScrollExtent - 240) {
+                              return false;
+                            }
+                            provider.loadMore();
+                            return false;
+                          },
+                          child: ListView(
                           padding: const EdgeInsets.all(20),
                           children: [
                             AppBackHeader(title: AppStrings.requestPayout.tr()),
@@ -159,7 +191,19 @@ class PayoutScreen extends StatelessWidget {
                               )
                             else
                               ...provider.requests.map(_RequestTile.new),
+                            if (provider.isLoadingMore)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                ),
+                              ),
                           ],
+                        ),
                         ),
                       ),
               ),
