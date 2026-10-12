@@ -154,6 +154,23 @@ class IdentityProofProvider extends BaseProvider {
       }
 
       final session = start.data!;
+      if (session.alreadyVerified) {
+        isVerified = true;
+        final name = session.fullName?.trim();
+        if (name != null && name.isNotEmpty) verifiedName = name;
+        if (!forDocumentChange) {
+          KycStatus.markIdentityDone();
+        }
+        AppToast.success(AppStrings.digilockerVerified.tr());
+        safeNotifyListeners();
+        if (editOnly || forDocumentChange) {
+          AppNavigation.back();
+          return;
+        }
+        _goNext();
+        return;
+      }
+
       final clientId = session.clientId?.trim() ?? '';
       final url = session.url?.trim() ?? '';
       final token = session.token?.trim() ?? '';

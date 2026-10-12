@@ -39,6 +39,7 @@ class ApiUrls {
   static const String services = 'partner/services';
 
   static const String referrals = 'partner/referrals';
+  static const String payouts = 'partner/payouts';
 
   static const String notifications = 'partner/notifications';
   static const String notificationsDeviceToken = 'partner/notifications/device-token';
@@ -89,6 +90,7 @@ class ApiUrls {
   static String jobStatusUrl(String id) => _join('$services/$id/status');
 
   static String referralsUrl() => _join(referrals);
+  static String payoutsUrl() => _join(payouts);
   static String referralCustomersUrl() => _join('$referrals/customers');
 
   static String notificationsUrl() => _join(notifications);

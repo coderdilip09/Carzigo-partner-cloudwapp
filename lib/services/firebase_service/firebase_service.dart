@@ -123,17 +123,53 @@ class FirebaseService {
         importance: Importance.high,
       ),
     );
-    await androidPlugin?.requestNotificationsPermission();
+  }
+
+  /// Asks only when notifications are not already allowed.
+  /// Call this after the first frame so Android can show the system dialog.
+  Future<void> requestNotificationPermission() async {
+    try {
+      if (await _notificationsAllowed()) return;
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (Platform.isAndroid) {
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
+            ?.requestNotificationsPermission();
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('[fcm] partner permission request error (continuing): $e');
+    }
+  }
+
+  Future<bool> _notificationsAllowed() async {
+    if (Platform.isAndroid) {
+      final enabled = await _localNotifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.areNotificationsEnabled();
+      return enabled == true;
+    }
+    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    final status = settings.authorizationStatus;
+    return status == AuthorizationStatus.authorized ||
+        status == AuthorizationStatus.provisional;
   }
 
   Future<void> _requestPushPermission() async {
-    final messaging = FirebaseMessaging.instance;
-    await messaging.requestPermission(alert: true, badge: true, sound: true);
-    await messaging.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
   }
 
   Future<void> _loadFcmToken() async {
@@ -181,17 +217,6 @@ class FirebaseService {
     }
 
     final messaging = FirebaseMessaging.instance;
-    try {
-      await messaging.requestPermission(alert: true, badge: true, sound: true);
-      final androidPlugin = _localNotifications
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-      await androidPlugin?.requestNotificationsPermission();
-    } catch (e) {
-      // ignore: avoid_print
-      print('[fcm] partner permission request error (continuing): $e');
-    }
 
     if (Platform.isIOS) {
       for (var i = 0; i < 15; i++) {

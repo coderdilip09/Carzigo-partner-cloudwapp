@@ -27,6 +27,7 @@ class RequestKeys {
   static const String state = 'state';
   static const String pincode = 'pincode';
   static const String sameAsDocument = 'same_as_document';
+  static const String amount = 'amount';
   static const String clientId = 'client_id';
   static const String redirectUrl = 'redirect_url';
   static const String holderName = 'account_holder_name';

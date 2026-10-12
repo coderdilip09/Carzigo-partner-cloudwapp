@@ -1,5 +1,6 @@
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
+import 'package:carzigo_partner/utils/media_url.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -14,7 +15,7 @@ class AppUserAvatar extends StatelessWidget {
     if (Skeletonizer.maybeOf(context)?.enabled == true) {
       return Bone.circle(size: size);
     }
-    final photo = url?.trim() ?? '';
+    final photo = resolveMediaUrl(url);
     final fallback = AppImageView(
       AppAssets.dummyProfile,
       width: size,
@@ -22,7 +23,7 @@ class AppUserAvatar extends StatelessWidget {
       fit: BoxFit.cover,
     );
 
-    final image = photo.startsWith('http://') || photo.startsWith('https://')
+    final image = isRemoteMediaUrl(photo)
         ? Image.network(
             photo,
             width: size,

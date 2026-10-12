@@ -224,17 +224,10 @@ class ApiClientMethods {
   }) {
     if (!kDebugMode) return;
 
-    Map<String, String>? safeHeaders;
-    if (headers != null) {
-      safeHeaders = Map<String, String>.from(headers);
-      if (safeHeaders.containsKey(HttpHeaders.authorizationHeader)) {
-        safeHeaders[HttpHeaders.authorizationHeader] = 'Bearer ***';
-      }
-    }
-
     debugPrint('======== API REQUEST ========');
-    debugPrint('<<<<<METHOD<<<<<$method>>>>URL=> $url>>>>>>>>>');
-    if (safeHeaders != null) debugPrint('HEADERS: $safeHeaders');
+    debugPrint('METHOD: $method');
+    debugPrint('URL: $url');
+    debugPrint('HEADERS: ${headers ?? '-'}');
     debugPrint('BODY: ${body ?? '-'}');
   }
 

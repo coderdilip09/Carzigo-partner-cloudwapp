@@ -11,6 +11,7 @@ import 'package:carzigo_partner/common_widgets/app_text_field.dart';
 import 'package:carzigo_partner/screens/profile/edit_profile/edit_profile_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
+import 'package:carzigo_partner/utils/media_url.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -240,8 +241,8 @@ class _ProfilePhoto extends StatelessWidget {
     if (localFile != null) {
       return Image.file(localFile, width: 110, height: 110, fit: BoxFit.cover);
     }
-    final photoUrl = url?.trim() ?? '';
-    if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) {
+    final photoUrl = resolveMediaUrl(url);
+    if (isRemoteMediaUrl(photoUrl)) {
       return Image.network(
         photoUrl,
         width: 110,

@@ -22,7 +22,12 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _scheduleNavigation() {
-    Future.delayed(const Duration(seconds: 2), _navigateNext);
+    final permission = FirebaseService().requestNotificationPermission();
+    Future.delayed(const Duration(seconds: 2), () async {
+      await permission;
+      if (!mounted) return;
+      await _navigateNext();
+    });
   }
 
   Future<void> _navigateNext() async {

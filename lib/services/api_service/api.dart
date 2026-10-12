@@ -530,6 +530,21 @@ class Api {
     return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
   }
 
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> getPayouts() async {
+    final json = await ApiClientMethods.getMethod(url: ApiUrls.payoutsUrl());
+    return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
+  }
+
+  static Future<ResponseWrapperModel<Map<String, dynamic>?>> requestPayout({
+    required int amount,
+    String? note,
+  }) {
+    return _postParsed(ApiUrls.payoutsUrl(), {
+      RequestKeys.amount: amount,
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    }, (data) => asMap(data));
+  }
+
   static Future<ResponseWrapperModel<Map<String, dynamic>?>>
   getHelpContact() async {
     final json = await ApiClientMethods.getMethod(

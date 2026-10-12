@@ -4,6 +4,7 @@ import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_user_avatar.dart';
 import 'package:carzigo_partner/models/user_data_model.dart';
 import 'package:carzigo_partner/screens/profile/documents/documents_screen.dart';
+import 'package:carzigo_partner/screens/profile/payout/payout_screen.dart';
 import 'package:carzigo_partner/screens/profile/edit_profile/edit_profile_screen.dart';
 import 'package:carzigo_partner/screens/profile/help_support/help_support_screen.dart';
 // import 'package:carzigo_partner/screens/profile/language/language_screen.dart';
@@ -57,6 +58,7 @@ class ProfileProvider extends BaseProvider {
   }
 
   void tapOnDocuments() => AppNavigation.to(const DocumentsScreen());
+  void tapOnPayout() => AppNavigation.to(const PayoutScreen());
   void tapOnHelp() => AppNavigation.to(const HelpSupportScreen());
   Future<void> tapOnRateApp() => AppRatingService.instance.rateFromMenu();
   Future<void> tapOnShareApp(BuildContext context) =>
@@ -287,6 +289,12 @@ class ProfileScreen extends StatelessWidget {
                           title: AppStrings.documents.tr(),
                           subtitle: AppStrings.documentsSubtitle.tr(),
                           onTap: provider.tapOnDocuments,
+                        ),
+                        _MenuTile(
+                          leadingIcon: Icons.account_balance_wallet_outlined,
+                          title: AppStrings.requestPayout.tr(),
+                          subtitle: AppStrings.requestPayoutSubtitle.tr(),
+                          onTap: provider.tapOnPayout,
                         ),
                         const SizedBox(height: 8),
                         _MenuTile(

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
+import 'package:carzigo_partner/utils/media_url.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -31,10 +32,10 @@ class AppVehicleImage extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
       );
     }
-    final path = image?.trim() ?? '';
+    final path = resolveMediaUrl(image);
     final child = path.isEmpty
         ? _fallback()
-        : path.startsWith('http://') || path.startsWith('https://')
+        : isRemoteMediaUrl(path)
         ? _network(path)
         : path.startsWith('assets/')
         ? AppImageView(path, width: width, height: height, fit: fit)

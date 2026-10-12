@@ -166,6 +166,8 @@ class DigilockerStartDataModel {
     this.gateway,
     this.expirySeconds,
     this.mock = false,
+    this.alreadyVerified = false,
+    this.fullName,
   });
 
   final String? clientId;
@@ -174,6 +176,8 @@ class DigilockerStartDataModel {
   final String? gateway;
   final num? expirySeconds;
   final bool mock;
+  final bool alreadyVerified;
+  final String? fullName;
 
   bool get isMock =>
       mock || gateway == 'mock' || (clientId?.startsWith('mock_digilocker_') ?? false);
@@ -192,6 +196,8 @@ class DigilockerStartDataModel {
       expirySeconds: json['expiry_seconds'] as num? ??
           json['expirySeconds'] as num?,
       mock: asBool(json['mock']) == true,
+      alreadyVerified: asBool(json['already_verified'] ?? json['alreadyVerified']) == true,
+      fullName: asString(json['full_name'] ?? json['fullName']),
     );
   }
 }

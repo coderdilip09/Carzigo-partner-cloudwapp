@@ -7,6 +7,7 @@ import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/screens/profile/documents/documents_provider.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
+import 'package:carzigo_partner/utils/media_url.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
@@ -871,8 +872,8 @@ class _NetworkOrFallbackImageState extends State<_NetworkOrFallbackImage> {
 
   @override
   Widget build(BuildContext context) {
-    final isHttp =
-        widget.url.startsWith('http://') || widget.url.startsWith('https://');
+    final url = resolveMediaUrl(widget.url);
+    final isHttp = isRemoteMediaUrl(url);
 
     if (!isHttp) {
       _notifyFailed();
@@ -882,7 +883,7 @@ class _NetworkOrFallbackImageState extends State<_NetworkOrFallbackImage> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Image.network(
-        widget.url,
+        url,
         fit: BoxFit.contain,
         width: double.infinity,
         height: double.infinity,

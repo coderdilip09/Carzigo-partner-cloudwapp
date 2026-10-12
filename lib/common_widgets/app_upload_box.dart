@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
+import 'package:carzigo_partner/utils/media_url.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
@@ -239,7 +240,7 @@ class AppUploadBox extends StatelessWidget {
     if (imageFile != null) {
       image = Image.file(imageFile!, fit: BoxFit.cover);
     } else {
-      final url = imageUrl?.trim() ?? '';
+      final url = resolveMediaUrl(imageUrl);
       image = Image.network(
         url,
         fit: BoxFit.cover,

@@ -48,3 +48,5 @@ app.*.map.json
 /screens/
 /CLAUDE.md
 /rulebook.md
+/CONVENTIONS.md
+/.cursor/rules/conventions.mdc
