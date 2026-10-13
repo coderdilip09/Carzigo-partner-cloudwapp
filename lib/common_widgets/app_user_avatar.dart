@@ -1,4 +1,5 @@
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
+import 'package:carzigo_partner/common_widgets/app_network_image.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/media_url.dart';
 import 'package:flutter/material.dart';
@@ -24,12 +25,13 @@ class AppUserAvatar extends StatelessWidget {
     );
 
     final image = isRemoteMediaUrl(photo)
-        ? Image.network(
-            photo,
+        ? AppNetworkImage(
+            url: photo,
             width: size,
             height: size,
             fit: BoxFit.cover,
-            errorBuilder: (_, error, stackTrace) => fallback,
+            circle: true,
+            error: fallback,
           )
         : fallback;
 

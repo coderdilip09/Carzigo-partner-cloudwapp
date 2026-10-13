@@ -47,6 +47,7 @@ class ApiUrls {
   static const String legal = 'legal';
   static const String legalTermsSlug = 'terms';
   static const String legalPrivacySlug = 'privacy';
+  static const String legalCancellationSlug = 'cancellation-policy';
 
   static const String help = 'help';
   static const String helpTopics = 'help/topics';
@@ -88,6 +89,7 @@ class ApiUrls {
   static String jobsUrl() => _join(services);
   static String jobDetailsUrl(String id) => _join('$services/$id');
   static String jobStatusUrl(String id) => _join('$services/$id/status');
+  static String jobPhotosUrl(String id) => _join('$services/$id/photos');
 
   static String referralsUrl() => _join(referrals);
   static String payoutsUrl() => _join(payouts);

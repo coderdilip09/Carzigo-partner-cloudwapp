@@ -14,6 +14,7 @@ import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 bool _isPdfUrl(String url) {
@@ -896,14 +897,13 @@ class _NetworkOrFallbackImageState extends State<_NetworkOrFallbackImage> {
         },
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return const Center(
-            child: SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: AppColors.primary,
-              ),
+          return Skeletonizer(
+            enabled: true,
+            effect: AppShimmer.effect,
+            child: const Bone(
+              width: double.infinity,
+              height: double.infinity,
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
           );
         },

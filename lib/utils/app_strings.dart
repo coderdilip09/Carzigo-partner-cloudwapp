@@ -204,6 +204,14 @@ class AppStrings {
   static const String shareAppSubject = 'share_app_subject';
   static const String termsSubtitle = 'terms_subtitle';
   static const String privacySubtitle = 'privacy_subtitle';
+  static const String cancellationPolicy = 'cancellation_policy';
+  static const String cancellationSubtitle = 'cancellation_subtitle';
+  static const String washPhotos = 'wash_photos';
+  static const String beforePhoto = 'before_photo';
+  static const String afterPhoto = 'after_photo';
+  static const String addPhoto = 'add_photo';
+  static const String photosRequired = 'photos_required';
+  static const String beforePhotoRequired = 'before_photo_required';
   static const String documentsSubtitle = 'documents_subtitle';
   static const String requestDocumentChange = 'request_document_change';
   static const String docChangeReasonHint = 'doc_change_reason_hint';

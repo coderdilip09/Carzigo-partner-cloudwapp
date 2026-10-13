@@ -66,6 +66,8 @@ class JobDataModel {
     this.notes,
     this.customerInstructions,
     this.assignedAt,
+    this.beforePhoto,
+    this.afterPhoto,
   });
 
   final String? id;
@@ -97,6 +99,8 @@ class JobDataModel {
   final String? notes;
   final String? customerInstructions;
   final String? assignedAt;
+  final String? beforePhoto;
+  final String? afterPhoto;
 
   int get step {
     if (currentStep != null) return currentStep!;
@@ -242,6 +246,8 @@ class JobDataModel {
         json['customerInstructions'] ?? json['customer_instructions'],
       ),
       assignedAt: asString(json['assignedAt'] ?? json['assigned_at']),
+      beforePhoto: asString(json['before_photo'] ?? json['beforePhoto']),
+      afterPhoto: asString(json['after_photo'] ?? json['afterPhoto']),
     );
   }
 

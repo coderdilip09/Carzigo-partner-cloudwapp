@@ -1,12 +1,15 @@
 import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
 import 'package:carzigo_partner/services/app_rating_service/app_rating_service.dart';
+import 'package:carzigo_partner/services/image_pick_service/image_pick_service.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:carzigo_partner/utils/base_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ServiceDetailsProvider extends BaseProvider {
@@ -24,6 +27,8 @@ class ServiceDetailsProvider extends BaseProvider {
   bool isLoading;
   bool isAddingToCalendar = false;
   bool isUpdating = false;
+  bool isUploadingPhoto = false;
+  String? uploadingPhotoKind;
   int currentStep = 1;
 
   String get displayScheduleId =>
@@ -214,6 +219,17 @@ class ServiceDetailsProvider extends BaseProvider {
     safeNotifyListeners();
 
     try {
+      if (status == JobWorkflowStatus.inProgress &&
+          (job?.beforePhoto ?? '').isEmpty) {
+        AppToast.error(AppStrings.beforePhotoRequired.tr());
+        return;
+      }
+      if (status == JobWorkflowStatus.completed &&
+          ((job?.beforePhoto ?? '').isEmpty ||
+              (job?.afterPhoto ?? '').isEmpty)) {
+        AppToast.error(AppStrings.photosRequired.tr());
+        return;
+      }
       final res = await Api.updateJobStatus(
         id: id,
         status: JobWorkflowStatus.toApiStatus(status),
@@ -409,5 +425,53 @@ class ServiceDetailsProvider extends BaseProvider {
     } catch (_) {}
 
     return null;
+  }
+
+  bool get canUploadPhotos {
+    final status = (job?.workflowStatus ?? '').toLowerCase();
+    if (status.isEmpty) return false;
+    return status != JobWorkflowStatus.completed &&
+        status != JobWorkflowStatus.cancelled &&
+        (job?.displayTag ?? '') != 'cancelled' &&
+        (job?.displayTag ?? '') != 'not_complete';
+  }
+
+  Future<void> pickWashPhoto(BuildContext context, String kind) async {
+    if (!canUploadPhotos || isUploadingPhoto) return;
+    await showImageSourceSheet(
+      context,
+      onCamera: () => _uploadWashPhoto(kind, ImageSource.camera),
+      onGallery: () => _uploadWashPhoto(kind, ImageSource.gallery),
+    );
+  }
+
+  Future<void> _uploadWashPhoto(String kind, ImageSource source) async {
+    final id = job?.id ?? jobId;
+    if (id == null || id.isEmpty) return;
+    final file = await ImagePickService.pickAndCrop(source);
+    if (file == null) return;
+
+    isUploadingPhoto = true;
+    uploadingPhotoKind = kind;
+    safeNotifyListeners();
+    try {
+      final uploaded = await Api.uploadImage(file: file, folder: 'service-photos');
+      final url = uploaded.data?.resolvedUrl;
+      if (!uploaded.isSuccess || url == null || url.isEmpty) {
+        AppToast.error(uploaded.message ?? AppStrings.requestFailed.tr());
+        return;
+      }
+      final saved = await Api.saveJobPhoto(id: id, kind: kind, imageUrl: url);
+      if (!saved.isSuccess || saved.data == null) {
+        AppToast.error(saved.message ?? AppStrings.requestFailed.tr());
+        return;
+      }
+      job = saved.data;
+      currentStep = saved.data!.step;
+    } finally {
+      isUploadingPhoto = false;
+      uploadingPhotoKind = null;
+      safeNotifyListeners();
+    }
   }
 }

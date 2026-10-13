@@ -2,6 +2,7 @@ import 'package:carzigo_partner/common_widgets/app_back_header.dart';
 import 'package:carzigo_partner/common_widgets/app_bg.dart';
 import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
+import 'package:carzigo_partner/common_widgets/app_network_image.dart';
 import 'package:carzigo_partner/common_widgets/app_shimmer.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_vehicle_image.dart';
@@ -59,6 +60,8 @@ class ServiceDetailsScreen extends StatelessWidget {
                               const _CustomerDetailsCard(),
                               const SizedBox(height: 16),
                               const _VehicleDetailsCard(),
+                              const SizedBox(height: 16),
+                              const _WashPhotosCard(),
                               const SizedBox(height: 16),
                               const _ServiceAddressCard(),
                               const SizedBox(height: 20),
@@ -890,6 +893,122 @@ class _NoteCard extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WashPhotosCard extends StatelessWidget {
+  const _WashPhotosCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<ServiceDetailsProvider>();
+    final before = provider.job?.beforePhoto ?? '';
+    final after = provider.job?.afterPhoto ?? '';
+    final canUpload = provider.canUploadPhotos;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.peachCard),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppStrings.washPhotos.tr(),
+            style: AppTextStyles.style(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            AppStrings.beforePhotoRequired.tr(),
+            style: AppTextStyles.style(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _slot(
+                  context,
+                  label: AppStrings.beforePhoto.tr(),
+                  url: before,
+                  busy: provider.isUploadingPhoto &&
+                      provider.uploadingPhotoKind == 'before',
+                  onTap: canUpload ? () => provider.pickWashPhoto(context, 'before') : null,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _slot(
+                  context,
+                  label: AppStrings.afterPhoto.tr(),
+                  url: after,
+                  busy: provider.isUploadingPhoto &&
+                      provider.uploadingPhotoKind == 'after',
+                  onTap: canUpload ? () => provider.pickWashPhoto(context, 'after') : null,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _slot(
+    BuildContext context, {
+    required String label,
+    required String url,
+    required bool busy,
+    required VoidCallback? onTap,
+  }) {
+    final resolved = url.trim();
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppTextStyles.style(fontSize: 12)),
+          const SizedBox(height: 6),
+          Container(
+            height: 110,
+            width: double.infinity,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: AppColors.customerCard,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: busy
+                ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                : resolved.isEmpty
+                    ? Center(
+                        child: Text(
+                          onTap == null ? '—' : AppStrings.addPhoto.tr(),
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      )
+                    : AppNetworkImage(
+                        url: resolved,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 110,
+                        borderRadius: 10,
+                        error: const Center(
+                          child: Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
           ),
         ],
       ),

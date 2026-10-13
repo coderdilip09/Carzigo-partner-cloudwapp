@@ -399,6 +399,21 @@ class Api {
     );
   }
 
+  static Future<ResponseWrapperModel<JobDataModel?>> saveJobPhoto({
+    required String id,
+    required String kind,
+    required String imageUrl,
+  }) async {
+    final json = await ApiClientMethods.patchMethod(
+      url: ApiUrls.jobPhotosUrl(id),
+      body: {'kind': kind, 'image_url': imageUrl},
+    );
+    return ResponseWrapperModel.fromJson(
+      json,
+      (data) => JobDataModel.fromJson(asMap(data) ?? {}),
+    );
+  }
+
   static Future<ResponseWrapperModel<ReferralDataModel?>> getReferral() async {
     final json = await ApiClientMethods.getMethod(url: ApiUrls.referralsUrl());
     return ResponseWrapperModel.fromJson(

@@ -4,6 +4,7 @@ import 'package:carzigo_partner/common_widgets/app_dialogs.dart';
 import 'package:carzigo_partner/common_widgets/app_icon.dart';
 import 'package:carzigo_partner/common_widgets/app_image_source_sheet.dart';
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
+import 'package:carzigo_partner/common_widgets/app_network_image.dart';
 import 'package:carzigo_partner/common_widgets/app_page_scaffold.dart';
 import 'package:carzigo_partner/common_widgets/app_phone_field.dart';
 import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
@@ -243,12 +244,13 @@ class _ProfilePhoto extends StatelessWidget {
     }
     final photoUrl = resolveMediaUrl(url);
     if (isRemoteMediaUrl(photoUrl)) {
-      return Image.network(
-        photoUrl,
+      return AppNetworkImage(
+        url: photoUrl,
         width: 110,
         height: 110,
         fit: BoxFit.cover,
-        errorBuilder: (_, error, stackTrace) => const AppImageView(
+        circle: true,
+        error: const AppImageView(
           AppAssets.dummyProfile,
           width: 110,
           height: 110,

@@ -8,6 +8,7 @@ import 'package:carzigo_partner/screens/profile/payout/payout_screen.dart';
 import 'package:carzigo_partner/screens/profile/edit_profile/edit_profile_screen.dart';
 import 'package:carzigo_partner/screens/profile/help_support/help_support_screen.dart';
 // import 'package:carzigo_partner/screens/profile/language/language_screen.dart';
+import 'package:carzigo_partner/screens/profile/cancellation/cancellation_policy_screen.dart';
 import 'package:carzigo_partner/screens/profile/privacy/privacy_screen.dart';
 import 'package:carzigo_partner/screens/profile/terms/terms_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
@@ -60,12 +61,14 @@ class ProfileProvider extends BaseProvider {
   void tapOnDocuments() => AppNavigation.to(const DocumentsScreen());
   void tapOnPayout() => AppNavigation.to(const PayoutScreen());
   void tapOnHelp() => AppNavigation.to(const HelpSupportScreen());
-  Future<void> tapOnRateApp() => AppRatingService.instance.rateFromMenu();
+  Future<void> tapOnRateApp(BuildContext context) =>
+      AppRatingService.instance.rateFromMenu(context);
   Future<void> tapOnShareApp(BuildContext context) =>
       ShareService.instance.shareApp(context: context);
   // void tapOnLanguage() => AppNavigation.to(const LanguageScreen());
   void tapOnTerms() => AppNavigation.to(const TermsScreen());
   void tapOnPrivacy() => AppNavigation.to(const PrivacyScreen());
+  void tapOnCancellation() => AppNavigation.to(const CancellationPolicyScreen());
 }
 
 class ProfileScreen extends StatelessWidget {
@@ -257,7 +260,7 @@ class ProfileScreen extends StatelessWidget {
                           iconAsset: AppAssets.star,
                           title: AppStrings.rateApp.tr(),
                           subtitle: AppStrings.rateAppSubtitle.tr(),
-                          onTap: provider.tapOnRateApp,
+                          onTap: () => provider.tapOnRateApp(context),
                         ),
                         _MenuTile(
                           iconAsset: AppAssets.share,
@@ -283,6 +286,12 @@ class ProfileScreen extends StatelessWidget {
                           title: AppStrings.privacyPolicy.tr(),
                           subtitle: AppStrings.privacySubtitle.tr(),
                           onTap: provider.tapOnPrivacy,
+                        ),
+                        _MenuTile(
+                          iconAsset: AppAssets.termsCondition,
+                          title: AppStrings.cancellationPolicy.tr(),
+                          subtitle: AppStrings.cancellationSubtitle.tr(),
+                          onTap: provider.tapOnCancellation,
                         ),
                         _MenuTile(
                           iconAsset: AppAssets.folder,

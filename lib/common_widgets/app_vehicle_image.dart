@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
+import 'package:carzigo_partner/common_widgets/app_network_image.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/media_url.dart';
 import 'package:flutter/material.dart';
@@ -58,14 +59,13 @@ class AppVehicleImage extends StatelessWidget {
   }
 
   Widget _network(String url) {
-    return Skeleton.leaf(
-      child: Image.network(
-        url,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (_, _, _) => _fallback(),
-      ),
+    return AppNetworkImage(
+      url: url,
+      width: width,
+      height: height,
+      fit: fit,
+      borderRadius: borderRadius,
+      error: _fallback(),
     );
   }
 
