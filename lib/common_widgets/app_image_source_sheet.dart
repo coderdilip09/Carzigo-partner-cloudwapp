@@ -5,6 +5,8 @@ import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 enum AppImageSourceChoice { camera, gallery }
@@ -42,7 +44,7 @@ Future<void> showImageSourceSheet(
 
   if (!context.mounted || choice == null) return;
 
-  await Future<void>.delayed(const Duration(milliseconds: 300));
+  await _waitForSheetDismiss();
   if (!context.mounted) return;
 
   switch (choice) {
@@ -83,7 +85,7 @@ Future<void> showDocumentSourceSheet(
 
   if (!context.mounted || choice == null) return;
 
-  await Future<void>.delayed(const Duration(milliseconds: 300));
+  await _waitForSheetDismiss();
   if (!context.mounted) return;
 
   switch (choice) {
@@ -94,6 +96,14 @@ Future<void> showDocumentSourceSheet(
     case AppDocumentSourceChoice.file:
       await onFile();
   }
+}
+
+/// Camera, gallery, and the cropper are modal. Opening the next one while
+/// this sheet is still dismissing returns an empty result.
+Future<void> _waitForSheetDismiss() {
+  return Future<void>.delayed(
+    Duration(milliseconds: Platform.isIOS ? 600 : 400),
+  );
 }
 
 class _SheetHandle extends StatelessWidget {

@@ -6,6 +6,7 @@ import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -42,11 +43,11 @@ class ImagePickService {
         return null;
       }
 
-      // iOS: camera VC must finish dismissing before TOCropViewController
-      // can present. Opening immediately returns null / blank cropper.
-      if (Platform.isIOS) {
-        await Future<void>.delayed(const Duration(milliseconds: 500));
-      }
+      // Camera must finish dismissing before the cropper can present.
+      // Opening immediately returns null and the photo never appears.
+      await Future<void>.delayed(
+        Duration(milliseconds: Platform.isIOS ? 600 : 400),
+      );
 
       // Copy into app temp as .jpg so UIImage can load camera captures reliably.
       stableCopy = await _stableJpegCopy(original);
@@ -108,7 +109,19 @@ class ImagePickService {
           await _safeDelete(stableCopy);
           return null;
         }
-        return File(cropped.path);
+        final croppedFile = File(cropped.path);
+        final stableCrop = await _stableJpegCopy(croppedFile);
+        if (stableCrop == null) {
+          AppToast.error(AppStrings.imagePickFailed.tr());
+          await _safeDelete(stableCopy);
+          return null;
+        }
+        if (stableCrop.path != croppedFile.path) {
+          await _safeDelete(croppedFile);
+        }
+        await _safeDelete(stableCopy);
+        await _evictFileImage(stableCrop);
+        return stableCrop;
       } on MissingPluginException catch (e) {
         // Happens after adding the plugin without a full app reinstall.
         debugPrint(
@@ -146,6 +159,12 @@ class ImagePickService {
       debugPrint('stable jpeg copy failed: $e\n$st');
       return null;
     }
+  }
+
+  static Future<void> _evictFileImage(File file) async {
+    try {
+      await FileImage(file).evict();
+    } catch (_) {}
   }
 
   static Future<void> _safeDelete(File? file) async {

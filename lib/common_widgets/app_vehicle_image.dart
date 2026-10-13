@@ -73,6 +73,7 @@ class AppVehicleImage extends StatelessWidget {
     return Skeleton.leaf(
       child: Image.file(
         File(path),
+        key: ValueKey(path),
         width: width,
         height: height,
         fit: fit,

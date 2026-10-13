@@ -240,7 +240,13 @@ class _ProfilePhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     final localFile = file;
     if (localFile != null) {
-      return Image.file(localFile, width: 110, height: 110, fit: BoxFit.cover);
+      return Image.file(
+        localFile,
+        key: ValueKey(localFile.path),
+        width: 110,
+        height: 110,
+        fit: BoxFit.cover,
+      );
     }
     final photoUrl = resolveMediaUrl(url);
     if (isRemoteMediaUrl(photoUrl)) {

@@ -239,7 +239,11 @@ class AppUploadBox extends StatelessWidget {
 
     final Widget image;
     if (imageFile != null) {
-      image = Image.file(imageFile!, fit: BoxFit.cover);
+      image = Image.file(
+        imageFile!,
+        key: ValueKey(imageFile!.path),
+        fit: BoxFit.cover,
+      );
     } else {
       final url = resolveMediaUrl(imageUrl);
       image = AppNetworkImage(

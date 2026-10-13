@@ -81,6 +81,9 @@ class CreateProfileScreen extends StatelessWidget {
                                     child: provider.profileImage != null
                                         ? Image.file(
                                             provider.profileImage!,
+                                            key: ValueKey(
+                                              provider.profileImage!.path,
+                                            ),
                                             width: 94,
                                             height: 94,
                                             fit: BoxFit.cover,
