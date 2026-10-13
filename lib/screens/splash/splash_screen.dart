@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carzigo_partner/common_widgets/app_image_view.dart';
 import 'package:carzigo_partner/common_widgets/app_logo.dart';
 import 'package:carzigo_partner/services/auth_route_service/auth_route_service.dart';
@@ -22,19 +24,33 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _scheduleNavigation() {
-    final permission = FirebaseService().requestNotificationPermission();
+    unawaited(
+      _askNotificationPermission().timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {},
+      ),
+    );
     Future.delayed(const Duration(seconds: 2), () async {
-      await permission;
       if (!mounted) return;
       await _navigateNext();
     });
+  }
+
+  Future<void> _askNotificationPermission() async {
+    await FirebaseService().init();
+    await FirebaseService().requestNotificationPermission();
   }
 
   Future<void> _navigateNext() async {
     if (!mounted) return;
 
     // Re-register push token on every cold start while logged in.
-    await FirebaseService().syncFcmTokenToServer();
+    // A stuck APNs handshake must not keep the splash on screen.
+    try {
+      await FirebaseService().syncFcmTokenToServer().timeout(
+        const Duration(seconds: 8),
+      );
+    } catch (_) {}
 
     final next = await _nextScreen();
     if (!mounted) return;

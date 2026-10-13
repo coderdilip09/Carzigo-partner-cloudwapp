@@ -22,7 +22,9 @@ void main() {
       ]);
       await EasyLocalization.ensureInitialized();
       await PrefsService().init();
-      await FirebaseService().init();
+      // Paint first. Firebase plugin calls can sit forever on iOS and leave
+      // the storyboard white if they run before runApp.
+      unawaited(FirebaseService().init());
       runApp(
         EasyLocalization(
           supportedLocales: const [Locale('en'), Locale('hi')],

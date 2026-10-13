@@ -44,8 +44,15 @@ class FirebaseService {
   String? fcmToken;
   bool _pendingNotificationOpen = false;
   Map<String, dynamic> _pendingData = const {};
+  Future<void>? _initFuture;
 
-  Future<void> init() async {
+  /// Safe to call more than once. Later callers share the first attempt so
+  /// startup can paint before this finishes.
+  Future<void> init() {
+    return _initFuture ??= _init();
+  }
+
+  Future<void> _init() async {
     try {
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
