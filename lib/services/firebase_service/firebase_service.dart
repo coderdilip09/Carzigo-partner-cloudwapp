@@ -178,7 +178,7 @@ class FirebaseService {
   /// Prefer in-memory / prefs, otherwise fetch from Firebase with retries.
   /// Use [forceRefresh] on login so we don't rely on a stale/empty prefs value.
   Future<String?> ensureFcmToken({
-    int attempts = 8,
+    int attempts = 3,
     bool forceRefresh = false,
   }) async {
     if (!forceRefresh) {
@@ -208,7 +208,7 @@ class FirebaseService {
     final messaging = FirebaseMessaging.instance;
 
     if (Platform.isIOS) {
-      for (var i = 0; i < 15; i++) {
+      for (var i = 0; i < attempts; i++) {
         final apns = await messaging.getAPNSToken();
         if (apns != null) {
           // ignore: avoid_print
@@ -224,7 +224,7 @@ class FirebaseService {
         // ignore: avoid_print
         print('[fcm] partner getToken attempt ${i + 1}/$attempts …');
         final token = (await messaging.getToken().timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 3),
           onTimeout: () => null,
         ))
             ?.trim();
@@ -249,18 +249,15 @@ class FirebaseService {
     return null;
   }
 
-  /// Keep trying after login — token sometimes arrives a few seconds late.
-  Future<void> syncFcmTokenWithRetry({int tries = 6}) async {
-    for (var i = 0; i < tries; i++) {
-      final token = await ensureFcmToken(forceRefresh: i > 0);
-      if (token != null && token.isNotEmpty) {
-        await syncFcmTokenToServer(token);
-        return;
-      }
-      await Future<void>.delayed(Duration(seconds: 2 + i));
+  /// Upload the token after login. Fetching already stops after three attempts.
+  Future<void> syncFcmTokenWithRetry() async {
+    final token = await ensureFcmToken();
+    if (token != null && token.isNotEmpty) {
+      await syncFcmTokenToServer(token);
+      return;
     }
     // ignore: avoid_print
-    print('[fcm] ❌ partner gave up syncing FCM after $tries tries');
+    print('[fcm] ❌ partner gave up syncing FCM after 3 attempts');
   }
 
   /// Upload FCM token when the partner is logged in.

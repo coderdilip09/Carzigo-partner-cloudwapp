@@ -103,6 +103,9 @@ class PayoutProvider extends BaseProvider {
     }
 
     if (amount > available) {
+      return AppStrings.payoutAmountMaximum.tr(
+        namedArgs: {'amount': '$available'},
+      );
       return AppStrings.payoutAmountExceedsBalance.tr();
     }
     if (amount > maximumRequestAmount) {
@@ -207,7 +210,7 @@ class PayoutScreen extends StatelessWidget {
                                     FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   validator: provider.validateAmount,
-                              errorMaxLines: 2,
+                                  errorMaxLines: 2,
                                 ),
                                 const SizedBox(height: 12),
                                 AppTextField(
