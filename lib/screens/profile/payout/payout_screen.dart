@@ -18,8 +18,13 @@ class PayoutProvider extends BaseProvider {
     load();
   }
 
+  static const int minimumRequestAmount = 1;
+  static const int maximumRequestAmount = 10000;
+
+  final formKey = GlobalKey<FormState>();
   final amountController = TextEditingController();
   final noteController = TextEditingController();
+  bool submitted = false;
 
   bool isLoading = true;
   bool isLoadingMore = false;
@@ -57,7 +62,10 @@ class PayoutProvider extends BaseProvider {
       available = _asInt(data['available']);
       final raw = data['requests'];
       final incoming = raw is List
-          ? raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList()
+          ? raw
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList()
           : <Map<String, dynamic>>[];
       if (reset) {
         requests = incoming;
@@ -79,12 +87,38 @@ class PayoutProvider extends BaseProvider {
 
   Future<void> loadMore() => load(reset: false);
 
-  Future<void> submit() async {
-    final amount = int.tryParse(amountController.text.trim()) ?? 0;
-    if (amount < 1 || amount > available) {
-      AppToast.error(AppStrings.payoutAmountInvalid.tr());
-      return;
+  String? validateAmount(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return AppStrings.payoutAmountRequired.tr();
+
+    final amount = int.tryParse(text);
+    if (amount == null || amount <= 0) {
+      return AppStrings.payoutAmountGreaterThanZero.tr();
     }
+
+    if (amount < minimumRequestAmount) {
+      return AppStrings.payoutAmountMinimum.tr(
+        namedArgs: {'amount': '$minimumRequestAmount'},
+      );
+    }
+
+    if (amount > available) {
+      return AppStrings.payoutAmountExceedsBalance.tr();
+    }
+    if (amount > maximumRequestAmount) {
+      return AppStrings.payoutAmountMaximum.tr(
+        namedArgs: {'amount': '$maximumRequestAmount'},
+      );
+    }
+
+    return null;
+  }
+
+  Future<void> submit() async {
+    submitted = true;
+    safeNotifyListeners();
+    if (formKey.currentState?.validate() != true) return;
+    final amount = int.parse(amountController.text.trim());
     isSubmitting = true;
     safeNotifyListeners();
     try {
@@ -96,6 +130,8 @@ class PayoutProvider extends BaseProvider {
         AppToast.error(res.message ?? AppStrings.requestFailed.tr());
         return;
       }
+      submitted = false;
+      formKey.currentState?.reset();
       amountController.clear();
       noteController.clear();
       AppToast.success(res.message ?? AppStrings.payoutRequested.tr());
@@ -149,61 +185,77 @@ class PayoutScreen extends StatelessWidget {
                             provider.loadMore();
                             return false;
                           },
-                          child: ListView(
-                          padding: const EdgeInsets.all(20),
-                          children: [
-                            AppBackHeader(title: AppStrings.requestPayout.tr()),
-                            const SizedBox(height: 16),
-                            _BalanceCard(provider: provider),
-                            const SizedBox(height: 16),
-                            AppTextField(
-                              controller: provider.amountController,
-                              hint: AppStrings.payoutAmount.tr(),
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            ),
-                            const SizedBox(height: 12),
-                            AppTextField(
-                              controller: provider.noteController,
-                              hint: AppStrings.payoutNote.tr(),
-                            ),
-                            const SizedBox(height: 16),
-                            AppSolidButton(
-                              label: AppStrings.submitPayout.tr(),
-                              isLoading: provider.isSubmitting,
-                              onTap: provider.available < 1 ? null : provider.submit,
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              AppStrings.payoutHistory.tr(),
-                              style: AppTextStyles.style(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            if (provider.requests.isEmpty)
-                              Text(
-                                '—',
-                                style: AppTextStyles.style(
-                                  color: AppColors.textSecondary,
+                          child: Form(
+                            key: provider.formKey,
+                            autovalidateMode: provider.submitted
+                                ? AutovalidateMode.onUserInteraction
+                                : AutovalidateMode.disabled,
+                            child: ListView(
+                              padding: const EdgeInsets.all(20),
+                              children: [
+                                AppBackHeader(
+                                  title: AppStrings.requestPayout.tr(),
                                 ),
-                              )
-                            else
-                              ...provider.requests.map(_RequestTile.new),
-                            if (provider.isLoadingMore)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                const SizedBox(height: 16),
+                                _BalanceCard(provider: provider),
+                                const SizedBox(height: 16),
+                                AppTextField(
+                                  controller: provider.amountController,
+                                  hint: AppStrings.payoutAmount.tr(),
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  validator: provider.validateAmount,
+                              errorMaxLines: 2,
+                                ),
+                                const SizedBox(height: 12),
+                                AppTextField(
+                                  controller: provider.noteController,
+                                  hint: AppStrings.payoutNote.tr(),
+                                ),
+                                const SizedBox(height: 16),
+                                AppSolidButton(
+                                  label: AppStrings.submitPayout.tr(),
+                                  isLoading: provider.isSubmitting,
+                                  onTap: provider.available < 1
+                                      ? null
+                                      : provider.submit,
+                                ),
+                                const SizedBox(height: 24),
+                                Text(
+                                  AppStrings.payoutHistory.tr(),
+                                  style: AppTextStyles.style(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
+                                const SizedBox(height: 8),
+                                if (provider.requests.isEmpty)
+                                  Text(
+                                    '—',
+                                    style: AppTextStyles.style(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  )
+                                else
+                                  ...provider.requests.map(_RequestTile.new),
+                                if (provider.isLoadingMore)
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 16),
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
               ),
@@ -235,12 +287,18 @@ class _BalanceCard extends StatelessWidget {
         children: [
           Text(
             AppStrings.availableBalance.tr(),
-            style: AppTextStyles.style(fontSize: 12, color: AppColors.textSecondary),
+            style: AppTextStyles.style(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             '₹${provider.available}',
-            style: AppTextStyles.style(fontSize: 28, fontWeight: FontWeight.w700),
+            style: AppTextStyles.style(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 12),
           Text('${AppStrings.partnerRevenue.tr()}: ${rupee(provider.revenue)}'),
@@ -278,7 +336,10 @@ class _RequestTile extends StatelessWidget {
           ),
           Text(
             status,
-            style: AppTextStyles.style(fontSize: 12, color: AppColors.textSecondary),
+            style: AppTextStyles.style(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),

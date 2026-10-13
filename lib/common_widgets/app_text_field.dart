@@ -23,6 +23,7 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.autovalidateMode,
+    this.errorMaxLines,
     this.inputFormatters,
     this.maxLength,
     this.textInputAction,
@@ -44,6 +45,7 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final FormFieldValidator<String>? validator;
   final AutovalidateMode? autovalidateMode;
+  final int? errorMaxLines;
   final List<TextInputFormatter>? inputFormatters;
   final int? maxLength;
   final TextInputAction? textInputAction;
@@ -121,6 +123,7 @@ class AppTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.destructive, width: 1.5),
         ),
+        errorMaxLines: errorMaxLines,
         errorStyle: AppTextStyles.style(
           fontSize: 12,
           color: AppColors.destructive,

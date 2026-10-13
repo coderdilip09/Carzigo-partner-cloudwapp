@@ -125,38 +125,27 @@ class FirebaseService {
     );
   }
 
-  /// Asks only when notifications are not already allowed.
   /// Call this after the first frame so Android can show the system dialog.
+  /// On Android 13+, Firebase shows the dialog only when POST_NOTIFICATIONS
+  /// is still undecided. A second request from the local-notifications plugin
+  /// can consume that prompt without showing it.
   Future<void> requestNotificationPermission() async {
     try {
-      if (await _notificationsAllowed()) return;
+      if (!kIsWeb && Platform.isIOS && await _iosNotificationsAllowed()) {
+        return;
+      }
       await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
         sound: true,
       );
-      if (Platform.isAndroid) {
-        await _localNotifications
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >()
-            ?.requestNotificationsPermission();
-      }
     } catch (e) {
       // ignore: avoid_print
       print('[fcm] partner permission request error (continuing): $e');
     }
   }
 
-  Future<bool> _notificationsAllowed() async {
-    if (Platform.isAndroid) {
-      final enabled = await _localNotifications
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >()
-          ?.areNotificationsEnabled();
-      return enabled == true;
-    }
+  Future<bool> _iosNotificationsAllowed() async {
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
     final status = settings.authorizationStatus;
     return status == AuthorizationStatus.authorized ||

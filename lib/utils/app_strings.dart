@@ -189,6 +189,11 @@ class AppStrings {
   static const String payoutHistory = 'payout_history';
   static const String payoutRequested = 'payout_requested';
   static const String payoutAmountInvalid = 'payout_amount_invalid';
+  static const String payoutAmountRequired = 'payout_amount_required';
+  static const String payoutAmountGreaterThanZero = 'payout_amount_greater_than_zero';
+  static const String payoutAmountExceedsBalance = 'payout_amount_exceeds_balance';
+  static const String payoutAmountMinimum = 'payout_amount_minimum';
+  static const String payoutAmountMaximum = 'payout_amount_maximum';
   static const String editProfile = 'edit_profile';
   static const String edit = 'edit';
   static const String myProfile = 'my_profile';
