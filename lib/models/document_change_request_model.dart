@@ -57,6 +57,9 @@ class DocumentChangeDraftModel {
     this.docUrl,
     this.addressLine,
     this.bankName,
+    this.bankBranch,
+    this.ifsc,
+    this.accountHolderName,
     this.accountNumber,
     this.chequeUrl,
     this.digilockerFullName,
@@ -69,6 +72,9 @@ class DocumentChangeDraftModel {
   final String? docUrl;
   final String? addressLine;
   final String? bankName;
+  final String? bankBranch;
+  final String? ifsc;
+  final String? accountHolderName;
   final String? accountNumber;
   final String? chequeUrl;
   final String? digilockerFullName;
@@ -82,6 +88,15 @@ class DocumentChangeDraftModel {
       docUrl: _asNonEmpty(json['doc_url'] ?? json['docUrl']),
       addressLine: _asNonEmpty(json['address_line'] ?? json['addressLine']),
       bankName: _asNonEmpty(json['bank_name'] ?? json['bankName']),
+      bankBranch: _asNonEmpty(
+        json['bank_branch'] ?? json['bankBranch'] ?? json['branch'],
+      ),
+      ifsc: _asNonEmpty(json['ifsc'] ?? json['ifsc_code'] ?? json['ifscCode']),
+      accountHolderName: _asNonEmpty(
+        json['account_holder_name'] ??
+            json['accountHolderName'] ??
+            json['holder_name'],
+      ),
       accountNumber: _asNonEmpty(
         json['account_number'] ?? json['accountNumber'],
       ),

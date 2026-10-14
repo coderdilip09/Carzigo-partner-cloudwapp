@@ -161,25 +161,63 @@ class DocumentsProvider extends BaseProvider {
     return urls;
   }
 
-  String get bankName {
-    final draftName = _draftOf('bank')?.bankName;
-    if (draftName != null) return draftName;
-    final name = review?.bank?.bankName?.trim();
-    if (name != null && name.isNotEmpty) return name;
-    final holder = review?.bank?.holderName?.trim();
-    if (holder != null && holder.isNotEmpty) return holder;
+  String? _bankValue(String? draft, String? saved) {
+    final fromDraft = draft?.trim() ?? '';
+    if (fromDraft.isNotEmpty) return fromDraft;
+    final fromSaved = saved?.trim() ?? '';
+    return fromSaved.isEmpty ? null : fromSaved;
+  }
+
+  String _orNoData(String? value) {
+    final text = value?.trim() ?? '';
+    return text.isEmpty ? AppStrings.noData.tr() : text;
+  }
+
+  String get bankHolderName => _orNoData(
+        _bankValue(
+          _draftOf('bank')?.accountHolderName,
+          review?.bank?.holderName,
+        ),
+      );
+
+  String get bankName => _orNoData(
+        _bankValue(_draftOf('bank')?.bankName, review?.bank?.bankName),
+      );
+
+  String get bankBranch => _orNoData(
+        _bankValue(_draftOf('bank')?.bankBranch, review?.bank?.bankBranch),
+      );
+
+  String get bankIfsc => _orNoData(
+        _bankValue(_draftOf('bank')?.ifsc, review?.bank?.ifsc),
+      );
+
+  /// Full number for the view dialog and edit form. The tile stays masked.
+  String get bankAccountFull {
+    final draft = _draftOf('bank')?.accountNumber?.trim() ?? '';
+    if (draft.isNotEmpty && !KycDocNumber.isMasked(draft)) return draft;
+    final saved = review?.bank?.accountNumber?.trim() ?? '';
+    if (saved.isNotEmpty && !KycDocNumber.isMasked(saved)) return saved;
     return AppStrings.noData.tr();
   }
 
   String get bankMasked {
     final draftAccount = _draftOf('bank')?.accountNumber;
     if (draftAccount != null) return _maskAccount(draftAccount);
-    final raw = (review?.bank?.accountNumberMasked ??
-            review?.bank?.accountNumber)
-        ?.trim();
-    if (raw == null || raw.isEmpty) return AppStrings.noData.tr();
-    return _maskAccount(raw);
+    final raw = review?.bank?.accountNumberMasked?.trim();
+    if (raw != null && raw.isNotEmpty) return _maskAccount(raw);
+    final full = review?.bank?.accountNumber?.trim();
+    if (full == null || full.isEmpty) return AppStrings.noData.tr();
+    return _maskAccount(full);
   }
+
+  List<({String label, String value})> get bankViewDetails => [
+        (label: AppStrings.accountHolderName.tr(), value: bankHolderName),
+        (label: AppStrings.bankName.tr(), value: bankName),
+        (label: AppStrings.bankBranch.tr(), value: bankBranch),
+        (label: AppStrings.ifscCode.tr(), value: bankIfsc),
+        (label: AppStrings.bankAccountNumber.tr(), value: bankAccountFull),
+      ];
 
   String _maskAccount(String raw) {
     final digits = raw.replaceAll(RegExp(r'\D'), '');

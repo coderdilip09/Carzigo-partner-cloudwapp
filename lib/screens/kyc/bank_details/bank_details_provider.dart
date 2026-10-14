@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_review/kyc_review_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_status.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
@@ -91,8 +90,8 @@ class BankDetailsProvider extends BaseProvider {
           ? bank.bankBranch!.trim()
           : null;
       chequeUrl = bank.chequeUrl;
-      final account = bank.accountNumber ?? bank.accountNumberMasked ?? '';
-      if (account.isNotEmpty) {
+      final account = (bank.accountNumber ?? '').replaceAll(RegExp(r'\s'), '');
+      if (RegExp(r'^\d{9,18}$').hasMatch(account)) {
         accountNumberController.text = account;
         confirmAccountController.text = account;
       }
@@ -222,11 +221,6 @@ class BankDetailsProvider extends BaseProvider {
   }
 
   String? validateAccountNumber(String? value) {
-    final replacing = chequeImage != null;
-    final hasSaved = chequeUrl != null;
-    if (!replacing && hasSaved && KycDocNumber.isPlaceholder(value)) {
-      return null;
-    }
     final account = value?.trim() ?? '';
     if (account.isEmpty) {
       return AppStrings.accountNumberRequired.tr();
@@ -240,14 +234,6 @@ class BankDetailsProvider extends BaseProvider {
   String? validateConfirmAccount(String? value) {
     final account = accountNumberController.text.trim();
     final confirm = value?.trim() ?? '';
-    final replacing = chequeImage != null;
-    final hasSaved = chequeUrl != null;
-    if (!replacing &&
-        hasSaved &&
-        KycDocNumber.isPlaceholder(account) &&
-        (confirm.isEmpty || confirm == account)) {
-      return null;
-    }
     if (confirm.isEmpty) {
       return AppStrings.confirmAccountRequired.tr();
     }
@@ -281,7 +267,6 @@ class BankDetailsProvider extends BaseProvider {
     if ((resolvedBranch ?? '').trim() != _savedBranch) return true;
     if (ifscController.text.trim().toUpperCase() != _savedIfsc) return true;
     final account = accountNumberController.text.trim();
-    if (KycDocNumber.isPlaceholder(account)) return false;
     return account != _savedAccount;
   }
 
@@ -309,13 +294,6 @@ class BankDetailsProvider extends BaseProvider {
 
     if (!_hasChanges()) {
       _finishSuccess();
-      return;
-    }
-
-    final account = accountNumberController.text.trim();
-    if (KycDocNumber.isPlaceholder(account) ||
-        !RegExp(r'^\d{9,18}$').hasMatch(account)) {
-      AppToast.error(AppStrings.accountNumberRequired.tr());
       return;
     }
 

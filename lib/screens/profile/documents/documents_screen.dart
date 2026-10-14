@@ -49,6 +49,7 @@ Future<void> _viewDocuments(
   BuildContext context, {
   required String title,
   required List<String> urls,
+  List<({String label, String value})> details = const [],
   String fallbackAsset = AppAssets.docProof,
 }) async {
   final clean = urls
@@ -57,24 +58,26 @@ Future<void> _viewDocuments(
       .toSet()
       .toList();
 
-  if (clean.isEmpty) {
+  if (clean.isEmpty && details.isEmpty) {
     AppToast.error(AppStrings.documentUnavailable.tr());
     return;
   }
 
-  final first = clean.first;
-  if (_isLikelyDocumentFile(first) || _isPdfUrl(first)) {
+  final first = clean.isEmpty ? '' : clean.first;
+  if (details.isEmpty &&
+      first.isNotEmpty &&
+      (_isLikelyDocumentFile(first) || _isPdfUrl(first))) {
     await _openExternalDocument(first);
     return;
   }
 
-  // Image extension, or unknown CDN URL — open in-app viewer.
   if (!context.mounted) return;
   await showDialog<void>(
     context: context,
     builder: (ctx) => _DocumentViewerDialog(
       title: title,
       urls: clean,
+      details: details,
       fallbackAsset: fallbackAsset,
     ),
   );
@@ -365,6 +368,7 @@ class DocumentsScreen extends StatelessWidget {
                                             title: AppStrings.bankDetails.tr(),
                                             line1: provider.bankName,
                                             line2: provider.bankMasked,
+                                            viewDetails: provider.bankViewDetails,
                                             isVerified:
                                                 provider.isSectionVerified(
                                               'bank',
@@ -377,6 +381,7 @@ class DocumentsScreen extends StatelessWidget {
                                             statusLabel:
                                                 provider.statusLabelFor(
                                               'bank',
+                                              
                                               provider.hasBank,
                                             ),
                                             documentUrls:
@@ -463,6 +468,8 @@ class _DocInfoCard extends StatelessWidget {
     required this.isVerified,
     required this.statusLabel,
     required this.documentUrls,
+    this.extraLines = const [],
+    this.viewDetails = const [],
     this.isUploaded = false,
     this.showUpdate = false,
     this.onUpdate,
@@ -472,6 +479,8 @@ class _DocInfoCard extends StatelessWidget {
   final String title;
   final String line1;
   final String line2;
+  final List<String> extraLines;
+  final List<({String label, String value})> viewDetails;
   final bool isVerified;
   final bool isUploaded;
   final String statusLabel;
@@ -592,6 +601,14 @@ class _DocInfoCard extends StatelessWidget {
                         color: AppColors.textMuted,
                       ),
                     ),
+                    for (final line in extraLines)
+                      Text(
+                        line,
+                        style: AppTextStyles.style(
+                          fontSize: 13,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -631,6 +648,7 @@ class _DocInfoCard extends StatelessWidget {
                         context,
                         title: title,
                         urls: documentUrls,
+                        details: viewDetails,
                       ),
                       behavior: HitTestBehavior.opaque,
                       child: Row(
@@ -669,11 +687,13 @@ class _DocumentViewerDialog extends StatefulWidget {
     required this.title,
     required this.urls,
     required this.fallbackAsset,
+    this.details = const [],
   });
 
   final String title;
   final List<String> urls;
   final String fallbackAsset;
+  final List<({String label, String value})> details;
 
   @override
   State<_DocumentViewerDialog> createState() => _DocumentViewerDialogState();
@@ -696,7 +716,8 @@ class _DocumentViewerDialogState extends State<_DocumentViewerDialog> {
     super.dispose();
   }
 
-  String get _currentUrl => widget.urls[_index];
+  String get _currentUrl =>
+      widget.urls.isEmpty ? '' : widget.urls[_index];
 
   String _sideLabel(int i) {
     if (widget.urls.length < 2) return '';
@@ -714,7 +735,11 @@ class _DocumentViewerDialogState extends State<_DocumentViewerDialog> {
       surfaceTintColor: AppColors.white,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
+        child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -757,9 +782,42 @@ class _DocumentViewerDialogState extends State<_DocumentViewerDialog> {
                 ),
               ],
             ),
+            if (widget.details.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              for (final row in widget.details) ...[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 118,
+                      child: Text(
+                        row.label,
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        row.value,
+                        style: AppTextStyles.style(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+            ],
+            if (widget.urls.isNotEmpty) ...[
             const SizedBox(height: 14),
             SizedBox(
-              height: 320,
+              height: 280,
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: widget.urls.length,
@@ -811,9 +869,10 @@ class _DocumentViewerDialogState extends State<_DocumentViewerDialog> {
                 }),
               ),
             ],
-            if (_imageFailed ||
-                _isPdfUrl(_currentUrl) ||
-                _isLikelyDocumentFile(_currentUrl)) ...[
+            if (_currentUrl.isNotEmpty &&
+                (_imageFailed ||
+                    _isPdfUrl(_currentUrl) ||
+                    _isLikelyDocumentFile(_currentUrl))) ...[
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -837,7 +896,9 @@ class _DocumentViewerDialogState extends State<_DocumentViewerDialog> {
                 ),
               ),
             ],
+            ],
           ],
+        ),
         ),
       ),
     );

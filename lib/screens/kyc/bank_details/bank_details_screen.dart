@@ -7,7 +7,6 @@ import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_text_field.dart';
 import 'package:carzigo_partner/common_widgets/app_upload_box.dart';
 import 'package:carzigo_partner/screens/kyc/bank_details/bank_details_provider.dart';
-import 'package:carzigo_partner/screens/kyc/kyc_document_number.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
@@ -83,34 +82,16 @@ class BankDetailsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 12),
                               AppTextField(
-                                key: ValueKey(
-                                  'acct_${KycDocNumber.isMasked(provider.accountNumberController.text)}',
-                                ),
                                 controller: provider.accountNumberController,
                                 hint: AppStrings.bankAccountNumber.tr(),
-                                prefixAsset: AppAssets.personId,
-                                keyboardType:
-                                    KycDocNumber.isMasked(
-                                      provider.accountNumberController.text,
-                                    )
-                                    ? TextInputType.text
-                                    : TextInputType.number,
+                                prefixAsset: AppAssets.bank,
+                                keyboardType: TextInputType.number,
                                 borderColor: AppColors.textFieldBorder,
                                 validator: provider.validateAccountNumber,
-                                maxLength:
-                                    KycDocNumber.isMasked(
-                                      provider.accountNumberController.text,
-                                    )
-                                    ? null
-                                    : 18,
-                                inputFormatters:
-                                    KycDocNumber.isMasked(
-                                      provider.accountNumberController.text,
-                                    )
-                                    ? const []
-                                    : [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
+                                maxLength: 18,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
                                 onChanged: (_) {
                                   if (provider.submitted) {
                                     provider.formKey.currentState?.validate();
@@ -120,40 +101,22 @@ class BankDetailsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 12),
                               AppTextField(
-                                key: ValueKey(
-                                  'confirm_${KycDocNumber.isMasked(provider.confirmAccountController.text)}',
-                                ),
                                 controller: provider.confirmAccountController,
                                 hint: AppStrings.confirmBankAccountNumber.tr(),
-                                prefixAsset: AppAssets.personId,
-                                keyboardType:
-                                    KycDocNumber.isMasked(
-                                      provider.confirmAccountController.text,
-                                    )
-                                    ? TextInputType.text
-                                    : TextInputType.number,
+                                prefixAsset: AppAssets.doubleCheck,
+                                keyboardType: TextInputType.number,
                                 borderColor: AppColors.textFieldBorder,
                                 validator: provider.validateConfirmAccount,
-                                maxLength:
-                                    KycDocNumber.isMasked(
-                                      provider.confirmAccountController.text,
-                                    )
-                                    ? null
-                                    : 18,
-                                inputFormatters:
-                                    KycDocNumber.isMasked(
-                                      provider.confirmAccountController.text,
-                                    )
-                                    ? const []
-                                    : [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
+                                maxLength: 18,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
                               ),
                               const SizedBox(height: 12),
                               AppTextField(
                                 controller: provider.ifscController,
                                 hint: AppStrings.ifscCode.tr(),
-                                prefixAsset: AppAssets.personId,
+                                prefixAsset: AppAssets.badge,
                                 borderColor: AppColors.textFieldBorder,
                                 textCapitalization:
                                     TextCapitalization.characters,
