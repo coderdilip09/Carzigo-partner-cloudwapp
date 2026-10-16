@@ -68,6 +68,8 @@ class JobDataModel {
     this.assignedAt,
     this.beforePhoto,
     this.afterPhoto,
+    this.washType,
+    this.keyVerified,
   });
 
   final String? id;
@@ -101,20 +103,65 @@ class JobDataModel {
   final String? assignedAt;
   final String? beforePhoto;
   final String? afterPhoto;
+  final String? washType;
+  final bool? keyVerified;
 
+  bool get needsKeyHandover => (washType ?? '').toLowerCase() == 'interior';
+
+  /// True only after the scheduled calendar day (IST) has ended.
+  /// The slot length does not make a same-day wash incomplete.
+  bool get scheduledDayHasPassed {
+    final iso = scheduledDate?.trim();
+    if (iso == null || iso.length < 10) return false;
+    return iso.substring(0, 10).compareTo(_todayIsoInIst()) < 0;
+  }
+
+  bool get isOpenWorkflow {
+    switch ((workflowStatus ?? '').toLowerCase()) {
+      case JobWorkflowStatus.assigned:
+      case JobWorkflowStatus.onTheWay:
+      case JobWorkflowStatus.arrived:
+      case JobWorkflowStatus.onSite:
+      case JobWorkflowStatus.serviceStarted:
+      case JobWorkflowStatus.inProgress:
+      case 'pending':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// Not Complete after the date changes, while the wash is still unfinished.
+  bool get isNotComplete => scheduledDayHasPassed && isOpenWorkflow;
+
+  static String _todayIsoInIst() {
+    final now = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+    final y = now.year.toString().padLeft(4, '0');
+    final m = now.month.toString().padLeft(2, '0');
+    final d = now.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
+  /// Last finished step. Interior washes insert Key Handover after On site.
   int get step {
-    if (currentStep != null) return currentStep!;
-    switch (workflowStatus) {
+    final hasBefore = (beforePhoto ?? '').trim().isNotEmpty;
+    final hasAfter = (afterPhoto ?? '').trim().isNotEmpty;
+    final keyOffset = needsKeyHandover ? 1 : 0;
+    final keyDone = keyVerified == true;
+    switch ((workflowStatus ?? '').toLowerCase()) {
       case JobWorkflowStatus.onTheWay:
         return 2;
       case JobWorkflowStatus.onSite:
       case JobWorkflowStatus.arrived:
-        return 3;
+        if (needsKeyHandover && !keyDone) return 3;
+        if (!hasBefore) return 3 + keyOffset;
+        return 4 + keyOffset;
       case JobWorkflowStatus.inProgress:
       case JobWorkflowStatus.serviceStarted:
-        return 4;
+        if (!hasAfter) return 5 + keyOffset;
+        return 6 + keyOffset;
       case JobWorkflowStatus.completed:
-        return 5;
+        return 7 + keyOffset;
       case JobWorkflowStatus.assigned:
       default:
         return 1;
@@ -248,6 +295,8 @@ class JobDataModel {
       assignedAt: asString(json['assignedAt'] ?? json['assigned_at']),
       beforePhoto: asString(json['before_photo'] ?? json['beforePhoto']),
       afterPhoto: asString(json['after_photo'] ?? json['afterPhoto']),
+      washType: asString(json['wash_type'] ?? json['washType']),
+      keyVerified: asBool(json['key_verified'] ?? json['keyVerified']),
     );
   }
 

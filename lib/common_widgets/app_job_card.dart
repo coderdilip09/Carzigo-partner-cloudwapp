@@ -234,23 +234,23 @@ class AppJobCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (showPrice) ...[
+                  if (showPrice && (price ?? '').trim().isNotEmpty) ...[
                     const SizedBox(width: 8),
                     Text(
-                      price ?? AppStrings.mockJobPrice.tr(),
+                      price!,
                       style: AppTextStyles.style(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(width: 2),
-                    const AppIcon(
-                      AppAssets.chevronRight,
-                      size: 16,
-                      color: AppColors.black,
-                    ),
                   ],
+                  const SizedBox(width: 2),
+                  const AppIcon(
+                    AppAssets.chevronRight,
+                    size: 16,
+                    color: AppColors.black,
+                  ),
                 ],
               ),
               Text(

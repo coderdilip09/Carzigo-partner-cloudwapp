@@ -88,15 +88,24 @@ class _DashboardHome extends StatelessWidget {
   }
 
   String _jobStatusLabel(JobDataModel job) {
+    if (job.isNotComplete) return AppStrings.notComplete.tr();
     final tag = (job.displayTag ?? '').toLowerCase().trim();
-    if (tag == 'not_complete') return AppStrings.notComplete.tr();
     if (tag == 'rejected') return AppStrings.reject.tr();
     if (tag == 'cancelled') return AppStrings.cancelled.tr();
     if (tag == 'completed') return AppStrings.completed.tr();
 
     final ui = (job.uiStatus ?? '').trim().toLowerCase();
-    if (ui == 'not complete' || ui == 'not_complete') {
-      return AppStrings.notComplete.tr();
+    if ((ui == 'not complete' || ui == 'not_complete') &&
+        !job.scheduledDayHasPassed) {
+      final rawStatus = (job.workflowStatus ?? '').toLowerCase();
+      if (rawStatus.contains('progress') || rawStatus == 'service_started') {
+        return AppStrings.inProgress.tr();
+      }
+      if (rawStatus == 'arrived' || rawStatus == 'on_site') {
+        return AppStrings.statusOnSite.tr();
+      }
+      if (rawStatus == 'on_the_way') return AppStrings.statusOnTheWay.tr();
+      return AppStrings.upcoming.tr();
     }
     if (ui == 'reject' || ui == 'rejected') return AppStrings.reject.tr();
     if (ui == 'cancelled' || ui == 'canceled') {
@@ -105,7 +114,9 @@ class _DashboardHome extends StatelessWidget {
     if (job.uiStatus?.trim().isNotEmpty == true) return job.uiStatus!.trim();
 
     final raw = (job.listStatus ?? job.workflowStatus ?? '').toLowerCase();
-    if (raw.contains('not_complete')) return AppStrings.notComplete.tr();
+    if (raw.contains('not_complete') && job.scheduledDayHasPassed) {
+      return AppStrings.notComplete.tr();
+    }
     if (raw.contains('reject')) return AppStrings.reject.tr();
     if (raw == 'completed' || raw.endsWith('_completed')) {
       return AppStrings.completed.tr();
@@ -391,9 +402,19 @@ class _DashboardHome extends StatelessWidget {
                                   carName: previewJobs[i].car,
                                   embedded: true,
                                   showBottomDivider: i < previewJobs.length - 1,
-                                  onTap: () => AppNavigation.to(
-                                    ServiceDetailsScreen(job: previewJobs[i]),
-                                  ),
+                                  onTap: () async {
+                                    final completed =
+                                        await AppNavigation.to<bool>(
+                                      ServiceDetailsScreen(
+                                        job: previewJobs[i],
+                                      ),
+                                    );
+                                    if (completed == true) {
+                                      await provider.loadDashboard(
+                                        silent: true,
+                                      );
+                                    }
+                                  },
                                 ),
                             ],
                           ),

@@ -8,12 +8,15 @@ import 'package:carzigo_partner/common_widgets/app_solid_button.dart';
 import 'package:carzigo_partner/common_widgets/app_vehicle_image.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/screens/schedule/service_details/service_details_provider.dart';
+import 'package:carzigo_partner/services/navigation_service/navigation_service.dart';
 import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
+import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
@@ -25,10 +28,8 @@ class ServiceDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ServiceDetailsProvider(
-        jobId: jobId ?? job?.id,
-        initialJob: job,
-      ),
+      create: (_) =>
+          ServiceDetailsProvider(jobId: jobId ?? job?.id, initialJob: job),
       child: Consumer<ServiceDetailsProvider>(
         builder: (context, provider, _) {
           final isPageLoading = provider.isLoading;
@@ -60,8 +61,12 @@ class ServiceDetailsScreen extends StatelessWidget {
                               const _CustomerDetailsCard(),
                               const SizedBox(height: 16),
                               const _VehicleDetailsCard(),
-                              const SizedBox(height: 16),
-                              const _WashPhotosCard(),
+                              if (provider.needsKeyHandover &&
+                                  provider.job?.keyVerified != true &&
+                                  provider.currentStep < 3) ...[
+                                const SizedBox(height: 16),
+                                const _KeyFindNote(),
+                              ],
                               const SizedBox(height: 16),
                               const _ServiceAddressCard(),
                               const SizedBox(height: 20),
@@ -152,17 +157,40 @@ class ServiceDetailsScreen extends StatelessWidget {
         provider.isLoading
             ? '00 Sep 0000, 09:00 AM'
             : provider.displayAssignedAt,
+        null,
+        null,
       ),
       (
         AppStrings.statusOnTheWay.tr(),
         AppStrings.statusOnTheWayDesc.tr(),
         AppAssets.logoCar,
         null,
+        null,
+        JobWorkflowStatus.onTheWay,
       ),
       (
         AppStrings.statusOnSite.tr(),
         AppStrings.statusOnSiteDesc.tr(),
         AppAssets.location,
+        null,
+        null,
+        JobWorkflowStatus.onSite,
+      ),
+      if (provider.needsKeyHandover)
+        (
+          AppStrings.statusKeyHandover.tr(),
+          AppStrings.statusKeyHandoverDesc.tr(),
+          AppAssets.shieldFilled,
+          null,
+          'key',
+          null,
+        ),
+      (
+        AppStrings.statusUploadBefore.tr(),
+        AppStrings.statusUploadBeforeDesc.tr(),
+        AppAssets.camera,
+        null,
+        'before',
         null,
       ),
       (
@@ -170,12 +198,24 @@ class ServiceDetailsScreen extends StatelessWidget {
         AppStrings.statusInProgressDesc.tr(),
         AppAssets.headset,
         null,
+        null,
+        JobWorkflowStatus.inProgress,
+      ),
+      (
+        AppStrings.statusUploadAfter.tr(),
+        AppStrings.statusUploadAfterDesc.tr(),
+        AppAssets.camera,
+        null,
+        'after',
+        null,
       ),
       (
         AppStrings.statusCompleted.tr(),
         AppStrings.statusCompletedDesc.tr(),
         AppAssets.doubleCheck,
         null,
+        null,
+        JobWorkflowStatus.completed,
       ),
     ];
 
@@ -188,156 +228,214 @@ class ServiceDetailsScreen extends StatelessWidget {
       final desc = steps[i].$2;
       final icon = steps[i].$3;
       final datetime = steps[i].$4;
+      final photoKind = steps[i].$5;
+      final statusApi = steps[i].$6;
+      final isKeyStep = photoKind == 'key';
+      final photoBusy =
+          photoKind != null &&
+          provider.isUploadingPhoto &&
+          provider.uploadingPhotoKind == photoKind;
+      final photoUrl = photoKind == 'before'
+          ? (provider.job?.beforePhoto ?? '')
+          : photoKind == 'after'
+          ? (provider.job?.afterPhoto ?? '')
+          : '';
+      final canPickPhoto = photoKind == 'before'
+          ? provider.canEditBeforePhoto
+          : photoKind == 'after'
+          ? provider.canEditAfterPhoto
+          : false;
 
-      return IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(
-              width: 28,
-              child: Column(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isDone ? AppColors.primary : AppColors.white,
-                      border: Border.all(
-                        color: isDone || isNext
-                            ? AppColors.primary
-                            : AppColors.border,
-                        width: 1.5,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: isDone
-                        ? AppIcon(
-                            AppAssets.check,
-                            size: 14,
-                            color: AppColors.white,
-                          )
-                        : isNext && provider.isUpdating
-                        ? const SizedBox(
-                            width: 12,
-                            height: 12,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 1.6,
-                              color: AppColors.primary,
-                            ),
-                          )
-                        : Text(
-                            '$stepNum',
-                            style: AppTextStyles.style(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isNext
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                  ),
-                  if (!isLast)
-                    Expanded(
-                      child: Container(
-                        width: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        color: isDone ? AppColors.primary : AppColors.border,
-                      ),
-                    ),
-                ],
+      return Stack(
+        children: [
+          if (!isLast)
+            Positioned(
+              left: 13,
+              top: 32,
+              bottom: 4,
+              width: 2,
+              child: ColoredBox(
+                color: isDone ? AppColors.primary : AppColors.border,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
-                child: Material(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    onTap: isNext &&
-                            !provider.isUpdating &&
-                            !provider.isLoading
-                        ? () => _confirmAndMarkStep(
-                            context,
-                            provider,
-                            stepNum,
-                            title,
-                          )
-                        : null,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDone ? AppColors.primary : AppColors.white,
+                  border: Border.all(
+                    color: isDone || isNext
+                        ? AppColors.primary
+                        : AppColors.border,
+                    width: 1.5,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: isDone
+                    ? AppIcon(AppAssets.check, size: 14, color: AppColors.white)
+                    : (isNext && provider.isUpdating) || photoBusy
+                    ? const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.6,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : Text(
+                        '$stepNum',
+                        style: AppTextStyles.style(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
                           color: isNext
                               ? AppColors.primary
-                              : AppColors.peachCard,
+                              : AppColors.textSecondary,
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: AppColors.peach,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            alignment: Alignment.center,
-                            child: AppIcon(
-                              icon,
-                              size: 18,
-                              color: AppColors.primary,
-                            ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+                  child: Material(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      onTap:
+                          !isKeyStep &&
+                              !provider.isUpdating &&
+                              !provider.isLoading &&
+                              !provider.isUploadingPhoto &&
+                              (canPickPhoto || (statusApi != null && isNext))
+                          ? () {
+                              if (photoKind == 'before' ||
+                                  photoKind == 'after') {
+                                provider.pickWashPhoto(context, photoKind!);
+                                return;
+                              }
+                              _confirmAndMarkStep(
+                                context,
+                                provider,
+                                stepNum,
+                                title,
+                                statusApi!,
+                              );
+                            }
+                          : null,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isNext
+                                ? AppColors.primary
+                                : AppColors.peachCard,
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (photoKind == 'before' ||
+                                photoKind == 'after') ...[
+                              _StepPhoto(
+                                url: photoUrl,
+                                busy: photoBusy,
+                                canAdd: canPickPhoto,
+                                onView: photoUrl.trim().isEmpty
+                                    ? null
+                                    : () => _showFullPhoto(context, photoUrl),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                            if (isKeyStep && isDone)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Text(
+                                  AppStrings.keyVerified.tr(),
+                                  style: AppTextStyles.style(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            Row(
                               children: [
-                                Text(
-                                  title,
-                                  style: AppTextStyles.style(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                    color: AppColors.sectionTitle,
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.peach,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: AppIcon(
+                                    icon,
+                                    size: 18,
+                                    color: AppColors.primary,
                                   ),
                                 ),
-                                Text(
-                                  desc,
-                                  style: AppTextStyles.style(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                if (datetime != null &&
-                                    datetime.trim().isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Text(
-                                      datetime,
-                                      style: AppTextStyles.style(
-                                        fontSize: 10,
-                                        color: AppColors.navigateText,
-                                        fontWeight: FontWeight.w500,
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: AppTextStyles.style(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                          color: AppColors.sectionTitle,
+                                        ),
                                       ),
-                                    ),
+                                      if (!(isKeyStep && isNext))
+                                        Text(
+                                          desc,
+                                          style: AppTextStyles.style(
+                                            fontSize: 11,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      if (datetime != null &&
+                                          datetime.trim().isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 4,
+                                          ),
+                                          child: Text(
+                                            datetime,
+                                            style: AppTextStyles.style(
+                                              fontSize: 10,
+                                              color: AppColors.navigateText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
+                                ),
                               ],
                             ),
-                          ),
-                        ],
+                            if (isKeyStep && isNext) ...[
+                              const SizedBox(height: 10),
+                              const _KeyOtpBox(),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       );
     });
   }
@@ -347,6 +445,7 @@ class ServiceDetailsScreen extends StatelessWidget {
     ServiceDetailsProvider provider,
     int stepNum,
     String statusTitle,
+    String statusApi,
   ) async {
     if (provider.isUpdating || provider.isLoading) return;
     final isOnTheWayNotToday =
@@ -358,16 +457,67 @@ class ServiceDetailsScreen extends StatelessWidget {
           : AppStrings.updateStatusConfirmTitle.tr(),
       body: isOnTheWayNotToday
           ? AppStrings.onTheWayNotTodayBody.tr(
-              args: [
-                provider.displayDate.isEmpty ? '—' : provider.displayDate,
-              ],
+              args: [provider.displayDate.isEmpty ? '—' : provider.displayDate],
             )
           : AppStrings.updateStatusConfirmBody.tr(args: [statusTitle]),
       confirmLabel: AppStrings.markAs.tr(args: [statusTitle]),
     );
     if (!confirmed || !context.mounted) return;
-    await provider.markStep(stepNum);
+    final completed = await provider.markStep(stepNum, statusApi);
+    if (!completed || !context.mounted) return;
+    AppToast.success(AppStrings.statusCompletedDesc.tr());
+    AppNavigation.back(true);
   }
+}
+
+void _showFullPhoto(BuildContext context, String url) {
+  final resolved = url.trim();
+  if (resolved.isEmpty) return;
+  showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      final size = MediaQuery.sizeOf(ctx);
+      return Dialog(
+        backgroundColor: AppColors.black,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: SizedBox(
+          width: size.width,
+          height: size.height * 0.72,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 4,
+                  child: Image.network(
+                    resolved,
+                    fit: BoxFit.contain,
+                    width: size.width,
+                    height: size.height * 0.72,
+                    errorBuilder: (_, _, _) => const Center(
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: Colors.white,
+                        size: 36,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class _ScheduleCard extends StatelessWidget {
@@ -750,7 +900,8 @@ class _ServiceAddressCard extends StatelessWidget {
     final provider = context.watch<ServiceDetailsProvider>();
     final loading = provider.isLoading;
     final address = provider.displayAddress;
-    final canNavigate = loading ||
+    final canNavigate =
+        loading ||
         address.isNotEmpty ||
         (provider.displayLat != null && provider.displayLng != null);
     return Container(
@@ -900,118 +1051,246 @@ class _NoteCard extends StatelessWidget {
   }
 }
 
-class _WashPhotosCard extends StatelessWidget {
-  const _WashPhotosCard();
+class _KeyFindNote extends StatelessWidget {
+  const _KeyFindNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary),
+      ),
+      child: Text(
+        AppStrings.keyHandoverPartnerNote.tr(),
+        style: AppTextStyles.style(
+          fontSize: 12,
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+}
+
+class _KeyOtpBox extends StatefulWidget {
+  const _KeyOtpBox();
+
+  @override
+  State<_KeyOtpBox> createState() => _KeyOtpBoxState();
+}
+
+class _KeyOtpBoxState extends State<_KeyOtpBox> {
+  String _code = '';
+
+  static const _findSteps = [
+    AppStrings.keyFindApp,
+    AppStrings.keyFindSchedule,
+    AppStrings.keyFindScreen,
+    AppStrings.keyFindNotification,
+  ];
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ServiceDetailsProvider>();
-    final before = provider.job?.beforePhoto ?? '';
-    final after = provider.job?.afterPhoto ?? '';
-    final canUpload = provider.canUploadPhotos;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.peachCard),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppStrings.washPhotos.tr(),
-            style: AppTextStyles.style(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            AppStrings.beforePhotoRequired.tr(),
-            style: AppTextStyles.style(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 12),
+    const steps = [
+      AppStrings.keyStepMeet,
+      AppStrings.keyStepAsk,
+      AppStrings.keyStepEnter,
+    ];
+    final hasError = provider.keyOtpError != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < steps.length; i++) ...[
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _slot(
-                  context,
-                  label: AppStrings.beforePhoto.tr(),
-                  url: before,
-                  busy: provider.isUploadingPhoto &&
-                      provider.uploadingPhotoKind == 'before',
-                  onTap: canUpload ? () => provider.pickWashPhoto(context, 'before') : null,
+              Text(
+                '${i + 1}. ',
+                style: AppTextStyles.style(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
                 ),
               ),
-              const SizedBox(width: 10),
               Expanded(
-                child: _slot(
-                  context,
-                  label: AppStrings.afterPhoto.tr(),
-                  url: after,
-                  busy: provider.isUploadingPhoto &&
-                      provider.uploadingPhotoKind == 'after',
-                  onTap: canUpload ? () => provider.pickWashPhoto(context, 'after') : null,
+                child: Text(
+                  steps[i].tr(),
+                  style: AppTextStyles.style(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],
           ),
+          if (i < steps.length - 1) const SizedBox(height: 4),
         ],
-      ),
-    );
-  }
-
-  Widget _slot(
-    BuildContext context, {
-    required String label,
-    required String url,
-    required bool busy,
-    required VoidCallback? onTap,
-  }) {
-    final resolved = url.trim();
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTextStyles.style(fontSize: 12)),
+        const SizedBox(height: 10),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 10.0;
+            final cellWidth = (constraints.maxWidth - spacing * 3) / 4;
+            return MaterialPinField(
+              length: 4,
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                _code = value;
+                if (provider.keyOtpError != null) {
+                  provider.setKeyOtp(value);
+                }
+              },
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+              theme: MaterialPinTheme(
+                shape: MaterialPinShape.outlined,
+                cellSize: Size(cellWidth, 48),
+                spacing: spacing,
+                borderRadius: BorderRadius.circular(10),
+                fillColor: const Color(0xFFF3F3F3),
+                focusedFillColor: const Color(0xFFF3F3F3),
+                filledFillColor: const Color(0xFFF3F3F3),
+                followingFillColor: const Color(0xFFF3F3F3),
+                completeFillColor: const Color(0xFFF3F3F3),
+                borderColor: hasError
+                    ? AppColors.destructive
+                    : AppColors.border,
+                focusedBorderColor: hasError
+                    ? AppColors.destructive
+                    : AppColors.primary,
+                filledBorderColor: hasError
+                    ? AppColors.destructive
+                    : AppColors.primary,
+                followingBorderColor: hasError
+                    ? AppColors.destructive
+                    : AppColors.border,
+                completeBorderColor: hasError
+                    ? AppColors.destructive
+                    : AppColors.primary,
+                errorColor: AppColors.destructive,
+                errorBorderColor: AppColors.destructive,
+                cursorColor: AppColors.primary,
+                hintCharacter: '-',
+                hintStyle: AppTextStyles.style(
+                  fontSize: 18,
+                  color: AppColors.textHint,
+                ),
+                textStyle: AppTextStyles.style(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          },
+        ),
+        if (hasError) ...[
           const SizedBox(height: 6),
-          Container(
-            height: 110,
-            width: double.infinity,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: AppColors.customerCard,
-              borderRadius: BorderRadius.circular(10),
+          Text(
+            provider.keyOtpError!,
+            style: AppTextStyles.style(
+              fontSize: 11,
+              color: AppColors.destructive,
             ),
-            child: busy
-                ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-                : resolved.isEmpty
-                    ? Center(
-                        child: Text(
-                          onTap == null ? '—' : AppStrings.addPhoto.tr(),
-                          style: AppTextStyles.style(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      )
-                    : AppNetworkImage(
-                        url: resolved,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 110,
-                        borderRadius: 10,
-                        error: const Center(
-                          child: Icon(Icons.broken_image_outlined),
-                        ),
-                      ),
           ),
         ],
+        const SizedBox(height: 8),
+        AppSolidButton(
+          label: AppStrings.verifyKey.tr(),
+          onTap: provider.isUpdating
+              ? null
+              : () => provider.verifyKeyOtp(_code),
+          isLoading: provider.isUpdating,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          AppStrings.keyFindTitle.tr(),
+          style: AppTextStyles.style(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: AppColors.sectionTitle,
+          ),
+        ),
+        const SizedBox(height: 6),
+        for (var i = 0; i < _findSteps.length; i++) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${i + 1}. ',
+                style: AppTextStyles.style(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  _findSteps[i].tr(),
+                  style: AppTextStyles.style(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (i < _findSteps.length - 1) const SizedBox(height: 4),
+        ],
+      ],
+    );
+  }
+}
+
+class _StepPhoto extends StatelessWidget {
+  const _StepPhoto({
+    required this.url,
+    required this.busy,
+    required this.canAdd,
+    this.onView,
+  });
+
+  final String url;
+  final bool busy;
+  final bool canAdd;
+  final VoidCallback? onView;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = url.trim();
+    return Container(
+      height: 140,
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.customerCard,
+        borderRadius: BorderRadius.circular(10),
       ),
+      child: busy
+          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          : resolved.isEmpty
+          ? Center(
+              child: Text(
+                canAdd ? AppStrings.addPhoto.tr() : '—',
+                style: AppTextStyles.style(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            )
+          : GestureDetector(
+              onTap: onView,
+              child: AppNetworkImage(
+                url: resolved,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 140,
+                borderRadius: 10,
+                error: const Center(child: Icon(Icons.broken_image_outlined)),
+              ),
+            ),
     );
   }
 }

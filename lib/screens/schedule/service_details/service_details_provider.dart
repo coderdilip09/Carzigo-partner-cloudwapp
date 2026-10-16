@@ -100,14 +100,33 @@ class ServiceDetailsProvider extends BaseProvider {
   bool get hasCarDetails => displayCar.isNotEmpty;
 
   String get displayStatus {
+    if (job?.isNotComplete == true) return AppStrings.notComplete.tr();
     final tag = (job?.displayTag ?? '').toLowerCase().trim();
-    if (tag == 'not_complete') return AppStrings.notComplete.tr();
     if (tag == 'rejected') return AppStrings.reject.tr();
     if (tag == 'cancelled') return AppStrings.cancelled.tr();
     if (tag == 'completed') return AppStrings.completed.tr();
     final ui = job?.uiStatus?.trim();
+    final uiLower = ui?.toLowerCase() ?? '';
+    if (uiLower == 'not complete' || uiLower == 'not_complete') {
+      return _openStatusLabel();
+    }
     if (ui != null && ui.isNotEmpty) return ui;
     return AppStrings.upcoming.tr();
+  }
+
+  String _openStatusLabel() {
+    switch ((job?.workflowStatus ?? '').toLowerCase()) {
+      case JobWorkflowStatus.serviceStarted:
+      case JobWorkflowStatus.inProgress:
+        return AppStrings.inProgress.tr();
+      case JobWorkflowStatus.arrived:
+      case JobWorkflowStatus.onSite:
+        return AppStrings.statusOnSite.tr();
+      case JobWorkflowStatus.onTheWay:
+        return AppStrings.statusOnTheWay.tr();
+      default:
+        return AppStrings.upcoming.tr();
+    }
   }
 
   Future<void> load() async {
@@ -192,43 +211,42 @@ class ServiceDetailsProvider extends BaseProvider {
     }
   }
 
-  Future<void> markStep(int step) async {
-    if (isUpdating) return;
-    if (step != currentStep + 1) return;
-    if (job?.canUpdate == false ||
-        (job?.displayTag ?? '').toLowerCase() == 'not_complete') {
+  Future<bool> markStep(int step, String status) async {
+    if (isUpdating) return false;
+    if (step != currentStep + 1) return false;
+    if (job?.isNotComplete == true) {
       AppToast.error(AppStrings.notComplete.tr());
-      return;
+      return false;
+    }
+    final tag = (job?.displayTag ?? '').toLowerCase();
+    if (job?.canUpdate == false && tag != 'not_complete') {
+      AppToast.error(AppStrings.notComplete.tr());
+      return false;
     }
     final id = job?.id ?? jobId;
     if (id == null || id.isEmpty) {
       currentStep = step;
       safeNotifyListeners();
-      return;
+      return false;
     }
 
-    final status = switch (step) {
-      2 => JobWorkflowStatus.onTheWay,
-      3 => JobWorkflowStatus.onSite,
-      4 => JobWorkflowStatus.inProgress,
-      5 => JobWorkflowStatus.completed,
-      _ => JobWorkflowStatus.assigned,
-    };
+    if (status.isEmpty) return false;
 
     isUpdating = true;
     safeNotifyListeners();
 
+    var completed = false;
     try {
       if (status == JobWorkflowStatus.inProgress &&
           (job?.beforePhoto ?? '').isEmpty) {
         AppToast.error(AppStrings.beforePhotoRequired.tr());
-        return;
+        return false;
       }
       if (status == JobWorkflowStatus.completed &&
           ((job?.beforePhoto ?? '').isEmpty ||
               (job?.afterPhoto ?? '').isEmpty)) {
         AppToast.error(AppStrings.photosRequired.tr());
-        return;
+        return false;
       }
       final res = await Api.updateJobStatus(
         id: id,
@@ -236,7 +254,7 @@ class ServiceDetailsProvider extends BaseProvider {
       );
       if (!res.isSuccess) {
         AppToast.error(res.message ?? AppStrings.requestFailed.tr());
-        return;
+        return false;
       }
       if (res.data != null) {
         job = res.data;
@@ -245,12 +263,14 @@ class ServiceDetailsProvider extends BaseProvider {
         currentStep = step;
       }
       if (status == JobWorkflowStatus.completed) {
-        AppRatingService.instance.maybePrompt();
+        await AppRatingService.instance.maybePrompt();
+        completed = true;
       }
     } finally {
       isUpdating = false;
       safeNotifyListeners();
     }
+    return completed;
   }
 
   Future<void> tapOnAddToCalendar() async {
@@ -427,17 +447,107 @@ class ServiceDetailsProvider extends BaseProvider {
     return null;
   }
 
-  bool get canUploadPhotos {
+  bool get _photosLocked {
     final status = (job?.workflowStatus ?? '').toLowerCase();
-    if (status.isEmpty) return false;
-    return status != JobWorkflowStatus.completed &&
-        status != JobWorkflowStatus.cancelled &&
-        (job?.displayTag ?? '') != 'cancelled' &&
-        (job?.displayTag ?? '') != 'not_complete';
+    if (status.isEmpty) return true;
+    if (job?.isNotComplete == true) return true;
+    final tag = (job?.displayTag ?? '').toLowerCase();
+    if (job?.canUpdate == false && tag != 'not_complete') return true;
+    return status == JobWorkflowStatus.completed ||
+        status == JobWorkflowStatus.cancelled ||
+        tag == 'cancelled';
   }
 
+  bool get _onBeforePhotoStep {
+    final status = (job?.workflowStatus ?? '').toLowerCase();
+    return status == JobWorkflowStatus.onSite ||
+        status == JobWorkflowStatus.arrived;
+  }
+
+  bool get _onAfterPhotoStep {
+    final status = (job?.workflowStatus ?? '').toLowerCase();
+    return status == JobWorkflowStatus.inProgress ||
+        status == JobWorkflowStatus.serviceStarted;
+  }
+
+  /// Replace the before photo only while still on that step (On site).
+  /// Interior washes stay locked until the key handover code is verified.
+  bool get canEditBeforePhoto =>
+      !_photosLocked &&
+      _onBeforePhotoStep &&
+      (!(job?.needsKeyHandover ?? false) || job?.keyVerified == true);
+
+  bool get needsKeyHandover => job?.needsKeyHandover ?? false;
+
+  String keyOtp = '';
+  String? keyOtpError;
+
+  void setKeyOtp(String value) {
+    keyOtp = value;
+    keyOtpError = null;
+    safeNotifyListeners();
+  }
+
+  Future<void> verifyKeyOtp([String? otp]) async {
+    final digits = (otp ?? keyOtp).trim();
+    if (digits.length < 4) {
+      keyOtpError = AppStrings.keyOtpInvalid.tr();
+      safeNotifyListeners();
+      return;
+    }
+    final id = job?.id ?? jobId;
+    if (id == null || id.isEmpty) return;
+    isUpdating = true;
+    keyOtpError = null;
+    safeNotifyListeners();
+    try {
+      final res = await Api.verifyKeyOtp(id: id, otp: digits);
+      if (!res.isSuccess || res.data == null) {
+        keyOtpError = res.message ?? AppStrings.keyOtpInvalid.tr();
+        return;
+      }
+      job = res.data;
+      currentStep = res.data!.step;
+      keyOtp = '';
+    } finally {
+      isUpdating = false;
+      safeNotifyListeners();
+    }
+  }
+
+  Future<void> resendKeyOtp() async {
+    final id = job?.id ?? jobId;
+    if (id == null || id.isEmpty || isUpdating) return;
+    isUpdating = true;
+    safeNotifyListeners();
+    try {
+      final res = await Api.verifyKeyOtp(id: id, resend: true);
+      if (!res.isSuccess) {
+        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+        return;
+      }
+      if (res.data != null) {
+        job = res.data;
+        currentStep = res.data!.step;
+      }
+      AppToast.success(AppStrings.keyOtpSent.tr());
+    } finally {
+      isUpdating = false;
+      safeNotifyListeners();
+    }
+  }
+
+  /// Replace the after photo only while still on that step (Service in progress).
+  bool get canEditAfterPhoto => !_photosLocked && _onAfterPhotoStep;
+
   Future<void> pickWashPhoto(BuildContext context, String kind) async {
-    if (!canUploadPhotos || isUploadingPhoto) return;
+    final allowed = kind == 'after' ? canEditAfterPhoto : canEditBeforePhoto;
+    if (!allowed || isUploadingPhoto) {
+      if (!allowed && job?.isNotComplete == true) {
+        AppToast.error(AppStrings.notComplete.tr());
+      }
+      return;
+    }
     await showImageSourceSheet(
       context,
       onCamera: () => _uploadWashPhoto(kind, ImageSource.camera),

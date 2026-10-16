@@ -44,16 +44,17 @@ class ScheduleScreen extends StatelessWidget {
             ScheduleTab.cancelled => AppStrings.cancelled.tr(),
           };
           String jobStatusLabel(JobDataModel job) {
+            if (job.isNotComplete) return AppStrings.notComplete.tr();
             final tag = (job.displayTag ?? '').toLowerCase().trim();
-            if (tag == 'not_complete') return AppStrings.notComplete.tr();
             if (tag == 'rejected') return AppStrings.reject.tr();
             if (tag == 'cancelled') return AppStrings.cancelled.tr();
             if (tag == 'completed') return AppStrings.completed.tr();
             if (tag == 'in_progress') return AppStrings.inProgress.tr();
 
             final ui = (job.uiStatus ?? '').trim().toLowerCase();
-            if (ui == 'not complete' || ui == 'not_complete') {
-              return AppStrings.notComplete.tr();
+            if ((ui == 'not complete' || ui == 'not_complete') &&
+                !job.scheduledDayHasPassed) {
+              return statusLabel;
             }
             if (ui == 'reject' || ui == 'rejected') {
               return AppStrings.reject.tr();
@@ -251,13 +252,11 @@ class ScheduleScreen extends StatelessWidget {
                                     for (var i = 0; i < 3; i++)
                                       AppJobCard(
                                         compact: false,
-                                        showPrice: true,
                                         status: statusLabel,
                                         timeLabel: '09:00 AM - 10:00 AM',
                                         serviceName: 'Exterior Wash Service',
                                         customerName: 'Customer Name',
                                         carName: 'Car Model Name',
-                                        price: '₹999',
                                       ),
                                   ],
                                 )
@@ -288,17 +287,21 @@ class ScheduleScreen extends StatelessWidget {
                                       for (final job in group.$2)
                                         AppJobCard(
                                           compact: false,
-                                          showPrice: true,
                                           status: jobStatusLabel(job),
                                           timeLabel: job.timeRange,
                                           serviceName: job.serviceName,
                                           customerName: job.customerName,
                                           carName: job.car,
                                           vehicleImage: job.vehicleImage,
-                                          price: job.price,
-                                          onTap: () => AppNavigation.to(
-                                            ServiceDetailsScreen(job: job),
-                                          ),
+                                          onTap: () async {
+                                            final completed =
+                                                await AppNavigation.to<bool>(
+                                              ServiceDetailsScreen(job: job),
+                                            );
+                                            if (completed == true) {
+                                              await provider.load(silent: true);
+                                            }
+                                          },
                                         ),
                                     ],
                                   ],

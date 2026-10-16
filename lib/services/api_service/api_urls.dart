@@ -90,6 +90,7 @@ class ApiUrls {
   static String jobDetailsUrl(String id) => _join('$services/$id');
   static String jobStatusUrl(String id) => _join('$services/$id/status');
   static String jobPhotosUrl(String id) => _join('$services/$id/photos');
+  static String jobKeyOtpUrl(String id) => _join('$services/$id/key-otp');
 
   static String referralsUrl() => _join(referrals);
   static String payoutsUrl() => _join(payouts);

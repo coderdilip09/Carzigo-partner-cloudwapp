@@ -399,6 +399,24 @@ class Api {
     );
   }
 
+  static Future<ResponseWrapperModel<JobDataModel?>> verifyKeyOtp({
+    required String id,
+    String? otp,
+    bool resend = false,
+  }) async {
+    final json = await ApiClientMethods.postMethod(
+      url: ApiUrls.jobKeyOtpUrl(id),
+      body: {
+        if (otp != null) 'otp': otp,
+        if (resend) 'resend': true,
+      },
+    );
+    return ResponseWrapperModel.fromJson(
+      json,
+      (data) => JobDataModel.fromJson(asMap(data) ?? {}),
+    );
+  }
+
   static Future<ResponseWrapperModel<JobDataModel?>> saveJobPhoto({
     required String id,
     required String kind,
