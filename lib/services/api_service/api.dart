@@ -385,6 +385,25 @@ class Api {
     );
   }
 
+  static Future<ResponseWrapperModel<Map<String, dynamic>>> reportUnavailability({
+    required String date,
+    required String kind,
+    String? note,
+  }) async {
+    final json = await ApiClientMethods.postMethod(
+      url: ApiUrls.unavailabilityUrl(),
+      body: {
+        'date': date,
+        'kind': kind,
+        if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+      },
+    );
+    return ResponseWrapperModel.fromJson(
+      json,
+      (data) => asMap(data) ?? <String, dynamic>{},
+    );
+  }
+
   static Future<ResponseWrapperModel<JobDataModel?>> updateJobStatus({
     required String id,
     required String status,

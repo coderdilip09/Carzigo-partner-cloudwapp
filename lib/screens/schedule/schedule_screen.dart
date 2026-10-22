@@ -11,6 +11,7 @@ import 'package:carzigo_partner/theme/app_colors.dart';
 import 'package:carzigo_partner/utils/app_assets.dart';
 import 'package:carzigo_partner/utils/app_strings.dart';
 import 'package:carzigo_partner/utils/app_text_styles.dart';
+import 'package:carzigo_partner/utils/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,10 +21,12 @@ class ScheduleScreen extends StatelessWidget {
     super.key,
     this.showBottomNav = true,
     this.initialTab = ScheduleTab.upcoming,
+    this.communityLabel,
   });
 
   final bool showBottomNav;
   final ScheduleTab initialTab;
+  final String? communityLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -107,24 +110,12 @@ class ScheduleScreen extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    AppStrings.scheduleJobs.tr(),
-                                    style: AppTextStyles.style(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  Text(
-                                    AppStrings.scheduleSubtitle.tr(),
-                                    style: AppTextStyles.style(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                AppStrings.scheduleJobs.tr(),
+                                style: AppTextStyles.style(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                             InkWell(
@@ -140,6 +131,59 @@ class ScheduleScreen extends StatelessWidget {
                                       )
                                     : const AppIcon(AppAssets.search),
                               ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                (communityLabel ?? '').trim(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.style(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            OutlinedButton(
+                              onPressed: () async {
+                                final days = await provider.loadUpcomingDays();
+                                if (!context.mounted) return;
+                                if (days.isEmpty) {
+                                  AppToast.error(AppStrings.noUpcomingWashes.tr());
+                                  return;
+                                }
+                                final picked = await showDialog<_DayOffChoice>(
+                                  context: context,
+                                  builder: (context) => _DayOffCalendar(jobDays: days),
+                                );
+                                if (picked == null || !context.mounted) return;
+                                final today = DateTime.now();
+                                final isToday = picked.date.year == today.year &&
+                                    picked.date.month == today.month &&
+                                    picked.date.day == today.day;
+                                await provider.reportDayOff(
+                                  picked.date,
+                                  emergency: isToday,
+                                  reason: picked.reason,
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                side: const BorderSide(color: AppColors.primary),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                textStyle: AppTextStyles.style(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: Text(AppStrings.reportDayOff.tr()),
                             ),
                           ],
                         ),
@@ -431,6 +475,205 @@ class _ScheduleSearchFieldState extends State<_ScheduleSearchField> {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _DayOffChoice {
+  const _DayOffChoice({required this.date, required this.reason});
+
+  final DateTime date;
+  final String reason;
+}
+
+class _DayOffCalendar extends StatefulWidget {
+  const _DayOffCalendar({required this.jobDays});
+
+  final Set<DateTime> jobDays;
+
+  @override
+  State<_DayOffCalendar> createState() => _DayOffCalendarState();
+}
+
+class _DayOffCalendarState extends State<_DayOffCalendar> {
+  late DateTime _month;
+  DateTime? _selected;
+  final _reason = TextEditingController();
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final today = DateTime.now();
+    final sorted = widget.jobDays.toList()..sort();
+    _month = DateTime(sorted.first.year, sorted.first.month);
+    final todayKey = DateTime(today.year, today.month, today.day);
+    if (widget.jobDays.contains(todayKey)) {
+      _month = DateTime(today.year, today.month);
+    }
+  }
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  bool _isJobDay(DateTime day) {
+    return widget.jobDays.contains(DateTime(day.year, day.month, day.day));
+  }
+
+  void _submit() {
+    final reason = _reason.text.trim();
+    if (_selected == null) return;
+    if (reason.length < 3) {
+      setState(() => _error = AppStrings.dayOffReasonRequired.tr());
+      return;
+    }
+    Navigator.pop(context, _DayOffChoice(date: _selected!, reason: reason));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final first = DateTime(_month.year, _month.month, 1);
+    final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
+    final leading = first.weekday % 7;
+    final cells = leading + daysInMonth;
+
+    return AlertDialog(
+      title: Text(AppStrings.reportDayOff.tr()),
+      content: SizedBox(
+        width: 340,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppStrings.dayOffOnlyWashDays.tr(),
+                style: AppTextStyles.style(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => setState(() {
+                      _month = DateTime(_month.year, _month.month - 1);
+                    }),
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  Expanded(
+                    child: Text(
+                      DateFormat('MMMM yyyy').format(_month),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.style(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() {
+                      _month = DateTime(_month.year, _month.month + 1);
+                    }),
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                ],
+              ),
+              Row(
+                children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+                    .map(
+                      (label) => Expanded(
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.style(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 6),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: cells,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                ),
+                itemBuilder: (context, index) {
+                  if (index < leading) return const SizedBox.shrink();
+                  final day = DateTime(_month.year, _month.month, index - leading + 1);
+                  final enabled = _isJobDay(day);
+                  final selected = _selected != null &&
+                      _selected!.year == day.year &&
+                      _selected!.month == day.month &&
+                      _selected!.day == day.day;
+                  return InkWell(
+                    onTap: enabled
+                        ? () => setState(() {
+                            _selected = day;
+                            _error = null;
+                          })
+                        : null,
+                    customBorder: const CircleBorder(),
+                    child: Center(
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.primaryDark
+                              : enabled
+                                  ? AppColors.primary
+                                  : Colors.transparent,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${day.day}',
+                          style: AppTextStyles.style(
+                            fontSize: 12,
+                            fontWeight: enabled ? FontWeight.w700 : FontWeight.w400,
+                            color: enabled ? AppColors.white : AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _reason,
+                minLines: 2,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: AppStrings.dayOffReason.tr(),
+                  hintText: AppStrings.dayOffReasonHint.tr(),
+                  errorText: _error,
+                ),
+                onChanged: (_) {
+                  if (_error != null) setState(() => _error = null);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(AppStrings.cancel.tr()),
+        ),
+        TextButton(
+          onPressed: _selected == null ? null : _submit,
+          child: Text(AppStrings.reportDayOff.tr()),
+        ),
+      ],
     );
   }
 }

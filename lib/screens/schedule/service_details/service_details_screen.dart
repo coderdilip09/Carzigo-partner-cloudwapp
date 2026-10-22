@@ -161,14 +161,6 @@ class ServiceDetailsScreen extends StatelessWidget {
         null,
       ),
       (
-        AppStrings.statusOnTheWay.tr(),
-        AppStrings.statusOnTheWayDesc.tr(),
-        AppAssets.logoCar,
-        null,
-        null,
-        JobWorkflowStatus.onTheWay,
-      ),
-      (
         AppStrings.statusOnSite.tr(),
         AppStrings.statusOnSiteDesc.tr(),
         AppAssets.location,

@@ -1,6 +1,14 @@
 import 'package:carzigo_partner/models/json_parsers.dart';
 import 'package:carzigo_partner/models/kyc_status_model.dart';
 
+String? _communityLabel(Map<String, dynamic> json) {
+  final name = asString(json['community_name'] ?? json['communityName'])?.trim();
+  final area = asString(json['community_area'] ?? json['communityArea'])?.trim();
+  if (name == null || name.isEmpty) return null;
+  if (area == null || area.isEmpty) return name;
+  return '$name · $area';
+}
+
 class UserDataModel {
   UserDataModel({
     this.id,
@@ -15,6 +23,7 @@ class UserDataModel {
     this.approval,
     this.isProfileComplete,
     this.kycStatus,
+    this.communityName,
   });
 
   final String? id;
@@ -29,6 +38,13 @@ class UserDataModel {
   final String? approval;
   final bool? isProfileComplete;
   final String? kycStatus;
+  final String? communityName;
+
+  String? get communityLabel {
+    final name = communityName?.trim() ?? '';
+    if (name.isEmpty) return null;
+    return name;
+  }
 
   String get displayName => fullName ?? name ?? '';
 
@@ -57,6 +73,7 @@ class UserDataModel {
     String? approval,
     bool? isProfileComplete,
     String? kycStatus,
+    String? communityName,
   }) {
     return UserDataModel(
       id: id ?? this.id,
@@ -71,6 +88,7 @@ class UserDataModel {
       approval: approval ?? this.approval,
       isProfileComplete: isProfileComplete ?? this.isProfileComplete,
       kycStatus: kycStatus ?? this.kycStatus,
+      communityName: communityName ?? this.communityName,
     );
   }
 
@@ -101,6 +119,7 @@ class UserDataModel {
             json['profile_complete'],
       ),
       kycStatus: asString(json['kycStatus'] ?? json['kyc_status']),
+      communityName: _communityLabel(json),
     );
   }
 
@@ -118,6 +137,7 @@ class UserDataModel {
       'approval': approval,
       'isProfileComplete': isProfileComplete,
       'kycStatus': kycStatus,
+      'communityName': communityName,
     };
   }
 }

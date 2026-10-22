@@ -6,6 +6,8 @@ class DashboardPartnerModel {
     this.id,
     this.name,
     this.serviceArea,
+    this.communityName,
+    this.communityArea,
     this.approval,
     this.kycStatus,
     this.status,
@@ -15,6 +17,8 @@ class DashboardPartnerModel {
   final String? id;
   final String? name;
   final String? serviceArea;
+  final String? communityName;
+  final String? communityArea;
   final String? approval;
   final String? kycStatus;
   final String? status;
@@ -27,6 +31,8 @@ class DashboardPartnerModel {
       serviceArea: asString(
         json['service_area'] ?? json['serviceArea'] ?? json['location'],
       ),
+      communityName: asString(json['community_name'] ?? json['communityName']),
+      communityArea: asString(json['community_area'] ?? json['communityArea']),
       approval: asString(json['approval']),
       kycStatus: asString(json['kyc_status'] ?? json['kycStatus']),
       status: asString(json['status']),

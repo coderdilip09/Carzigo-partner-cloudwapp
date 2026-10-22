@@ -95,6 +95,48 @@ class ScheduleProvider extends BaseProvider {
     await load(silent: true);
   }
 
+  Future<Set<DateTime>> loadUpcomingDays() async {
+    List<JobDataModel> items = const [];
+    if (currentTab == ScheduleTab.upcoming && data != null) {
+      items = data!.jobs;
+    } else {
+      final res = await Api.getJobs(tab: 'upcoming');
+      if (res.isSuccess && res.data != null) items = res.data!.jobs;
+    }
+    final days = <DateTime>{};
+    for (final job in items) {
+      final iso = job.scheduledDate?.trim() ?? '';
+      final match = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(iso);
+      if (match == null) continue;
+      days.add(DateTime(
+        int.parse(match.group(1)!),
+        int.parse(match.group(2)!),
+        int.parse(match.group(3)!),
+      ));
+    }
+    return days;
+  }
+
+  Future<void> reportDayOff(
+    DateTime date, {
+    required bool emergency,
+    String? reason,
+  }) async {
+    final iso =
+        '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final res = await Api.reportUnavailability(
+      date: iso,
+      kind: emergency ? 'emergency' : 'planned',
+      note: reason,
+    );
+    if (!res.isSuccess) {
+      AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+      return;
+    }
+    AppToast.success(AppStrings.dayOffSaved.tr());
+    await load();
+  }
+
   Future<void> load({bool silent = false}) async {
     final tab = currentTab;
     if (!silent) {

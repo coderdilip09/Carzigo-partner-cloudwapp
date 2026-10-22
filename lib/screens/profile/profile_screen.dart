@@ -195,6 +195,14 @@ class ProfileScreen extends StatelessWidget {
                                         color: AppColors.textSecondary,
                                       ),
                                     ),
+                                    if (provider.user?.communityLabel != null)
+                                      Text(
+                                        provider.user!.communityLabel!,
+                                        style: AppTextStyles.style(
+                                          fontSize: 11,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),

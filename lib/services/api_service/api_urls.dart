@@ -85,7 +85,9 @@ class ApiUrls {
   static String documentChangeSubmitUrl() => _join(documentChangeSubmit);
 
   static String dashboardUrl() => _join(dashboard);
+  static const String unavailability = 'partner/unavailability';
   static String servicesUrl() => _join(services);
+  static String unavailabilityUrl() => _join(unavailability);
   static String jobsUrl() => _join(services);
   static String jobDetailsUrl(String id) => _join('$services/$id');
   static String jobStatusUrl(String id) => _join('$services/$id/status');

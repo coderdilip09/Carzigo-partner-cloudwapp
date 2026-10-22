@@ -44,6 +44,7 @@ class DashboardScreen extends StatelessWidget {
             ScheduleScreen(
               showBottomNav: true,
               initialTab: provider.scheduleTab,
+              communityLabel: provider.communityLabel,
             ),
             const ReferEarnScreen(showBottomNav: true),
             const ProfileScreen(showBottomNav: true),
@@ -197,7 +198,7 @@ class _DashboardHome extends StatelessWidget {
     final dashboard = provider.dashboard;
     final jobs = dashboard?.todaySchedule ?? const [];
     final previewJobs = jobs.take(3).toList();
-    final serviceArea = provider.serviceArea;
+    final serviceArea = provider.communityLabel;
 
     final loading = provider.isLoading && dashboard == null;
     return SafeArea(

@@ -55,7 +55,7 @@ class AppJobCard extends StatelessWidget {
         children: [
           Container(
             margin: embedded ? EdgeInsets.zero : const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(compact ? 14 : 16),
             decoration: embedded
                 ? null
                 : BoxDecoration(
@@ -207,14 +207,20 @@ class AppJobCard extends StatelessWidget {
 
   Widget _buildScheduleCard(String resolvedTime) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppVehicleImage(
-          image: vehicleImage,
-          width: 72,
-          height: 72,
+        // Hidden (not removed) — set visible: true to show car image again.
+        Visibility(
+          visible: false,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: AppVehicleImage(
+              image: vehicleImage,
+              width: 72,
+              height: 72,
+            ),
+          ),
         ),
-        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,7 +234,7 @@ class AppJobCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.style(
-                        fontSize: 10,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
@@ -245,18 +251,25 @@ class AppJobCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const SizedBox(width: 2),
-                  const AppIcon(
-                    AppAssets.chevronRight,
-                    size: 16,
-                    color: AppColors.black,
+                  const SizedBox(width: 4),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 2),
+                    child: AppIcon(
+                      AppAssets.chevronRight,
+                      size: 16,
+                      color: AppColors.black,
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
               Text(
                 customerName ?? AppStrings.mockJobCustomer.tr(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.style(
                   fontSize: 12,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -267,10 +280,10 @@ class AppJobCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.style(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textMuted,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Flexible(

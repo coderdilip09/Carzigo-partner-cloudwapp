@@ -42,6 +42,16 @@ class DashboardProvider extends BaseProvider {
     return null;
   }
 
+  String? get communityLabel {
+    final name = dashboard?.partner?.communityName?.trim();
+    final area = dashboard?.partner?.communityArea?.trim();
+    if (name != null && name.isNotEmpty) {
+      if (area != null && area.isNotEmpty) return '$name · $area';
+      return name;
+    }
+    return serviceArea;
+  }
+
   String get performancePeriodLabel {
     switch (performancePeriod) {
       case PerformancePeriod.week:

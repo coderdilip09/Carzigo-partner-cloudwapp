@@ -323,7 +323,16 @@ class AppStrings {
   static const String documentsSafe = 'documents_safe';
   static const String scheduleJobs = 'schedule_jobs';
   static const String scheduleSubtitle = 'schedule_subtitle';
+  static const String yourCommunity = 'your_community';
   static const String upcomingJobs = 'upcoming_jobs';
+  static const String reportDayOff = 'report_day_off';
+  static const String dayOffOnlyWashDays = 'day_off_only_wash_days';
+  static const String dayOffReason = 'day_off_reason';
+  static const String dayOffReasonHint = 'day_off_reason_hint';
+  static const String dayOffReasonRequired = 'day_off_reason_required';
+  static const String noUpcomingWashes = 'no_upcoming_washes';
+  static const String dayOffSaved = 'day_off_saved';
+  static const String emergencyDayOff = 'emergency_day_off';
   static const String inProgressJobs = 'in_progress_jobs';
   static const String completedJobs = 'completed_jobs';
   static const String cancelledJobs = 'cancelled_jobs';
