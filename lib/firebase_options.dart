@@ -56,7 +56,6 @@ class DefaultFirebaseOptions {
     projectId: 'carzigo-partner',
     storageBucket: 'carzigo-partner.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBZzfHONOtm09dqV5gZkFmjvNfSuThfOro',
     appId: '1:585836666621:ios:1bcb9bcc37518e931ba894',
