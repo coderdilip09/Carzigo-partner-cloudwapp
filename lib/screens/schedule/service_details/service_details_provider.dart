@@ -84,6 +84,7 @@ class ServiceDetailsProvider extends BaseProvider {
   String get displayInstructions => job?.customerInstructions?.trim() ?? '';
   String get displayAssignedAt => job?.assignedAt?.trim() ?? '';
   String get displayServiceName => job?.serviceName?.trim() ?? '';
+  String get displayPayout => job?.payoutLabel ?? '';
   String get displayVehicleModel => job?.vehicleModel?.trim() ?? '';
   String get displayPlateNumber => job?.plateNumber?.trim() ?? '';
   String get displayVehicleImage => job?.vehicleImage?.trim() ?? '';

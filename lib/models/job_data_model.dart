@@ -108,6 +108,16 @@ class JobDataModel {
 
   bool get needsKeyHandover => (washType ?? '').toLowerCase() == 'interior';
 
+  /// Partner payout for this wash type, e.g. `₹50`.
+  String get payoutLabel {
+    final raw = (price ?? '').trim();
+    if (raw.isEmpty) return '';
+    if (raw.startsWith('₹') || raw.startsWith('Rs')) return raw;
+    final amount = int.tryParse(raw.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (amount == null) return raw;
+    return '₹$amount';
+  }
+
   /// True only after the scheduled calendar day (IST) has ended.
   /// The slot length does not make a same-day wash incomplete.
   bool get scheduledDayHasPassed {

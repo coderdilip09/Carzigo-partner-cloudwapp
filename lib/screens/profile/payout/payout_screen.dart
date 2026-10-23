@@ -36,6 +36,8 @@ class PayoutProvider extends BaseProvider {
   int pending = 0;
   int paid = 0;
   int available = 0;
+  int exteriorRate = 50;
+  int interiorRate = 80;
   List<Map<String, dynamic>> requests = [];
 
   Future<void> load({bool reset = true}) async {
@@ -60,6 +62,11 @@ class PayoutProvider extends BaseProvider {
       pending = _asInt(data['pending']);
       paid = _asInt(data['paid']);
       available = _asInt(data['available']);
+      final rates = data['wash_rates'] ?? data['washRates'];
+      if (rates is Map) {
+        exteriorRate = _asInt(rates['exterior'], fallback: exteriorRate);
+        interiorRate = _asInt(rates['interior'], fallback: interiorRate);
+      }
       final raw = data['requests'];
       final incoming = raw is List
           ? raw
@@ -106,7 +113,6 @@ class PayoutProvider extends BaseProvider {
       return AppStrings.payoutAmountMaximum.tr(
         namedArgs: {'amount': '$available'},
       );
-      return AppStrings.payoutAmountExceedsBalance.tr();
     }
     if (amount > maximumRequestAmount) {
       return AppStrings.payoutAmountMaximum.tr(
@@ -156,10 +162,59 @@ class PayoutProvider extends BaseProvider {
   }
 }
 
-int _asInt(dynamic value) {
+int _asInt(dynamic value, {int fallback = 0}) {
   if (value is int) return value;
   if (value is num) return value.round();
-  return int.tryParse('$value') ?? 0;
+  return int.tryParse('$value') ?? fallback;
+}
+
+String _statusLabel(String status) {
+  switch (status.toLowerCase().trim()) {
+    case 'approved':
+      return AppStrings.payoutStatusApproved.tr();
+    case 'paid':
+      return AppStrings.payoutStatusPaid.tr();
+    case 'rejected':
+      return AppStrings.payoutStatusRejected.tr();
+    case 'requested':
+    default:
+      return AppStrings.payoutStatusRequested.tr();
+  }
+}
+
+Color _statusColor(String status) {
+  switch (status.toLowerCase().trim()) {
+    case 'approved':
+      return AppColors.viewAllLink;
+    case 'paid':
+      return AppColors.verified;
+    case 'rejected':
+      return AppColors.destructive;
+    case 'requested':
+    default:
+      return AppColors.primary;
+  }
+}
+
+Color _statusBg(String status) {
+  switch (status.toLowerCase().trim()) {
+    case 'approved':
+      return const Color(0xFFE8F1FF);
+    case 'paid':
+      return AppColors.greenLight;
+    case 'rejected':
+      return AppColors.redLight;
+    case 'requested':
+    default:
+      return AppColors.peach;
+  }
+}
+
+String _formatWhen(dynamic value) {
+  if (value == null) return '';
+  final parsed = DateTime.tryParse(value.toString());
+  if (parsed == null) return value.toString();
+  return DateFormat('dd MMM yyyy, h:mm a').format(parsed.toLocal());
 }
 
 class PayoutScreen extends StatelessWidget {
@@ -199,32 +254,18 @@ class PayoutScreen extends StatelessWidget {
                                 AppBackHeader(
                                   title: AppStrings.requestPayout.tr(),
                                 ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  AppStrings.requestPayoutSubtitle.tr(),
+                                  style: AppTextStyles.style(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
                                 const SizedBox(height: 16),
                                 _BalanceCard(provider: provider),
                                 const SizedBox(height: 16),
-                                AppTextField(
-                                  controller: provider.amountController,
-                                  hint: AppStrings.payoutAmount.tr(),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  validator: provider.validateAmount,
-                                  errorMaxLines: 2,
-                                ),
-                                const SizedBox(height: 12),
-                                AppTextField(
-                                  controller: provider.noteController,
-                                  hint: AppStrings.payoutNote.tr(),
-                                ),
-                                const SizedBox(height: 16),
-                                AppSolidButton(
-                                  label: AppStrings.submitPayout.tr(),
-                                  isLoading: provider.isSubmitting,
-                                  onTap: provider.available < 1
-                                      ? null
-                                      : provider.submit,
-                                ),
+                                _RequestCard(provider: provider),
                                 const SizedBox(height: 24),
                                 Text(
                                   AppStrings.payoutHistory.tr(),
@@ -233,14 +274,9 @@ class PayoutScreen extends StatelessWidget {
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 10),
                                 if (provider.requests.isEmpty)
-                                  Text(
-                                    '—',
-                                    style: AppTextStyles.style(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  )
+                                  const _EmptyHistory()
                                 else
                                   ...provider.requests.map(_RequestTile.new),
                                 if (provider.isLoadingMore)
@@ -277,13 +313,16 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String rupee(int value) => '₹$value';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.gradientStart, AppColors.gradientEnd],
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,21 +331,215 @@ class _BalanceCard extends StatelessWidget {
             AppStrings.availableBalance.tr(),
             style: AppTextStyles.style(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+              color: AppColors.white.withValues(alpha: 0.85),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             '₹${provider.available}',
             style: AppTextStyles.style(
-              fontSize: 28,
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              color: AppColors.white,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _BalanceStat(
+                  label: AppStrings.partnerRevenue.tr(),
+                  value: '₹${provider.revenue}',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _BalanceStat(
+                  label: AppStrings.pendingPayout.tr(),
+                  value: '₹${provider.pending}',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _BalanceStat(
+                  label: AppStrings.paidOut.tr(),
+                  value: '₹${provider.paid}',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.white.withValues(alpha: 0.18),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.washPayoutRates.tr(),
+                  style: AppTextStyles.style(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppStrings.exteriorWashPayout.tr(
+                    namedArgs: {'amount': '${provider.exteriorRate}'},
+                  ),
+                  style: AppTextStyles.style(
+                    fontSize: 12,
+                    color: AppColors.white,
+                  ),
+                ),
+                Text(
+                  AppStrings.interiorWashPayout.tr(
+                    namedArgs: {'amount': '${provider.interiorRate}'},
+                  ),
+                  style: AppTextStyles.style(
+                    fontSize: 12,
+                    color: AppColors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BalanceStat extends StatelessWidget {
+  const _BalanceStat({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.style(
+              fontSize: 10,
+              color: AppColors.white.withValues(alpha: 0.75),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: AppTextStyles.style(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RequestCard extends StatelessWidget {
+  const _RequestCard({required this.provider});
+
+  final PayoutProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppStrings.payoutRequestSection.tr(),
+            style: AppTextStyles.style(
+              fontSize: 15,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
-          Text('${AppStrings.partnerRevenue.tr()}: ${rupee(provider.revenue)}'),
-          Text('${AppStrings.pendingPayout.tr()}: ${rupee(provider.pending)}'),
-          Text('${AppStrings.paidOut.tr()}: ${rupee(provider.paid)}'),
+          AppTextField(
+            controller: provider.amountController,
+            hint: AppStrings.payoutAmount.tr(),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            validator: provider.validateAmount,
+            errorMaxLines: 2,
+          ),
+          const SizedBox(height: 12),
+          AppTextField(
+            controller: provider.noteController,
+            hint: AppStrings.payoutNoteOptional.tr(),
+          ),
+          const SizedBox(height: 16),
+          AppSolidButton(
+            label: AppStrings.submitPayout.tr(),
+            isLoading: provider.isSubmitting,
+            onTap: provider.available < 1 ? null : provider.submit,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyHistory extends StatelessWidget {
+  const _EmptyHistory();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.account_balance_wallet_outlined,
+            size: 32,
+            color: AppColors.textSecondary.withValues(alpha: 0.7),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppStrings.payoutEmptyHistory.tr(),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.style(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -322,28 +555,80 @@ class _RequestTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = (row['status'] ?? '').toString();
     final amount = _asInt(row['amount']);
+    final when = _formatWhen(row['processed_at'] ?? row['created_at']);
+    final note = (row['note'] ?? '').toString().trim();
+    final adminNote = (row['admin_note'] ?? '').toString().trim();
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              '₹$amount',
-              style: AppTextStyles.style(fontWeight: FontWeight.w700),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '₹$amount',
+                  style: AppTextStyles.style(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: _statusBg(status),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _statusLabel(status),
+                  style: AppTextStyles.style(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: _statusColor(status),
+                  ),
+                ),
+              ),
+            ],
           ),
-          Text(
-            status,
-            style: AppTextStyles.style(
-              fontSize: 12,
-              color: AppColors.textSecondary,
+          if (when.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              when,
+              style: AppTextStyles.style(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
-          ),
+          ],
+          if (note.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              note,
+              style: AppTextStyles.style(
+                fontSize: 12,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+          if (adminNote.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              adminNote,
+              style: AppTextStyles.style(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
     );

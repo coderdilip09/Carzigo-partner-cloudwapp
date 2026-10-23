@@ -337,6 +337,8 @@ class ScheduleScreen extends StatelessWidget {
                                           customerName: job.customerName,
                                           carName: job.car,
                                           vehicleImage: job.vehicleImage,
+                                          showPrice: true,
+                                          price: job.payoutLabel,
                                           onTap: () async {
                                             final completed =
                                                 await AppNavigation.to<bool>(

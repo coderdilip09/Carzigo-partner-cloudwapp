@@ -4,6 +4,7 @@ import 'package:carzigo_partner/models/document_change_request_model.dart';
 import 'package:carzigo_partner/models/cms_data_model.dart';
 import 'package:carzigo_partner/models/delete_account_data_model.dart';
 import 'package:carzigo_partner/models/dashboard_data_model.dart';
+import 'package:carzigo_partner/models/earning_item_model.dart';
 import 'package:carzigo_partner/models/job_data_model.dart';
 import 'package:carzigo_partner/models/json_parsers.dart';
 import 'package:carzigo_partner/models/kyc_account_status_data_model.dart';
@@ -594,6 +595,25 @@ class Api {
       },
     );
     return ResponseWrapperModel.fromJson(json, (data) => asMap(data));
+  }
+
+  static Future<ResponseWrapperModel<EarningsDataModel?>> getEarnings({
+    String type = 'all',
+    int page = 1,
+    int limit = 30,
+  }) async {
+    final json = await ApiClientMethods.getMethod(
+      url: ApiUrls.earningsUrl(),
+      query: {
+        'type': type,
+        RequestKeys.page: '$page',
+        RequestKeys.limit: '$limit',
+      },
+    );
+    return ResponseWrapperModel.fromJson(
+      json,
+      (data) => EarningsDataModel.fromJson(asMap(data)),
+    );
   }
 
   static Future<ResponseWrapperModel<Map<String, dynamic>?>> requestPayout({

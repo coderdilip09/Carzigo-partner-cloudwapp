@@ -124,15 +124,32 @@ class AppJobCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                serviceName ?? AppStrings.mockJobService.tr(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.style(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.black,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      serviceName ?? AppStrings.mockJobService.tr(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.style(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.black,
+                      ),
+                    ),
+                  ),
+                  if (showPrice && (price ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      price!,
+                      style: AppTextStyles.style(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.black,
+                      ),
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 2),
               Text(

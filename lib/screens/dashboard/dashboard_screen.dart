@@ -262,10 +262,6 @@ class _DashboardHome extends StatelessWidget {
                                             ),
                                           ),
                                         ),
-                                        const AppIcon(
-                                          AppAssets.chevronDown,
-                                          size: 16,
-                                        ),
                                       ],
                                     ),
                                 ],
@@ -401,15 +397,17 @@ class _DashboardHome extends StatelessWidget {
                                   serviceName: previewJobs[i].serviceName,
                                   customerName: previewJobs[i].customerName,
                                   carName: previewJobs[i].car,
+                                  showPrice: true,
+                                  price: previewJobs[i].payoutLabel,
                                   embedded: true,
                                   showBottomDivider: i < previewJobs.length - 1,
                                   onTap: () async {
                                     final completed =
                                         await AppNavigation.to<bool>(
-                                      ServiceDetailsScreen(
-                                        job: previewJobs[i],
-                                      ),
-                                    );
+                                          ServiceDetailsScreen(
+                                            job: previewJobs[i],
+                                          ),
+                                        );
                                     if (completed == true) {
                                       await provider.loadDashboard(
                                         silent: true,

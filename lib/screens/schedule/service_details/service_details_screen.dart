@@ -620,6 +620,19 @@ class _ScheduleCard extends StatelessWidget {
                         fontSize: 13,
                       ),
                     ),
+                    if (!loading && provider.displayPayout.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        provider.displayServiceName.isEmpty
+                            ? provider.displayPayout
+                            : '${provider.displayServiceName} · ${provider.displayPayout}',
+                        style: AppTextStyles.style(
+                          color: AppColors.white.withValues(alpha: 0.95),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

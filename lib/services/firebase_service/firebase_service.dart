@@ -8,6 +8,7 @@ import 'package:carzigo_partner/screens/dashboard/dashboard_screen.dart';
 import 'package:carzigo_partner/screens/kyc/kyc_overview/kyc_overview_screen.dart';
 import 'package:carzigo_partner/screens/notifications/notifications_screen.dart';
 import 'package:carzigo_partner/screens/profile/documents/documents_screen.dart';
+import 'package:carzigo_partner/screens/profile/payout/payout_screen.dart';
 import 'package:carzigo_partner/screens/refer_earn/refer_earn_screen.dart';
 import 'package:carzigo_partner/screens/schedule/service_details/service_details_screen.dart';
 import 'package:carzigo_partner/services/api_service/api.dart';
@@ -390,6 +391,12 @@ class FirebaseService {
     }
     if (screen == 'refer_earn' || type.startsWith('referral')) {
       await AppNavigation.to(const ReferEarnScreen(showBottomNav: false));
+      return;
+    }
+    if (screen == 'payouts' ||
+        screen == 'payout' ||
+        type.startsWith('payout')) {
+      await AppNavigation.to(const PayoutScreen());
       return;
     }
     if (screen == 'documents' || type.contains('doc_change')) {
