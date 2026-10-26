@@ -63,12 +63,34 @@ class ServiceDetailsScreen extends StatelessWidget {
                               const _VehicleDetailsCard(),
                               if (provider.needsKeyHandover &&
                                   provider.job?.keyVerified != true &&
-                                  provider.currentStep < 3) ...[
+                                  provider.currentStep < 4) ...[
                                 const SizedBox(height: 16),
                                 const _KeyFindNote(),
                               ],
                               const SizedBox(height: 16),
                               const _ServiceAddressCard(),
+                              if (provider.job?.isNotComplete == true) ...[
+                                const SizedBox(height: 16),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF4E5),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFE67E22),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    AppStrings.washDayEndedContactAdmin.tr(),
+                                    style: AppTextStyles.style(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF9A5B00),
+                                    ),
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 20),
                               Text(
                                 AppStrings.updateStatus.tr(),
@@ -159,6 +181,14 @@ class ServiceDetailsScreen extends StatelessWidget {
             : provider.displayAssignedAt,
         null,
         null,
+      ),
+      (
+        AppStrings.statusOnTheWay.tr(),
+        AppStrings.statusOnTheWayDesc.tr(),
+        AppAssets.location,
+        null,
+        null,
+        JobWorkflowStatus.onTheWay,
       ),
       (
         AppStrings.statusOnSite.tr(),
@@ -440,18 +470,23 @@ class ServiceDetailsScreen extends StatelessWidget {
     String statusApi,
   ) async {
     if (provider.isUpdating || provider.isLoading) return;
-    final isOnTheWayNotToday =
-        stepNum == 2 && provider.needsOnTheWayNotTodayConfirm;
+
+    // Duty can only start for today's scheduled jobs.
+    final isDutyStart =
+        statusApi == JobWorkflowStatus.onTheWay ||
+        statusApi == JobWorkflowStatus.onSite ||
+        statusApi == JobWorkflowStatus.arrived ||
+        statusApi == JobWorkflowStatus.inProgress ||
+        statusApi == JobWorkflowStatus.serviceStarted;
+    if (isDutyStart && !provider.isScheduledToday) {
+      AppToast.error(AppStrings.onTheWayNotTodayBody.tr());
+      return;
+    }
+
     final confirmed = await showAppConfirmDialog(
       context: context,
-      title: isOnTheWayNotToday
-          ? AppStrings.onTheWayNotTodayTitle.tr()
-          : AppStrings.updateStatusConfirmTitle.tr(),
-      body: isOnTheWayNotToday
-          ? AppStrings.onTheWayNotTodayBody.tr(
-              args: [provider.displayDate.isEmpty ? '—' : provider.displayDate],
-            )
-          : AppStrings.updateStatusConfirmBody.tr(args: [statusTitle]),
+      title: AppStrings.updateStatusConfirmTitle.tr(),
+      body: AppStrings.updateStatusConfirmBody.tr(args: [statusTitle]),
       confirmLabel: AppStrings.markAs.tr(args: [statusTitle]),
     );
     if (!confirmed || !context.mounted) return;

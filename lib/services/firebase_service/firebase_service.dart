@@ -383,7 +383,8 @@ class FirebaseService {
         type == 'day_before_reminder' ||
         type == 'wash_day_reminder' ||
         type == 'booking_rescheduled' ||
-        type == 'schedule_cancelled';
+        type == 'schedule_cancelled' ||
+        type == 'job_completed';
 
     if (opensJob && serviceId.isNotEmpty) {
       await AppNavigation.to(ServiceDetailsScreen(jobId: serviceId));

@@ -167,6 +167,7 @@ class AppStrings {
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';
   static const String notComplete = 'not_complete';
+  static const String washDayEndedContactAdmin = 'wash_day_ended_contact_admin';
   static const String reject = 'reject';
   static const String inProgress = 'in_progress';
   static const String todayComplete = 'today_complete';

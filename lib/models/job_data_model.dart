@@ -152,24 +152,27 @@ class JobDataModel {
     return '$y-$m-$d';
   }
 
-  /// Last finished step. Interior washes insert Key Handover after On site.
+  /// Last finished step. Flow: Assigned → On the way → On site → …
+  /// Interior washes insert Key Handover after On site.
   int get step {
     final hasBefore = (beforePhoto ?? '').trim().isNotEmpty;
     final hasAfter = (afterPhoto ?? '').trim().isNotEmpty;
     final keyOffset = needsKeyHandover ? 1 : 0;
     final keyDone = keyVerified == true;
     switch ((workflowStatus ?? '').toLowerCase()) {
+      case JobWorkflowStatus.onTheWay:
+        return 2;
       case JobWorkflowStatus.onSite:
       case JobWorkflowStatus.arrived:
-        if (needsKeyHandover && !keyDone) return 2;
-        if (!hasBefore) return 2 + keyOffset;
-        return 3 + keyOffset;
+        if (needsKeyHandover && !keyDone) return 3;
+        if (!hasBefore) return 3 + keyOffset;
+        return 4 + keyOffset;
       case JobWorkflowStatus.inProgress:
       case JobWorkflowStatus.serviceStarted:
-        if (!hasAfter) return 4 + keyOffset;
-        return 5 + keyOffset;
-      case JobWorkflowStatus.completed:
+        if (!hasAfter) return 5 + keyOffset;
         return 6 + keyOffset;
+      case JobWorkflowStatus.completed:
+        return 7 + keyOffset;
       case JobWorkflowStatus.assigned:
       default:
         return 1;

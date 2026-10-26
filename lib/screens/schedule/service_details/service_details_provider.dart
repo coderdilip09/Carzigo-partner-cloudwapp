@@ -51,8 +51,6 @@ class ServiceDetailsProvider extends BaseProvider {
         date.day == today.day;
   }
 
-  bool get needsOnTheWayNotTodayConfirm => !isScheduledToday;
-
   static DateTime _nowInIst() {
     return DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
   }
@@ -216,12 +214,12 @@ class ServiceDetailsProvider extends BaseProvider {
     if (isUpdating) return false;
     if (step != currentStep + 1) return false;
     if (job?.isNotComplete == true) {
-      AppToast.error(AppStrings.notComplete.tr());
+      AppToast.error(AppStrings.washDayEndedContactAdmin.tr());
       return false;
     }
     final tag = (job?.displayTag ?? '').toLowerCase();
     if (job?.canUpdate == false && tag != 'not_complete') {
-      AppToast.error(AppStrings.notComplete.tr());
+      AppToast.error(AppStrings.washDayEndedContactAdmin.tr());
       return false;
     }
     final id = job?.id ?? jobId;
@@ -545,7 +543,7 @@ class ServiceDetailsProvider extends BaseProvider {
     final allowed = kind == 'after' ? canEditAfterPhoto : canEditBeforePhoto;
     if (!allowed || isUploadingPhoto) {
       if (!allowed && job?.isNotComplete == true) {
-        AppToast.error(AppStrings.notComplete.tr());
+        AppToast.error(AppStrings.washDayEndedContactAdmin.tr());
       }
       return;
     }
