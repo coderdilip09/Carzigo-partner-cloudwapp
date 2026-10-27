@@ -408,10 +408,16 @@ class Api {
   static Future<ResponseWrapperModel<JobDataModel?>> updateJobStatus({
     required String id,
     required String status,
+    String? note,
   }) async {
+    final trimmedNote = note?.trim();
     final json = await ApiClientMethods.patchMethod(
       url: ApiUrls.jobStatusUrl(id),
-      body: {RequestKeys.status: status},
+      body: {
+        RequestKeys.status: status,
+        if (trimmedNote != null && trimmedNote.isNotEmpty)
+          RequestKeys.note: trimmedNote,
+      },
     );
     return ResponseWrapperModel.fromJson(
       json,

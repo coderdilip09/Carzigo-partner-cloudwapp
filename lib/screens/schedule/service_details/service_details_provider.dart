@@ -395,6 +395,12 @@ class ServiceDetailsProvider extends BaseProvider {
     // English month names only — avoid current locale (e.g. hi) failing on "24 Sep 2026"
     const locale = 'en';
     try {
+      return DateFormat('EEE, dd MMM yyyy', locale).parseLoose(value);
+    } catch (_) {}
+    try {
+      return DateFormat('EEE, d MMM yyyy', locale).parseLoose(value);
+    } catch (_) {}
+    try {
       return DateFormat('d MMM yyyy', locale).parseLoose(value);
     } catch (_) {}
     try {
@@ -530,6 +536,45 @@ class ServiceDetailsProvider extends BaseProvider {
         currentStep = res.data!.step;
       }
       AppToast.success(AppStrings.keyOtpSent.tr());
+    } finally {
+      isUpdating = false;
+      safeNotifyListeners();
+    }
+  }
+
+  /// Close an interior wash when the customer is not available for key handover.
+  Future<bool> reportCustomerUnavailable({String? note}) async {
+    if (isUpdating) return false;
+    if (job?.isNotComplete == true) {
+      AppToast.error(AppStrings.washDayEndedContactAdmin.tr());
+      return false;
+    }
+    final tag = (job?.displayTag ?? '').toLowerCase();
+    if (job?.canUpdate == false && tag != 'not_complete') {
+      AppToast.error(AppStrings.washDayEndedContactAdmin.tr());
+      return false;
+    }
+    final id = job?.id ?? jobId;
+    if (id == null || id.isEmpty) return false;
+
+    isUpdating = true;
+    safeNotifyListeners();
+    try {
+      final res = await Api.updateJobStatus(
+        id: id,
+        status: JobWorkflowStatus.customerUnavailable,
+        note: note ?? 'Customer not available for key handover',
+      );
+      if (!res.isSuccess) {
+        AppToast.error(res.message ?? AppStrings.requestFailed.tr());
+        return false;
+      }
+      if (res.data != null) {
+        job = res.data;
+        currentStep = res.data!.step;
+      }
+      AppToast.success(AppStrings.customerUnavailableReported.tr());
+      return true;
     } finally {
       isUpdating = false;
       safeNotifyListeners();

@@ -13,6 +13,7 @@ class JobWorkflowStatus {
   static const String inProgress = 'in_progress';
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';
+  static const String customerUnavailable = 'customer_unavailable';
 
   /// Map UI step statuses to API values the backend accepts.
   static String toApiStatus(String status) {
@@ -392,6 +393,7 @@ class JobDataModel {
     if (value == null || value.isEmpty) return null;
     final d = _parseCalendarDate(value);
     if (d != null) {
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       const monthNames = [
         'Jan',
         'Feb',
@@ -406,7 +408,9 @@ class JobDataModel {
         'Nov',
         'Dec',
       ];
-      return '${d.day.toString().padLeft(2, '0')} ${monthNames[d.month - 1]} ${d.year}';
+      // DateTime.weekday: Mon=1 … Sun=7
+      return '${weekdays[d.weekday - 1]}, '
+          '${d.day.toString().padLeft(2, '0')} ${monthNames[d.month - 1]} ${d.year}';
     }
     return value;
   }

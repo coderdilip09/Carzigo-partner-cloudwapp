@@ -475,6 +475,11 @@ class AppStrings {
   static const String resendKeyOtp = 'resend_key_otp';
   static const String keyResendHint = 'key_resend_hint';
   static const String keyVerified = 'key_verified';
+  static const String customerUnavailableCta = 'customer_unavailable_cta';
+  static const String customerUnavailableTitle = 'customer_unavailable_title';
+  static const String customerUnavailableBody = 'customer_unavailable_body';
+  static const String customerUnavailableConfirm = 'customer_unavailable_confirm';
+  static const String customerUnavailableReported = 'customer_unavailable_reported';
   static const String view = 'view';
   static const String changeNumber = 'change_number';
   static const String updatePhoneHint = 'update_phone_hint';

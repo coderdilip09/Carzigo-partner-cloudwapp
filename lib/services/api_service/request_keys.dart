@@ -40,6 +40,7 @@ class RequestKeys {
   static const String deviceType = 'device_type';
   static const String deviceId = 'device_id';
   static const String status = 'status';
+  static const String note = 'note';
   static const String tab = 'tab';
   static const String page = 'page';
   static const String limit = 'limit';

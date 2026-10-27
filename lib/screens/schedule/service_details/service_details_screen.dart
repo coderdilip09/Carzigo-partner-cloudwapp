@@ -1132,6 +1132,23 @@ class _KeyOtpBoxState extends State<_KeyOtpBox> {
     AppStrings.keyFindNotification,
   ];
 
+  Future<void> _onCustomerUnavailable(
+    BuildContext context,
+    ServiceDetailsProvider provider,
+  ) async {
+    final confirmed = await showAppConfirmDialog(
+      context: context,
+      title: AppStrings.customerUnavailableTitle.tr(),
+      body: AppStrings.customerUnavailableBody.tr(),
+      confirmLabel: AppStrings.customerUnavailableConfirm.tr(),
+      cancelLabel: AppStrings.cancel.tr(),
+    );
+    if (!confirmed || !context.mounted) return;
+    final closed = await provider.reportCustomerUnavailable();
+    if (!closed || !context.mounted) return;
+    AppNavigation.back(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ServiceDetailsProvider>();
@@ -1243,6 +1260,31 @@ class _KeyOtpBoxState extends State<_KeyOtpBox> {
               ? null
               : () => provider.verifyKeyOtp(_code),
           isLoading: provider.isUpdating,
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton(
+            onPressed: provider.isUpdating
+                ? null
+                : () => _onCustomerUnavailable(context, provider),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.destructive,
+              side: const BorderSide(color: AppColors.destructive),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+            ),
+            child: Text(
+              AppStrings.customerUnavailableCta.tr(),
+              style: AppTextStyles.style(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.destructive,
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         Text(
